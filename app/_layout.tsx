@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { AuthProvider } from "@/src/auth/context/AuthProvider";
 import AuthGate from "@/src/auth/router/AuthGate";
 import { ensureDbReady, isDbReady } from "@/src/db/bootstrap";
+import { AppBootstrap } from "@/src/bootstrap/AppBootstrap";
+import { syncHouseholdUseCase } from "@/src/di/container";
 
 export default function RootLayout() {
   // const [dbReady, setDbReady] = useState(false);
@@ -21,6 +23,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
+      <AppBootstrap syncHouseholdUseCase={syncHouseholdUseCase} />
       <AuthGate />
     </AuthProvider>
   );
