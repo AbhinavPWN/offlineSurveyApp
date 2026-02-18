@@ -3,4 +3,8 @@
 // LOCKED → session exists, PIN required
 // UNLOCKED → app usable
 
-export type AuthState = "LOGGED_OUT" | "LOCKED" | "UNLOCKED";
+export type AuthState =
+  | "LOGGED_OUT"
+  | "LOCKED"
+  | "UNLOCKED"
+  | "SESSION_EXPIRED";

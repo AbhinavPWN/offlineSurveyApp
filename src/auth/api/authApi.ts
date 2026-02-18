@@ -1,3 +1,6 @@
+import axios from "axios";
+import { AppLogger } from "@/src/utils/AppLogger";
+
 const BASE_URL = "https://wecareapi.nirdhan.com.np:8085";
 
 export interface LoginResponse {
@@ -6,30 +9,37 @@ export interface LoginResponse {
   data?: {
     access_token: string;
     expires_in: number;
-    //offline_pin?:string;
   };
 }
+
+// Create axios instance (separate from HouseholdApiService)
+const authClient = axios.create({
+  baseURL: BASE_URL,
+  timeout: 15000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 export async function loginApi(
   username: string,
   password: string,
   officeCode: string,
 ): Promise<LoginResponse> {
-  const res = await fetch(`${BASE_URL}/api/Account/Login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  try {
+    const response = await authClient.post("/api/Account/Login", {
       userName: username,
       password,
       officeCode,
-    }),
-  });
+    });
 
-  if (!res.ok) {
-    throw new Error("Network error");
+    return response.data;
+  } catch (error: any) {
+    await AppLogger.log("ERROR", "LOGIN_API_ERROR", {
+      message: error?.message,
+      status: error?.response?.status ?? "NO_RESPONSE",
+    });
+
+    throw error;
   }
-
-  return res.json();
 }

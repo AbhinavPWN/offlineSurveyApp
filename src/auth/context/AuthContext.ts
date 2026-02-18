@@ -20,6 +20,7 @@ export interface AuthContextValue {
   login: (session: AuthSession) => Promise<void>;
   unlockWithPin: (pin: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  expireSession: () => void;
 
   // CHW profile
   chwProfile: CHWProfile | null;

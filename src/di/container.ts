@@ -1,19 +1,22 @@
-import { HouseholdLocalRepositoryImpl } from "../repositories/impl/HouseholdLocalRepositoryImpl";
+import { SQLiteHouseholdLocalRepository } from "../repositories/SQLiteHouseholdLocalRepository";
 import { HouseholdApiServiceImpl } from "../services/HouseholdApiService";
 import { NetworkServiceImpl } from "../utils/NetworkService";
 import { SyncHouseholdUseCase } from "../usecases/household/SyncHouseholdUseCase";
 
-// Singleton instances - Created once for the entire APP.
+// ------------------------
+// Singletons (App Lifetime)
+// ------------------------
 
-// Repositories
-const householdLocalRepository = new HouseholdLocalRepositoryImpl();
+export const householdLocalRepository = new SQLiteHouseholdLocalRepository();
 
-// Services
-const householdApiService = new HouseholdApiServiceImpl();
+export const householdApiService = new HouseholdApiServiceImpl();
 
-const networkService = new NetworkServiceImpl();
+export const networkService = new NetworkServiceImpl();
 
-// use cases
+// ------------------------
+// Use Cases
+// ------------------------
+
 export const syncHouseholdUseCase = new SyncHouseholdUseCase(
   householdLocalRepository,
   householdApiService,

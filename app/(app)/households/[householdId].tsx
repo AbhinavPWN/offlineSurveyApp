@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -7,662 +7,646 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  Alert,
+  Animated,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { PROVINCES } from "@/src/constants/provinces";
 import { Picker } from "@react-native-picker/picker";
-import { HOUSING_TYPES } from "@/src/constants/housingTypes";
-import * as Location from "expo-location";
-import { SubmitHouseholdUseCase } from "@/src/usecases/SubmitHouseholdUseCase";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import {
-  householdRepository,
-  householdInfoRepository,
-} from "@/src/repositories";
-import type { Household } from "@/src/repositories/HouseholdRepository";
-import type { HouseholdInfo } from "@/src/repositories/HouseholdInfoRepository";
+import * as Location from "expo-location";
+import { HOUSING_TYPES } from "@/src/constants/housingTypes";
+import { LUMBINI_DISTRICTS } from "@/src/constants/lumbiniLocations";
 
-// Helper function for progress bar - use form state instead of Db state
-function getSectionProgressFromForm(params: {
-  provinceCode: string;
-  districtId: string;
-  wardNo: string;
-  address: string;
-  membersCount: string;
-  typeOfHousing: string;
-  cleanWater: string;
-  sanitation: string;
-  gpsCoordinates: string;
-}) {
-  return {
-    location: Boolean(
-      params.provinceCode &&
-      params.districtId &&
-      params.wardNo &&
-      params.address,
-    ),
+import { householdLocalRepository } from "@/src/di/container";
+import type { HouseholdLocal } from "@/src/models/household.model";
+import { useAuth } from "@/src/auth/context/useAuth";
 
-    members:
-      params.membersCount.trim() !== "" &&
-      !isNaN(Number(params.membersCount)) &&
-      Number(params.membersCount) > 0,
-
-    housing: Boolean(
-      params.typeOfHousing && params.cleanWater && params.sanitation,
-    ),
-
-    gps: Boolean(params.gpsCoordinates),
-  };
-}
-
-// for DatePicker
-function formatDateYYYYMMDD(date: Date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+function formatDate(date: Date) {
+  return date.toISOString().split("T")[0];
 }
 
 export default function HouseholdDetailScreen() {
   const router = useRouter();
-  // const { householdId } = useLocalSearchParams<{ householdId: string }>();
+  const { chwProfile } = useAuth();
   const params = useLocalSearchParams();
-  const householdId =
+
+  const localId =
     typeof params.householdId === "string" ? params.householdId : null;
 
   const [loading, setLoading] = useState(true);
-  const [household, setHousehold] = useState<Household | null>(null);
-  const [householdInfo, setHouseholdInfo] = useState<HouseholdInfo | null>(
-    null,
-  );
-  // Adding hydration guard so that it doesn't autosave while running but when only after user interaction
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [household, setHousehold] = useState<HouseholdLocal | null>(null);
+  // const isReadOnly = household?.syncStatus === "SYNCED";
+  const isReadOnly = false;
 
-  //   Adding FORM states
-  const [dateOfListing, setDateOfListing] = useState<string | null>(null);
+  const progressAnim = useRef(new Animated.Value(0)).current;
+
+  // ---------------- FORM STATE ----------------
+  const [dateOfListing, setDateOfListing] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
+
   const [chwName, setChwName] = useState("");
-  const [districtId, setDistrictId] = useState("");
-  const [vdcCode, setVdcCode] = useState("");
-  const [wardNo, setWardNo] = useState("");
   const [provinceCode, setProvinceCode] = useState("");
+  const [districtCode, setDistrictCode] = useState("");
+  const [vdcnpCode, setVdcnpCode] = useState("");
+  const [wardNo, setWardNo] = useState("");
   const [address, setAddress] = useState("");
   const [membersCount, setMembersCount] = useState("");
   const [typeOfHousing, setTypeOfHousing] = useState("");
-  const [cleanWater, setCleanWater] = useState("");
-  const [sanitation, setSanitation] = useState("");
+  const [cleanWater, setCleanWater] = useState<"Y" | "N" | "">("");
+  const [sanitation, setSanitation] = useState<"Y" | "N" | "">("");
   const [gpsCoordinates, setGpsCoordinates] = useState("");
-  const [gpsError, setGpsError] = useState<string | null>(null);
-  const [gpsLoading, setGpsLoading] = useState(false);
 
-  // To prevent double Tap submitting.
-  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // const displayDate = dateOfListing ?? "";
-  const isReadOnly = household?.status !== "DRAFT";
+  // ---------------- LOAD ----------------
+  useEffect(() => {
+    async function load() {
+      if (!localId) return;
 
-  // For Gps coordinate
-  async function handleCaptureGPS() {
-    try {
-      setGpsError(null);
-      setGpsLoading(true);
+      const result = await householdLocalRepository.getByLocalId(localId);
+      setHousehold(result);
 
-      const { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== "granted") {
-        setGpsError("Location permission denied");
-        return;
+      if (result) {
+        setDateOfListing(result.dateoflistingAD ?? "");
+        setProvinceCode("5");
+        setDistrictCode(result.districtCode ?? "");
+        setVdcnpCode(result.vdcnpCode ?? "");
+        setWardNo(result.wardNo ?? "");
+        setAddress(result.address ?? "");
+        setMembersCount(result.noofHHMembers?.toString() ?? "");
+        setTypeOfHousing(result.typeofHousing ?? "");
+        setCleanWater(result.accesstoCleanWater ?? "");
+        setSanitation(result.accesstoSanitation ?? "");
+        setGpsCoordinates(result.gpsCoordinates ?? "");
       }
 
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
+      if (chwProfile) {
+        setChwName(chwProfile.userName);
+      }
+
+      setLoading(false);
+    }
+
+    load();
+  }, [chwProfile, localId]);
+
+  // ---------------- AUTO SAVE ----------------
+  useEffect(() => {
+    if (!household) return;
+
+    const timeout = setTimeout(async () => {
+      // 1️⃣ Always update draft fields
+      await householdLocalRepository.updateDraft(household.localId, {
+        dateoflistingAD: dateOfListing,
+        provinceCode,
+        districtCode,
+        vdcnpCode,
+        wardNo,
+        address,
+        noofHHMembers:
+          membersCount.trim() !== "" && !isNaN(Number(membersCount))
+            ? Number(membersCount)
+            : 0,
+        typeofHousing: typeOfHousing as any,
+        accesstoCleanWater: cleanWater as any,
+        accesstoSanitation: sanitation as any,
+        gpsCoordinates,
       });
 
-      const lat = location.coords.latitude.toFixed(6);
-      const lng = location.coords.longitude.toFixed(6);
-
-      const formatted = `${lat},${lng}`;
-      setGpsCoordinates(formatted);
-    } catch (error) {
-      console.error("GPS capture failed", error);
-      setGpsError("Failed to capture GPS location");
-    } finally {
-      setGpsLoading(false);
-    }
-  }
-
-  //   Loading household by ID
-  useEffect(() => {
-    async function loadData() {
-      if (!householdId) {
-        setLoading(false);
-        return;
+      // 2️⃣ Only promote SYNCED → PENDING once
+      if (household.syncStatus === "SYNCED" && household.syncAction === null) {
+        await householdLocalRepository.markPending(household.localId, "UPDATE");
       }
-
-      try {
-        const householdResult =
-          await householdRepository.getHouseholdById(householdId);
-        setHousehold(householdResult);
-
-        if (householdResult) {
-          const info = await householdInfoRepository.getByHouseholdId(
-            householdResult.id,
-          );
-          setHouseholdInfo(info);
-        }
-      } catch (error) {
-        console.error("Failed to load household", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadData();
-  }, [householdId]);
-
-  // Auto-fill CHW name once when households load.
-  useEffect(() => {
-    if (!household) return;
-    if (chwName) return; // already set, do not overwrite
-
-    // TEMP: replace later with auth user
-    const MOCK_CHW_NAME = "Mock Chw Name";
-
-    setChwName(MOCK_CHW_NAME);
-
-    householdInfoRepository.upsertDraft(household.id, {
-      nameOfChw: MOCK_CHW_NAME,
-      createdBy: household.createdByUserId,
-    });
-  }, [chwName, household]);
-
-  // Auto-fill Date of Listing with today's date (once)
-  useEffect(() => {
-    if (!household) return;
-    if (dateOfListing) return; // already set, do not overwrite
-
-    const today = new Date();
-    const formatted = formatDateYYYYMMDD(today);
-
-    setDateOfListing(formatted);
-
-    householdInfoRepository.upsertDraft(household.id, {
-      dateOfListing: formatted,
-    });
-  }, [dateOfListing, household]);
-
-  //   Initializing form state from DB.
-  useEffect(() => {
-    if (!householdInfo) {
-      setIsHydrated(true);
-      return;
-    }
-
-    setProvinceCode(
-      typeof householdInfo.province === "string" ? householdInfo.province : "",
-    );
-    setAddress(householdInfo.address ?? "");
-    setMembersCount(householdInfo.noOfHouseholdMembers?.toString() ?? "");
-    setTypeOfHousing(householdInfo.typeOfHousing ?? "");
-    setCleanWater(
-      householdInfo.accessToCleanWater === "Y" ||
-        householdInfo.accessToCleanWater === "N"
-        ? householdInfo.accessToCleanWater
-        : "",
-    );
-    setSanitation(
-      householdInfo.accessToSanitation === "Y" ||
-        householdInfo.accessToSanitation === "N"
-        ? householdInfo.accessToSanitation
-        : "",
-    );
-
-    setDateOfListing(householdInfo.dateOfListing ?? "");
-    setChwName(householdInfo.nameOfChw ?? "");
-    setDistrictId(householdInfo.districtId ?? "");
-    setVdcCode(householdInfo.vdcnpCode ?? "");
-    setWardNo(householdInfo.wardNo ?? "");
-    setGpsCoordinates(householdInfo.gpsCoordinates ?? "");
-
-    setIsHydrated(true);
-  }, [householdInfo]);
-
-  //   Adding auto-save effect
-  useEffect(() => {
-    if (!household) return;
-    if (household.status !== "DRAFT") return;
-    if (!isHydrated) return;
-
-    const members =
-      membersCount.trim() !== "" && !isNaN(Number(membersCount))
-        ? Number(membersCount)
-        : undefined;
-
-    const safeProvince = PROVINCES.some((p) => p.value === provinceCode)
-      ? provinceCode
-      : undefined;
-
-    const safeWard =
-      wardNo.trim() !== "" && !isNaN(Number(wardNo)) ? wardNo : undefined;
-
-    const timeout = setTimeout(() => {
-      householdInfoRepository.upsertDraft(household.id, {
-        province: safeProvince,
-        address: address || undefined,
-
-        dateOfListing: dateOfListing || undefined,
-        nameOfChw: chwName || undefined,
-
-        districtId: districtId || undefined,
-        vdcnpCode: vdcCode || undefined,
-        wardNo: safeWard,
-
-        gpsCoordinates: gpsCoordinates || undefined,
-
-        noOfHouseholdMembers: members,
-        typeOfHousing: typeOfHousing || undefined,
-        accessToCleanWater: cleanWater || undefined,
-        accessToSanitation: sanitation || undefined,
-      });
-    }, 500);
+    }, 400);
 
     return () => clearTimeout(timeout);
   }, [
-    household,
+    dateOfListing,
     provinceCode,
+    districtCode,
+    vdcnpCode,
+    wardNo,
     address,
     membersCount,
     typeOfHousing,
     cleanWater,
     sanitation,
-    isHydrated,
-    wardNo,
-    dateOfListing,
-    chwName,
-    districtId,
-    vdcCode,
+    household,
     gpsCoordinates,
   ]);
 
+  // ---------------- VALIDATION ----------------
+  function validate() {
+    const newErrors: Record<string, string> = {};
+
+    // Date
+    if (!dateOfListing) {
+      newErrors.date = "Date of listing is required";
+    } else if (isNaN(Date.parse(dateOfListing))) {
+      newErrors.date = "Invalid date format";
+    }
+
+    // CHW
+    if (!chwProfile?.userName) {
+      newErrors.chw = "CHW identity missing. Please re-login.";
+    }
+
+    // Province
+    if (provinceCode !== "5") {
+      newErrors.province = "Province must be Lumbini";
+    }
+
+    // District
+    const selectedDistrict = LUMBINI_DISTRICTS.find(
+      (d) => String(d.code) === String(districtCode),
+    );
+
+    if (!districtCode || !selectedDistrict) {
+      newErrors.district = "Valid district required";
+    }
+
+    // Municipality
+    const validMunicipality = selectedDistrict?.municipalities.find(
+      (m) => String(m.code) === String(vdcnpCode),
+    );
+
+    if (!vdcnpCode || !validMunicipality) {
+      newErrors.vdc = "Valid municipality required";
+    }
+
+    // Ward
+    const wardNumber = Number(wardNo);
+    if (!wardNo || isNaN(wardNumber) || wardNumber < 1 || wardNumber > 32) {
+      newErrors.ward = "Ward must be between 1 and 32";
+    }
+
+    // Address
+    if (!address || address.trim().length < 3) {
+      newErrors.address = "Address too short";
+    }
+
+    // Members
+    const members = Number(membersCount);
+    if (!membersCount || isNaN(members) || members < 1 || members > 50) {
+      newErrors.members = "Members must be between 1 and 50";
+    }
+
+    // Housing
+    const validHousing = HOUSING_TYPES.some((h) => h.value === typeOfHousing);
+    if (!typeOfHousing || !validHousing) {
+      newErrors.housing = "Select valid housing type";
+    }
+
+    // Water
+    if (cleanWater !== "Y" && cleanWater !== "N") {
+      newErrors.water = "Select water access";
+    }
+
+    // Sanitation
+    if (sanitation !== "Y" && sanitation !== "N") {
+      newErrors.sanitation = "Select sanitation access";
+    }
+
+    // GPS
+    const gpsRegex = /^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/;
+    if (!gpsCoordinates || !gpsRegex.test(gpsCoordinates)) {
+      newErrors.gps = "Valid GPS required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+  // ---------------- SUBMIT ----------------
+  async function handleSubmit() {
+    if (!household) return;
+
+    if (!validate()) {
+      Alert.alert("Incomplete Form", "Please fix the highlighted fields.");
+      return;
+    }
+
+    const action = household.householdId ? "UPDATE" : "INSERT";
+
+    await householdLocalRepository.updateDraft(household.localId, {
+      dateoflistingAD: dateOfListing,
+      provinceCode,
+      districtCode,
+      vdcnpCode,
+      wardNo,
+      address,
+      noofHHMembers: Number(membersCount),
+      typeofHousing: typeOfHousing as "P" | "S" | "T",
+      accesstoCleanWater: cleanWater as "Y" | "N",
+      accesstoSanitation: sanitation as "Y" | "N",
+      gpsCoordinates,
+    });
+
+    await householdLocalRepository.markPending(household.localId, action);
+
+    Alert.alert("Saved", "Marked for sync.");
+    router.back();
+  }
+
+  // ---------------- GPS ----------------
+  async function handleCaptureGPS() {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") return;
+
+    const location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.High,
+    });
+
+    const lat = location.coords.latitude.toFixed(6);
+    const lng = location.coords.longitude.toFixed(6);
+    // const acc = location.coords.accuracy?.toFixed(1);
+
+    const formatted = `${lat},${lng}`;
+
+    setGpsCoordinates(formatted);
+  }
+
+  // Progress Calculation
+  const completedSections = [
+    dateOfListing,
+    provinceCode,
+    districtCode,
+    vdcnpCode,
+    wardNo,
+    address,
+    membersCount,
+    typeOfHousing,
+    cleanWater,
+    sanitation,
+    gpsCoordinates,
+  ].filter(Boolean).length;
+
+  const totalSections = 11;
+  const progress = completedSections / totalSections;
+
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 400,
+      useNativeDriver: false,
+    }).start();
+  }, [progress, progressAnim]);
+
   if (loading) {
     return (
-      <View>
-        <Text style={{ marginBottom: 8 }}> Loading household...</Text>
+      <View className="flex-1 items-center justify-center">
+        <Text>Loading...</Text>
       </View>
     );
   }
 
   if (!household) {
     return (
-      <View>
+      <View className="flex-1 items-center justify-center">
         <Text>Household not found</Text>
       </View>
     );
   }
 
-  // For submit
-  async function handleSubmit() {
-    if (!household) return;
-    if (submitting) return;
+  const selectedDistrict = LUMBINI_DISTRICTS.find(
+    (d) => String(d.code) === String(districtCode),
+  );
+  // console.log("districtCode:", districtCode);
+  // console.log("selectedDistrict:", selectedDistrict);
 
-    try {
-      setSubmitting(true);
-
-      const useCase = new SubmitHouseholdUseCase();
-      await useCase.execute(household.id);
-
-      alert("Household submitted successfully");
-      router.replace("/(app)/households");
-    } catch (error: any) {
-      console.error("Submit failed", error);
-      alert(error.message ?? "Failed to submit household");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  const sectionProgress = getSectionProgressFromForm({
-    provinceCode,
-    districtId,
-    wardNo,
-    address,
-    membersCount,
-    typeOfHousing,
-    cleanWater,
-    sanitation,
-    gpsCoordinates,
-  });
-
-  // For Date
-  function handleDateChange(event: any, selectedDate?: Date) {
-    setShowDatePicker(false);
-
-    if (!selectedDate || !household) return;
-
-    const formatted = formatDateYYYYMMDD(selectedDate);
-
-    setDateOfListing(formatted);
-
-    householdInfoRepository.upsertDraft(household.id, {
-      dateOfListing: formatted,
-    });
-  }
-
-  const canSubmit = Object.values(sectionProgress).every(Boolean);
-
+  // ---------------- UI ----------------
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      className="flex-1 bg-gray-50"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView
-        contentContainerStyle={{
-          padding: 16,
-          paddingBottom: 40,
-        }}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Progress Block */}
-        {/* Section Progress Indicator */}
+      {/* ---------------- STICKY HEADER ---------------- */}
+      <View className="bg-white px-4 pt-4 pb-3 shadow-sm">
+        {/* Sync Status Banner */}
         <View
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 10,
-            backgroundColor: "white",
-            paddingBottom: 8,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: "#f8fafc",
-              padding: 12,
-              borderRadius: 8,
-              marginBottom: 16,
-              borderWidth: 1,
-              borderColor: "#e5e7eb",
-            }}
-          >
-            <Text style={{ fontWeight: "600", marginBottom: 8 }}>
-              Form Progress
-            </Text>
-
-            <Text>
-              {sectionProgress.location ? "✅" : "❌"} Location & Address
-            </Text>
-
-            <Text>
-              {sectionProgress.members ? "✅" : "❌"} Household Members
-            </Text>
-
-            <Text>
-              {sectionProgress.housing ? "✅" : "❌"} Housing & Facilities
-            </Text>
-
-            <Text>{sectionProgress.gps ? "✅" : "❌"} GPS Location</Text>
-          </View>
-        </View>
-
-        {/* Household Starts */}
-        <Text style={{ fontSize: 20, marginBottom: 10 }}>
-          Household Basic Info
-        </Text>
-
-        <Text> Household Code: </Text>
-        <Text style={{ marginBottom: 16 }}>{household.householdCode}</Text>
-
-        {/* Date of listing */}
-        <Text>Date of Listing</Text>
-
-        <Pressable
-          onPress={() => setShowDatePicker(true)}
-          disabled={isReadOnly}
-          style={{
-            borderWidth: 1,
-            borderColor: "#ccc",
-            padding: 12,
-            marginBottom: 16,
-            backgroundColor: isReadOnly ? "#f3f4f6" : "white",
-            borderRadius: 6,
-          }}
-        >
-          <Text style={{ color: dateOfListing ? "#111827" : "#6b7280" }}>
-            {dateOfListing ?? "Today (Tap to change)"}
-          </Text>
-        </Pressable>
-
-        {showDatePicker && Platform.OS === "android" && (
-          <DateTimePicker
-            value={dateOfListing ? new Date(dateOfListing) : new Date()}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-          />
-        )}
-
-        {/* Chw Name */}
-        <Text>Name of CHW</Text>
-        <TextInput
-          value={chwName}
-          // onChangeText={setChwName}
-          editable={false}
-          style={{
-            borderWidth: 1,
-            borderColor: "#ccc",
-            padding: 10,
-            marginBottom: 16,
-          }}
-        />
-        {/* Province */}
-        <Text> Province </Text>
-        <View
-          style={{
-            borderWidth: 1,
-            borderColor: "#ccc",
-            marginBottom: 16,
-          }}
-        >
-          <Picker
-            selectedValue={provinceCode}
-            onValueChange={(value) => setProvinceCode(value)}
-            enabled={!isReadOnly}
-            style={{
-              color: "#000",
-            }}
-          >
-            <Picker.Item label="Select Province" value="" />
-            {PROVINCES.map((p) => (
-              <Picker.Item key={p.value} label={p.label} value={p.value} />
-            ))}
-          </Picker>
-        </View>
-
-        {/* District,VDC,WARD */}
-        <Text>District Code</Text>
-        <TextInput
-          value={districtId}
-          onChangeText={setDistrictId}
-          editable={!isReadOnly}
-          style={{ borderWidth: 1, padding: 10, marginBottom: 16 }}
-        />
-
-        <Text>VDC / Municipality Code</Text>
-        <TextInput
-          value={vdcCode}
-          onChangeText={setVdcCode}
-          editable={!isReadOnly}
-          style={{ borderWidth: 1, padding: 10, marginBottom: 16 }}
-        />
-
-        <Text>Ward No</Text>
-        <TextInput
-          value={wardNo}
-          onChangeText={setWardNo}
-          keyboardType="numeric"
-          editable={!isReadOnly}
-          style={{ borderWidth: 1, padding: 10, marginBottom: 16 }}
-        />
-
-        <Text>Address</Text>
-        <TextInput
-          value={address}
-          onChangeText={setAddress}
-          placeholder="Enter address"
-          editable={!isReadOnly}
-          style={{
-            borderWidth: 1,
-            borderColor: "#ccc",
-            padding: 10,
-          }}
-        />
-
-        {/* GPS Coordinate */}
-        <Text
-          style={{
-            fontSize: 14,
-            fontWeight: "600",
-            marginVertical: 12,
-          }}
-        >
-          GPS Location
-        </Text>
-
-        {gpsCoordinates ? (
-          <Text style={{ marginBottom: 8 }}>📍 {gpsCoordinates}</Text>
-        ) : (
-          <Text style={{ marginBottom: 8, color: "#6b7280" }}>
-            GPS not captured yet
-          </Text>
-        )}
-
-        {gpsError && (
-          <Text style={{ color: "red", marginBottom: 8 }}>{gpsError}</Text>
-        )}
-
-        <Pressable
-          onPress={handleCaptureGPS}
-          disabled={gpsLoading || isReadOnly}
-          style={{
-            backgroundColor: gpsLoading ? "#9ca3af" : "#2563eb",
-            paddingVertical: 12,
-            borderRadius: 8,
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <Text style={{ color: "white", fontWeight: "600" }}>
-            {gpsLoading ? "Capturing GPS..." : "Capture GPS"}
-          </Text>
-        </Pressable>
-
-        {/* Household members */}
-        <Text style={{ marginTop: 8 }}>No. of Household Members</Text>
-        <TextInput
-          value={membersCount}
-          onChangeText={setMembersCount}
-          keyboardType="numeric"
-          editable={!isReadOnly}
-          placeholder="e.g. 3"
-          style={{
-            borderWidth: 1,
-            borderColor: "#ccc",
-            padding: 10,
-            marginBottom: 16,
-          }}
-        />
-
-        {/* Types of Housing */}
-        <Text>Type of Housing</Text>
-        <View style={{ borderWidth: 1, borderColor: "#ccc", marginBottom: 16 }}>
-          <Picker
-            selectedValue={typeOfHousing}
-            onValueChange={setTypeOfHousing}
-            enabled={!isReadOnly}
-            style={{
-              color: "#000",
-            }}
-          >
-            <Picker.Item label="Select housing type" value="" />
-            {HOUSING_TYPES.map((h) => (
-              <Picker.Item key={h.value} label={h.label} value={h.value} />
-            ))}
-          </Picker>
-        </View>
-
-        {/* Clean Water */}
-        <Text>Access to Clean Water</Text>
-        <View style={{ borderWidth: 1, borderColor: "#ccc", marginBottom: 16 }}>
-          <Picker
-            selectedValue={cleanWater}
-            onValueChange={setCleanWater}
-            enabled={!isReadOnly}
-            style={{
-              color: "#000",
-            }}
-          >
-            <Picker.Item label="Select option" value="" />
-            <Picker.Item label="Yes" value="Y" />
-            <Picker.Item label="No" value="N" />
-          </Picker>
-        </View>
-
-        {/* Access to sanitation */}
-        <Text>Access to Sanitation</Text>
-        <View style={{ borderWidth: 1, borderColor: "#ccc", marginBottom: 16 }}>
-          <Picker
-            selectedValue={sanitation}
-            onValueChange={setSanitation}
-            enabled={!isReadOnly}
-            style={{
-              color: "#000",
-            }}
-          >
-            <Picker.Item label="Select option" value="" />
-            <Picker.Item label="Yes" value="Y" />
-            <Picker.Item label="No" value="N" />
-          </Picker>
-        </View>
-
-        {/* Compact progress indicator near submit */}
-        <View
-          style={{
-            marginTop: 16,
-            marginBottom: 8,
-            paddingVertical: 8,
-            borderTopWidth: 1,
-            borderColor: "#e5e7eb",
-          }}
+          className={`p-3 rounded-lg mb-3 ${
+            household.syncStatus === "SYNCED"
+              ? "bg-green-100 border border-green-300"
+              : household.syncStatus === "PENDING"
+                ? "bg-yellow-100 border border-yellow-300"
+                : "bg-red-100 border border-red-300"
+          }`}
         >
           <Text
-            style={{
-              textAlign: "center",
-              color: canSubmit ? "#16a34a" : "#b45309",
-              fontSize: 14,
-            }}
+            className={`font-semibold ${
+              household.syncStatus === "SYNCED"
+                ? "text-green-700"
+                : household.syncStatus === "PENDING"
+                  ? "text-yellow-700"
+                  : "text-red-700"
+            }`}
           >
-            Progress: {Object.values(sectionProgress).filter(Boolean).length}
-            /4 sections complete
+            {household.syncStatus === "SYNCED"
+              ? "Synced with server"
+              : household.syncStatus === "PENDING"
+                ? "Waiting to sync"
+                : "Sync failed"}
           </Text>
         </View>
 
-        {/* Submit Button */}
-        {!isReadOnly && (
+        {/* Progress Bar */}
+        <View>
+          <View className="h-3 bg-gray-200 rounded-full overflow-hidden">
+            <Animated.View
+              style={{
+                height: 12,
+                width: progressAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ["0%", "100%"],
+                }),
+                backgroundColor: "#2563eb",
+              }}
+            />
+          </View>
+
+          <Text className="text-sm text-gray-600 mt-2">
+            {completedSections}/{totalSections} fields completed
+          </Text>
+        </View>
+      </View>
+
+      {/* ---------------- FORM BODY ---------------- */}
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* TITLE */}
+        <Text className="text-xl font-bold mb-6 text-gray-900">
+          Household Information
+        </Text>
+
+        {/* ---------------- BASIC INFO CARD ---------------- */}
+        <View className="bg-white p-4 rounded-xl shadow-sm mb-4">
+          <Text className="text-lg font-semibold mb-4 text-gray-800">
+            Basic Information
+          </Text>
+
+          <Text className="text-gray-700 mb-1">Date of Listing</Text>
           <Pressable
-            onPress={handleSubmit}
-            disabled={!canSubmit || submitting}
-            style={{
-              backgroundColor: submitting ? "#9ca3af" : "#16a34a",
-              paddingVertical: 14,
-              borderRadius: 8,
-              marginTop: 24,
-              alignItems: "center",
-            }}
+            onPress={() => setShowDatePicker(true)}
+            // disabled={true}
+            className={`border p-3 rounded mb-2 ${
+              isReadOnly ? "bg-gray-100" : "bg-white"
+            }`}
           >
-            <Text style={{ color: "white", fontWeight: "600", fontSize: 16 }}>
-              {submitting ? "Submitting..." : "Submit Household"}
-            </Text>
+            <Text>{dateOfListing || "Select Date"}</Text>
           </Pressable>
+
+          {errors.date && (
+            <Text className="text-red-500 text-sm mt-1 mb-2">
+              {errors.date}
+            </Text>
+          )}
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={dateOfListing ? new Date(dateOfListing) : new Date()}
+              mode="date"
+              onChange={(e, date) => {
+                setShowDatePicker(false);
+                if (date) setDateOfListing(formatDate(date));
+              }}
+            />
+          )}
+
+          <Text className="text-gray-700 mt-4 mb-1">CHW Name</Text>
+          <TextInput
+            value={chwName}
+            editable={true}
+            className="border p-3 rounded bg-gray-100"
+          />
+        </View>
+
+        {/* ---------------- LOCATION CARD ---------------- */}
+        <View className="bg-white p-4 rounded-xl shadow-sm mb-4">
+          <Text className="text-lg font-semibold mb-4 text-gray-800">
+            Location Details
+          </Text>
+
+          {/* Province */}
+          <Text className="text-gray-700 mb-1">Province</Text>
+          <View className="border rounded mb-3 bg-white">
+            <Picker
+              selectedValue={provinceCode}
+              enabled={true}
+              onValueChange={setProvinceCode}
+              style={{ height: 50, color: "#000" }}
+            >
+              <Picker.Item label="Lumbini Pradesh" value="5" />
+            </Picker>
+          </View>
+
+          {errors.province && (
+            <Text className="text-red-500 text-sm mt-1 mb-2">
+              {errors.province}
+            </Text>
+          )}
+
+          {/* District */}
+          <Text className="text-gray-700 mb-1">District</Text>
+          <View className="border rounded mb-3 bg-white">
+            <Picker
+              selectedValue={districtCode}
+              enabled={true}
+              onValueChange={(value) => {
+                setDistrictCode(value);
+                setVdcnpCode("");
+              }}
+              style={{ height: 50, color: "#000" }}
+            >
+              <Picker.Item label="Select District" value="" />
+              {LUMBINI_DISTRICTS.map((d) => (
+                <Picker.Item key={d.code} label={d.name} value={d.code} />
+              ))}
+            </Picker>
+          </View>
+          {errors.district && (
+            <Text className="text-red-500 text-sm mt-1 mb-2">
+              {errors.district}
+            </Text>
+          )}
+
+          {/* Municipality */}
+          <Text className="text-gray-700 mb-1">Municipality / VDC</Text>
+          <View className="border rounded mb-3 bg-white">
+            <Picker
+              selectedValue={vdcnpCode}
+              enabled={true && districtCode !== ""}
+              onValueChange={(value) => setVdcnpCode(String(value))}
+              style={{ height: 50, color: "#000" }}
+            >
+              <Picker.Item label="Select Municipality" value="" />
+              {selectedDistrict &&
+                selectedDistrict.municipalities.map((m) => (
+                  <Picker.Item key={m.code} label={m.name} value={m.code} />
+                ))}
+            </Picker>
+          </View>
+          {errors.vdc && (
+            <Text className="text-red-500 text-sm mt-1 mb-2">{errors.vdc}</Text>
+          )}
+
+          {/* Ward */}
+          <Text className="text-gray-700 mb-1">Ward No</Text>
+          <TextInput
+            value={wardNo}
+            onChangeText={setWardNo}
+            editable={true}
+            keyboardType="numeric"
+            className="border p-3 rounded mb-3"
+          />
+          {errors.ward && (
+            <Text className="text-red-500 text-sm mt-1 mb-2">
+              {errors.ward}
+            </Text>
+          )}
+
+          {/* Address */}
+          <Text className="text-gray-700 mb-1">Address</Text>
+          <TextInput
+            value={address}
+            onChangeText={setAddress}
+            editable={true}
+            className="border p-3 rounded mb-1"
+          />
+          {errors.address && (
+            <Text className="text-red-500 text-sm mt-1 mb-2">
+              {errors.address}
+            </Text>
+          )}
+        </View>
+
+        {/* ---------------- HOUSEHOLD CARD ---------------- */}
+        <View className="bg-white p-4 rounded-xl shadow-sm mb-4">
+          <Text className="text-lg font-semibold mb-4 text-gray-800">
+            Household Details
+          </Text>
+
+          <Text className="text-gray-700 mb-1">No. of Household Members</Text>
+          <TextInput
+            value={membersCount}
+            onChangeText={setMembersCount}
+            editable={true}
+            keyboardType="numeric"
+            className="border p-3 rounded mb-3"
+          />
+          {errors.members && (
+            <Text className="text-red-500 text-sm mt-1 mb-2">
+              {errors.members}
+            </Text>
+          )}
+
+          <Text className="text-gray-700 mb-1">Housing Type</Text>
+          <View className="border rounded mb-3 bg-white">
+            <Picker
+              selectedValue={typeOfHousing}
+              enabled={true}
+              onValueChange={setTypeOfHousing}
+              style={{ height: 50, color: "#000" }}
+            >
+              <Picker.Item label="Select type" value="" />
+              {HOUSING_TYPES.map((h) => (
+                <Picker.Item key={h.value} label={h.label} value={h.value} />
+              ))}
+            </Picker>
+          </View>
+          {errors.housing && (
+            <Text className="text-red-500 text-sm mt-1 mb-2">
+              {errors.housing}
+            </Text>
+          )}
+
+          <Text className="text-gray-700 mb-1">Access to Clean Water</Text>
+          <View className="border rounded mb-3 bg-white">
+            <Picker
+              selectedValue={cleanWater}
+              enabled={true}
+              onValueChange={setCleanWater}
+              style={{ height: 50, color: "#000" }}
+            >
+              <Picker.Item label="Select option" value="" />
+              <Picker.Item label="Yes" value="Y" />
+              <Picker.Item label="No" value="N" />
+            </Picker>
+          </View>
+          {errors.water && (
+            <Text className="text-red-500 text-sm mt-1 mb-2">
+              {errors.water}
+            </Text>
+          )}
+
+          <Text className="text-gray-700 mb-1">Access to Sanitation</Text>
+          <View className="border rounded bg-white">
+            <Picker
+              selectedValue={sanitation}
+              enabled={true}
+              onValueChange={setSanitation}
+              style={{ height: 50, color: "#000" }}
+            >
+              <Picker.Item label="Select option" value="" />
+              <Picker.Item label="Yes" value="Y" />
+              <Picker.Item label="No" value="N" />
+            </Picker>
+          </View>
+          {errors.sanitation && (
+            <Text className="text-red-500 text-sm mt-1 mb-2">
+              {errors.sanitation}
+            </Text>
+          )}
+        </View>
+
+        {/* ---------------- GPS CARD ---------------- */}
+        <View className="bg-white p-4 rounded-xl shadow-sm mb-6">
+          <Text className="text-lg font-semibold mb-4 text-gray-800">
+            GPS Verification
+          </Text>
+
+          <Pressable
+            onPress={handleCaptureGPS}
+            // disabled={true}
+            className={`p-4 rounded-xl ${
+              isReadOnly ? "bg-gray-400" : "bg-blue-600"
+            }`}
+          >
+            <Text className="text-white text-center">Capture GPS</Text>
+          </Pressable>
+
+          {gpsCoordinates ? (
+            <View className="bg-green-100 border border-green-300 p-3 rounded-lg mt-3">
+              <Text className="text-green-700 font-medium">
+                GPS Captured Successfully
+              </Text>
+              <Text className="text-green-800 text-sm mt-1">
+                {gpsCoordinates}
+              </Text>
+            </View>
+          ) : (
+            <View className="bg-gray-100 border border-gray-300 p-3 rounded-lg mt-3">
+              <Text className="text-gray-600">GPS not captured yet</Text>
+            </View>
+          )}
+        </View>
+        {errors.gps && (
+          <Text className="text-red-500 text-sm mt-1 mb-2">{errors.gps}</Text>
         )}
+
+        {/* Submit */}
+        <Pressable
+          onPress={handleSubmit}
+          // disabled={isReadOnly}
+          className={`p-4 rounded-xl ${
+            isReadOnly ? "bg-gray-400" : "bg-green-600"
+          }`}
+        >
+          <Text className="text-white text-center font-semibold">
+            Save & Mark for Sync
+          </Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );

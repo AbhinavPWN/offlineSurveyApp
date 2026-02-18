@@ -40,6 +40,6 @@ export interface HouseholdLocalRepository {
   markFailed(localId: string, errorMessage?: string): Promise<void>;
 
   // Server Listing Integration
-  insertFromListing(household: Household): Promise<void>;
+  insertFromListing(household: Household, chwUsername: string): Promise<void>;
   updateFromListing(household: Household): Promise<void>;
 }

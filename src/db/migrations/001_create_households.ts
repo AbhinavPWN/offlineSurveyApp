@@ -1,54 +1,46 @@
 import { SQLiteDatabase } from "expo-sqlite";
 
-export const migration001 ={
-    version : 1,
-    
-    async up(db:SQLiteDatabase):Promise<void>{
-        // SQL is going here
-        await db.execAsync(`
-            CREATE TABLE IF NOT EXISTS households(
-                id TEXT PRIMARY KEY,
-                household_code TEXT NOT NULL UNIQUE,
+export const migration001 = {
+  version: 1,
 
-                status TEXT NOT NULL,
-                is_active INTEGER NOT NULL DEFAULT 1 ,
-                submitted_at TEXT,
-                
-                
-                created_by_user_id TEXT NOT NULL ,
-                chw_id TEXT,
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL,
+  async up(db: SQLiteDatabase): Promise<void> {
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS households (
+        id TEXT PRIMARY KEY,
 
-                province_code TEXT,
-                district_code TEXT,
-                vdc_code TEXT,
-                ward_no INTEGER,
-                address TEXT,
+        server_id TEXT UNIQUE,
 
-                gps_lat REAL,
-                gps_lng REAL, 
-                gps_accuracy REAL, 
+        chw_id TEXT NOT NULL,
 
-                household_member_count INTEGER,
-                housing_type_code TEXT,
-                has_clean_water INTEGER,
-                has_sanitation INTEGER,
+        status TEXT NOT NULL,              -- SYNCED | PENDING | FAILED
+        sync_action TEXT,                  -- INSERT | UPDATE | null
 
-                server_id TEXT,
-                deleted_at TEXT
-            )     
-        `);
+        province_code TEXT,
+        district_code TEXT,
+        vdc_code TEXT,
+        ward_no TEXT,
+        address TEXT,
 
-        await db.execAsync(`
-                CREATE INDEX IF NOT EXISTS idx_households_status 
-                ON households (status);
-            `);
+        household_member_count INTEGER,
+        housing_type_code TEXT,
+        has_clean_water TEXT,
+        has_sanitation TEXT,
+        active_flag TEXT,
 
-        await db.execAsync(`
-                CREATE INDEX IF NOT EXISTS idx_households_deleted
-                ON households (deleted_at);
-            
-            `);    
-    }
-}
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        deleted_at TEXT
+      );
+    `);
+
+    await db.execAsync(`
+      CREATE INDEX IF NOT EXISTS idx_households_chw
+      ON households (chw_id);
+    `);
+
+    await db.execAsync(`
+      CREATE INDEX IF NOT EXISTS idx_households_status
+      ON households (status);
+    `);
+  },
+};

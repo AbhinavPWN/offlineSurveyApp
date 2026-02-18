@@ -3,28 +3,46 @@ import { AuthProvider } from "@/src/auth/context/AuthProvider";
 import AuthGate from "@/src/auth/router/AuthGate";
 import { ensureDbReady, isDbReady } from "@/src/db/bootstrap";
 import { AppBootstrap } from "@/src/bootstrap/AppBootstrap";
-import { syncHouseholdUseCase } from "@/src/di/container";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import "react-native-get-random-values";
+import "../global.css";
+import { AppLogger } from "@/src/utils/AppLogger";
 
 export default function RootLayout() {
   // const [dbReady, setDbReady] = useState(false);
   const [, forceRender] = useState(0);
 
   useEffect(() => {
-    ensureDbReady().then(() => {
-      // force one re-render when DB becomes ready
-      forceRender((x) => x + 1);
-    });
+    async function bootstrap() {
+      try {
+        await AppLogger.initialize();
+
+        await ensureDbReady();
+
+        await AppLogger.log("INFO", "DATABASE_READY");
+
+        forceRender((x) => x + 1);
+      } catch (error: any) {
+        await AppLogger.log("ERROR", "APP_BOOTSTRAP_FAILED", {
+          message: error?.message,
+        });
+      }
+    }
+
+    bootstrap();
   }, []);
 
   if (!isDbReady) {
-    console.log("Database is not ready");
+    AppLogger.log("WARN", "DATABASE_NOT_READY_RENDER_BLOCKED");
     return null; // splash later
   }
 
   return (
-    <AuthProvider>
-      <AppBootstrap syncHouseholdUseCase={syncHouseholdUseCase} />
-      <AuthGate />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <AppBootstrap />
+        <AuthGate />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

@@ -1,10 +1,18 @@
 import { useState } from "react";
-import { Button, Text, TextInput, View, Alert } from "react-native";
+import {
+  Button,
+  Text,
+  TextInput,
+  View,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import { useAuth } from "@/src/auth/context/useAuth";
 import { AuthSession } from "@/src/auth/model/AuthSession";
 import { hashPin } from "@/src/auth/service/pin";
 import { loginApi } from "@/src/auth/api/authApi";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -13,6 +21,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [officeCode, setOfficeCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleLogin() {
     console.log("LOGIN ATTEMPT", { username, password, officeCode });
@@ -98,20 +107,38 @@ export default function LoginScreen() {
         }}
       />
 
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor="#888"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
+      {/* Password Input */}
+      <View
         style={{
           borderWidth: 1,
-          padding: 8,
-          marginTop: 12,
           borderColor: "#ccc",
-          color: "#000",
+          marginTop: 12,
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 8,
         }}
-      />
+      >
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#888"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showPassword}
+          style={{
+            flex: 1,
+            paddingVertical: 8,
+            color: "#000",
+          }}
+        />
+
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+          <Ionicons
+            name={showPassword ? "eye-off-outline" : "eye-outline"}
+            size={22}
+            color="#6b7280"
+          />
+        </TouchableOpacity>
+      </View>
 
       <TextInput
         placeholder="Office Code"

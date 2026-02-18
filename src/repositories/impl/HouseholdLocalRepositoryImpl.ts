@@ -46,6 +46,7 @@ export class HouseholdLocalRepositoryImpl implements HouseholdLocalRepository {
       syncStatus: "SYNCED",
       syncAction: null,
       lastModifiedAt: Date.now(),
+      gpsCoordinates: "",
     };
 
     this.table.push(household);
@@ -105,6 +106,7 @@ export class HouseholdLocalRepositoryImpl implements HouseholdLocalRepository {
       syncStatus: "PENDING",
       syncAction: "INSERT",
       lastModifiedAt: Date.now(),
+      gpsCoordinates: "",
     };
 
     this.table.push(household);

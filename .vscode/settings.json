@@ -4,7 +4,16 @@
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
   },
-  "cSpell.words": [
-    "surveyapp"
-  ]
+  "cSpell.words": ["surveyapp"],
+  "tailwindCSS.experimental.classAttributes": ["class", "twClass"],
+  "tailwindCSS.includeLanguages": {
+    "plaintext": "html",
+    "javascript": "javascript",
+    "typescript": "typescript",
+    "javascriptreact": "javascript",
+    "typescriptreact": "typescript"
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
 }

@@ -26,11 +26,6 @@ export interface HouseholdRepository {
 
   getHouseholdByCode(householdCode: string): Promise<Household | null>;
 
-  // updateDraftHousehold(
-  //   id: string,
-  //   patch: Partial<Omit<Household, "id" | "householdCode" | "status">>,
-  // ): Promise<void>;
-
   submitHousehold(id: string): Promise<void>;
 
   listDraftHouseholds(): Promise<Household[]>;

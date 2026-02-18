@@ -9,4 +9,5 @@ export interface AuthSession {
 
   //   debugging and audit
   lastOnlineLoginAt: number;
+  idofCHW?: string;
 }

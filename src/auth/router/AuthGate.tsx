@@ -26,6 +26,10 @@ export default function AuthGate() {
     return <Redirect href="/login" />;
   }
 
+  // SESSION EXPIRED -> Stay in app , do not redirect
+  if (state === "SESSION_EXPIRED") {
+  }
+
   // 🔐 LOCKED → redirect to unlock
   if (state === "LOCKED" && segments[1] !== "unlock") {
     return <Redirect href="/unlock" />;
@@ -46,8 +50,7 @@ export default function AuthGate() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* MAIN APP STACK */}
+    <>
       <Stack
         screenOptions={{
           contentStyle: { flex: 1 },
@@ -55,9 +58,20 @@ export default function AuthGate() {
       />
 
       {/* GLOBAL FOOTER */}
-      <View className="items-center py-1 border-t border-gray-200 bg-white">
+      <View
+        style={{
+          position: "absolute",
+          bottom: 0,
+          width: "100%",
+          alignItems: "center",
+          paddingVertical: 4,
+          borderTopWidth: 1,
+          borderColor: "#e5e7eb",
+          backgroundColor: "white",
+        }}
+      >
         <Pressable onPress={handleVersionPress}>
-          <Text className="text-xs text-gray-400">Version 1.0.0</Text>
+          <Text style={{ fontSize: 12, color: "#9ca3af" }}>Version 1.0.0</Text>
         </Pressable>
       </View>
 
@@ -71,6 +85,6 @@ export default function AuthGate() {
           router.push("../support/logs");
         }}
       />
-    </View>
+    </>
   );
 }

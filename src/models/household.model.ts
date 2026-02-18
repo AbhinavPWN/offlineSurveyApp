@@ -1,4 +1,4 @@
-export type SyncStatus = "SYNCED" | "PENDING" | "FAILED";
+export type SyncStatus = "DRAFT" | "SYNCED" | "PENDING" | "FAILED";
 export type SyncAction = "INSERT" | "UPDATE" | null;
 
 export interface HouseholdLocal {
@@ -12,6 +12,7 @@ export interface HouseholdLocal {
   wardNo: string;
   address: string;
   dateoflistingAD: string;
+  gpsCoordinates: string;
   noofHHMembers: number;
   typeofHousing: "P" | "S" | "T";
   accesstoCleanWater: "Y" | "N";
