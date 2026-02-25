@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -16,10 +16,17 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Location from "expo-location";
 import { HOUSING_TYPES } from "@/src/constants/housingTypes";
 import { LUMBINI_DISTRICTS } from "@/src/constants/lumbiniLocations";
+import { LABELS } from "@/src/constants/labels";
 
-import { householdLocalRepository } from "@/src/di/container";
+import {
+  householdLocalRepository,
+  householdInfoRepository,
+  householdMemberLocalRepository,
+} from "@/src/di/container";
 import type { HouseholdLocal } from "@/src/models/household.model";
 import { useAuth } from "@/src/auth/context/useAuth";
+import { ValidateHouseholdMembersForSubmitUseCase } from "@/src/usecases/household/ValidateHouseholdMembersForSubmitUseCase";
+import { SubmitHouseholdUseCase } from "@/src/usecases/household/SubmitHouseholdUseCase";
 
 function formatDate(date: Date) {
   return date.toISOString().split("T")[0];
@@ -36,7 +43,7 @@ export default function HouseholdDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [household, setHousehold] = useState<HouseholdLocal | null>(null);
   // const isReadOnly = household?.syncStatus === "SYNCED";
-  const isReadOnly = false;
+  const isReadOnly = household?.syncStatus === "PENDING";
 
   const progressAnim = useRef(new Animated.Value(0)).current;
 
@@ -57,6 +64,16 @@ export default function HouseholdDetailScreen() {
   const [gpsCoordinates, setGpsCoordinates] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [initialSnapshot, setInitialSnapshot] =
+    useState<Partial<HouseholdLocal> | null>(null);
+
+  // State for member
+  const [memberSummary, setMemberSummary] = useState({
+    total: 0,
+    headCount: 0,
+    pendingCount: 0,
+    failedCount: 0,
+  });
 
   // ---------------- LOAD ----------------
   useEffect(() => {
@@ -64,21 +81,40 @@ export default function HouseholdDetailScreen() {
       if (!localId) return;
 
       const result = await householdLocalRepository.getByLocalId(localId);
+
+      if (!result) {
+        setLoading(false);
+        return;
+      }
+
       setHousehold(result);
 
-      if (result) {
-        setDateOfListing(result.dateoflistingAD ?? "");
-        setProvinceCode("5");
-        setDistrictCode(result.districtCode ?? "");
-        setVdcnpCode(result.vdcnpCode ?? "");
-        setWardNo(result.wardNo ?? "");
-        setAddress(result.address ?? "");
-        setMembersCount(result.noofHHMembers?.toString() ?? "");
-        setTypeOfHousing(result.typeofHousing ?? "");
-        setCleanWater(result.accesstoCleanWater ?? "");
-        setSanitation(result.accesstoSanitation ?? "");
-        setGpsCoordinates(result.gpsCoordinates ?? "");
-      }
+      setInitialSnapshot({
+        dateoflistingAD: result.dateoflistingAD,
+        provinceCode: result.provinceCode,
+        districtCode: result.districtCode,
+        vdcnpCode: result.vdcnpCode,
+        wardNo: result.wardNo,
+        address: result.address,
+        noofHHMembers: result.noofHHMembers,
+        typeofHousing: result.typeofHousing,
+        accesstoCleanWater: result.accesstoCleanWater,
+        accesstoSanitation: result.accesstoSanitation,
+        gpsCoordinates: result.gpsCoordinates,
+      });
+
+      // now set form state
+      setDateOfListing(result.dateoflistingAD ?? "");
+      setProvinceCode("5");
+      setDistrictCode(result.districtCode ?? "");
+      setVdcnpCode(result.vdcnpCode ?? "");
+      setWardNo(result.wardNo ?? "");
+      setAddress(result.address ?? "");
+      setMembersCount(result.noofHHMembers?.toString() ?? "");
+      setTypeOfHousing(result.typeofHousing ?? "");
+      setCleanWater(result.accesstoCleanWater ?? "");
+      setSanitation(result.accesstoSanitation ?? "");
+      setGpsCoordinates(result.gpsCoordinates ?? "");
 
       if (chwProfile) {
         setChwName(chwProfile.userName);
@@ -89,6 +125,26 @@ export default function HouseholdDetailScreen() {
 
     load();
   }, [chwProfile, localId]);
+
+  // Load members
+  useEffect(() => {
+    async function loadMembers() {
+      if (!household) return;
+
+      const members = await householdMemberLocalRepository.listByHousehold(
+        household.localId,
+      );
+
+      setMemberSummary({
+        total: members.length,
+        headCount: members.filter((m) => m.headHousehold === "Y").length,
+        pendingCount: members.filter((m) => m.syncStatus === "PENDING").length,
+        failedCount: members.filter((m) => m.syncStatus === "FAILED").length,
+      });
+    }
+
+    loadMembers();
+  }, [household]);
 
   // ---------------- AUTO SAVE ----------------
   useEffect(() => {
@@ -114,7 +170,22 @@ export default function HouseholdDetailScreen() {
       });
 
       // 2️⃣ Only promote SYNCED → PENDING once
-      if (household.syncStatus === "SYNCED" && household.syncAction === null) {
+      if (
+        household.syncStatus === "SYNCED" &&
+        household.syncAction === null &&
+        initialSnapshot &&
+        (initialSnapshot.dateoflistingAD !== dateOfListing ||
+          initialSnapshot.provinceCode !== provinceCode ||
+          initialSnapshot.districtCode !== districtCode ||
+          initialSnapshot.vdcnpCode !== vdcnpCode ||
+          initialSnapshot.wardNo !== wardNo ||
+          initialSnapshot.address !== address ||
+          initialSnapshot.noofHHMembers !== Number(membersCount) ||
+          initialSnapshot.typeofHousing !== typeOfHousing ||
+          initialSnapshot.accesstoCleanWater !== cleanWater ||
+          initialSnapshot.accesstoSanitation !== sanitation ||
+          initialSnapshot.gpsCoordinates !== gpsCoordinates)
+      ) {
         await householdLocalRepository.markPending(household.localId, "UPDATE");
       }
     }, 400);
@@ -133,6 +204,7 @@ export default function HouseholdDetailScreen() {
     sanitation,
     household,
     gpsCoordinates,
+    initialSnapshot,
   ]);
 
   // ---------------- VALIDATION ----------------
@@ -217,6 +289,40 @@ export default function HouseholdDetailScreen() {
     return Object.keys(newErrors).length === 0;
   }
 
+  const validateMembersUseCase = useMemo(
+    () =>
+      new ValidateHouseholdMembersForSubmitUseCase(
+        householdMemberLocalRepository,
+      ),
+    [],
+  );
+
+  const submitUseCase = useMemo(
+    () =>
+      new SubmitHouseholdUseCase(
+        householdLocalRepository,
+        householdInfoRepository,
+        householdMemberLocalRepository,
+      ),
+    [],
+  );
+
+  function buildValidationMessage(errors: any) {
+    const messages: string[] = [];
+
+    if (errors.noMembers) messages.push("• " + errors.noMembers);
+
+    if (errors.headMissing) messages.push("• " + errors.headMissing);
+
+    if (errors.multipleHeads) messages.push("• " + errors.multipleHeads);
+
+    if (errors.failedMembers) messages.push("• " + errors.failedMembers);
+
+    if (errors.draftMembers) messages.push("• " + errors.draftMembers);
+
+    return messages.join("\n");
+  }
+
   // ---------------- SUBMIT ----------------
   async function handleSubmit() {
     if (!household) return;
@@ -226,26 +332,35 @@ export default function HouseholdDetailScreen() {
       return;
     }
 
-    const action = household.householdId ? "UPDATE" : "INSERT";
-
-    await householdLocalRepository.updateDraft(household.localId, {
-      dateoflistingAD: dateOfListing,
-      provinceCode,
-      districtCode,
-      vdcnpCode,
-      wardNo,
-      address,
-      noofHHMembers: Number(membersCount),
-      typeofHousing: typeOfHousing as "P" | "S" | "T",
-      accesstoCleanWater: cleanWater as "Y" | "N",
-      accesstoSanitation: sanitation as "Y" | "N",
-      gpsCoordinates,
+    const memberValidation = await validateMembersUseCase.execute({
+      householdLocalId: household.localId,
     });
 
-    await householdLocalRepository.markPending(household.localId, action);
+    if (!memberValidation.valid) {
+      const message = buildValidationMessage(memberValidation.errors);
 
-    Alert.alert("Saved", "Marked for sync.");
-    router.back();
+      Alert.alert("Cannot Submit", message);
+      return;
+    }
+
+    Alert.alert(
+      "Confirm Submission",
+      "Once submitted, this household and its members will be queued for sync. Please ensure all information is correct.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Confirm & Submit",
+          onPress: async () => {
+            await submitUseCase.execute({
+              localId: household.localId,
+            });
+
+            Alert.alert("Success", "Marked for sync.");
+            router.back();
+          },
+        },
+      ],
+    );
   }
 
   // ---------------- GPS ----------------
@@ -377,16 +492,16 @@ export default function HouseholdDetailScreen() {
       >
         {/* TITLE */}
         <Text className="text-xl font-bold mb-6 text-gray-900">
-          Household Information
+          {LABELS.householdInformation}
         </Text>
 
         {/* ---------------- BASIC INFO CARD ---------------- */}
         <View className="bg-white p-4 rounded-xl shadow-sm mb-4">
           <Text className="text-lg font-semibold mb-4 text-gray-800">
-            Basic Information
+            {LABELS.basicInformation}
           </Text>
 
-          <Text className="text-gray-700 mb-1">Date of Listing</Text>
+          <Text className="text-gray-700 mb-1">{LABELS.dateOfListing}</Text>
           <Pressable
             onPress={() => setShowDatePicker(true)}
             // disabled={true}
@@ -414,7 +529,7 @@ export default function HouseholdDetailScreen() {
             />
           )}
 
-          <Text className="text-gray-700 mt-4 mb-1">CHW Name</Text>
+          <Text className="text-gray-700 mt-4 mb-1">{LABELS.chwName}</Text>
           <TextInput
             value={chwName}
             editable={true}
@@ -425,11 +540,11 @@ export default function HouseholdDetailScreen() {
         {/* ---------------- LOCATION CARD ---------------- */}
         <View className="bg-white p-4 rounded-xl shadow-sm mb-4">
           <Text className="text-lg font-semibold mb-4 text-gray-800">
-            Location Details
+            {LABELS.locationDetails}
           </Text>
 
           {/* Province */}
-          <Text className="text-gray-700 mb-1">Province</Text>
+          <Text className="text-gray-700 mb-1">{LABELS.province}</Text>
           <View className="border rounded mb-3 bg-white">
             <Picker
               selectedValue={provinceCode}
@@ -448,7 +563,7 @@ export default function HouseholdDetailScreen() {
           )}
 
           {/* District */}
-          <Text className="text-gray-700 mb-1">District</Text>
+          <Text className="text-gray-700 mb-1">{LABELS.district}</Text>
           <View className="border rounded mb-3 bg-white">
             <Picker
               selectedValue={districtCode}
@@ -472,7 +587,7 @@ export default function HouseholdDetailScreen() {
           )}
 
           {/* Municipality */}
-          <Text className="text-gray-700 mb-1">Municipality / VDC</Text>
+          <Text className="text-gray-700 mb-1">{LABELS.municipality}</Text>
           <View className="border rounded mb-3 bg-white">
             <Picker
               selectedValue={vdcnpCode}
@@ -492,7 +607,7 @@ export default function HouseholdDetailScreen() {
           )}
 
           {/* Ward */}
-          <Text className="text-gray-700 mb-1">Ward No</Text>
+          <Text className="text-gray-700 mb-1">{LABELS.wardNo}</Text>
           <TextInput
             value={wardNo}
             onChangeText={setWardNo}
@@ -507,7 +622,7 @@ export default function HouseholdDetailScreen() {
           )}
 
           {/* Address */}
-          <Text className="text-gray-700 mb-1">Address</Text>
+          <Text className="text-gray-700 mb-1">{LABELS.address}</Text>
           <TextInput
             value={address}
             onChangeText={setAddress}
@@ -524,10 +639,10 @@ export default function HouseholdDetailScreen() {
         {/* ---------------- HOUSEHOLD CARD ---------------- */}
         <View className="bg-white p-4 rounded-xl shadow-sm mb-4">
           <Text className="text-lg font-semibold mb-4 text-gray-800">
-            Household Details
+            {LABELS.householdDetails}
           </Text>
 
-          <Text className="text-gray-700 mb-1">No. of Household Members</Text>
+          <Text className="text-gray-700 mb-1">{LABELS.householdMembers}</Text>
           <TextInput
             value={membersCount}
             onChangeText={setMembersCount}
@@ -541,7 +656,7 @@ export default function HouseholdDetailScreen() {
             </Text>
           )}
 
-          <Text className="text-gray-700 mb-1">Housing Type</Text>
+          <Text className="text-gray-700 mb-1">{LABELS.housingType}</Text>
           <View className="border rounded mb-3 bg-white">
             <Picker
               selectedValue={typeOfHousing}
@@ -561,7 +676,7 @@ export default function HouseholdDetailScreen() {
             </Text>
           )}
 
-          <Text className="text-gray-700 mb-1">Access to Clean Water</Text>
+          <Text className="text-gray-700 mb-1">{LABELS.cleanWater}</Text>
           <View className="border rounded mb-3 bg-white">
             <Picker
               selectedValue={cleanWater}
@@ -580,7 +695,7 @@ export default function HouseholdDetailScreen() {
             </Text>
           )}
 
-          <Text className="text-gray-700 mb-1">Access to Sanitation</Text>
+          <Text className="text-gray-700 mb-1">{LABELS.sanitation}</Text>
           <View className="border rounded bg-white">
             <Picker
               selectedValue={sanitation}
@@ -603,7 +718,7 @@ export default function HouseholdDetailScreen() {
         {/* ---------------- GPS CARD ---------------- */}
         <View className="bg-white p-4 rounded-xl shadow-sm mb-6">
           <Text className="text-lg font-semibold mb-4 text-gray-800">
-            GPS Verification
+            {LABELS.gpsVerification}
           </Text>
 
           <Pressable
@@ -613,13 +728,13 @@ export default function HouseholdDetailScreen() {
               isReadOnly ? "bg-gray-400" : "bg-blue-600"
             }`}
           >
-            <Text className="text-white text-center">Capture GPS</Text>
+            <Text className="text-white text-center">{LABELS.captureGPS}</Text>
           </Pressable>
 
           {gpsCoordinates ? (
             <View className="bg-green-100 border border-green-300 p-3 rounded-lg mt-3">
               <Text className="text-green-700 font-medium">
-                GPS Captured Successfully
+                {LABELS.gpsCaptured}
               </Text>
               <Text className="text-green-800 text-sm mt-1">
                 {gpsCoordinates}
@@ -627,7 +742,7 @@ export default function HouseholdDetailScreen() {
             </View>
           ) : (
             <View className="bg-gray-100 border border-gray-300 p-3 rounded-lg mt-3">
-              <Text className="text-gray-600">GPS not captured yet</Text>
+              <Text className="text-gray-600">{LABELS.gpsNotCaptured}</Text>
             </View>
           )}
         </View>
@@ -635,16 +750,41 @@ export default function HouseholdDetailScreen() {
           <Text className="text-red-500 text-sm mt-1 mb-2">{errors.gps}</Text>
         )}
 
+        {/* ---------------- MEMBERS SUMMARY ---------------- */}
+        <View className="bg-white p-4 rounded-xl shadow-sm mb-6">
+          <Text className="text-lg font-semibold mb-4 text-gray-800">
+            {LABELS.householdMembers}
+          </Text>
+
+          <Text>Total Members: {memberSummary.total}</Text>
+          <Text>
+            Head Selected: {memberSummary.headCount === 1 ? "Yes" : "No"}
+          </Text>
+          <Text>Pending Members: {memberSummary.pendingCount}</Text>
+          <Text>Failed Members: {memberSummary.failedCount}</Text>
+
+          <Pressable
+            onPress={() =>
+              router.push(`/households/${household.localId}/members`)
+            }
+            className="mt-4 p-3 bg-blue-600 rounded-xl"
+          >
+            <Text className="text-white text-center font-semibold">
+              {LABELS.addManageMembers}
+            </Text>
+          </Pressable>
+        </View>
+
         {/* Submit */}
         <Pressable
           onPress={handleSubmit}
-          // disabled={isReadOnly}
+          disabled={isReadOnly}
           className={`p-4 rounded-xl ${
             isReadOnly ? "bg-gray-400" : "bg-green-600"
           }`}
         >
           <Text className="text-white text-center font-semibold">
-            Save & Mark for Sync
+            {LABELS.saveAndSync}
           </Text>
         </Pressable>
       </ScrollView>

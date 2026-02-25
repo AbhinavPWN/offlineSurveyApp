@@ -16,6 +16,7 @@ export class DownloadHouseholdsUseCase {
     private apiService: HouseholdApiService,
     private localRepo: HouseholdLocalRepository,
     private getCurrentChwUsername: () => Promise<string>,
+    private getCurrentIdOfChw: () => Promise<string>,
   ) {}
 
   async execute(): Promise<DownloadSummary> {
@@ -32,6 +33,7 @@ export class DownloadHouseholdsUseCase {
       }
 
       const chwUsername = await this.getCurrentChwUsername();
+      const idofCHW = await this.getCurrentIdOfChw();
 
       await AppLogger.log("INFO", "Download Households started", {
         chwUsername,
@@ -48,7 +50,7 @@ export class DownloadHouseholdsUseCase {
         );
 
         if (!existing) {
-          await this.localRepo.insertFromListing(remote, chwUsername);
+          await this.localRepo.insertFromListing(remote, chwUsername, idofCHW);
           inserted++;
           continue;
         }

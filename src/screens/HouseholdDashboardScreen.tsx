@@ -1,26 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Pressable } from "react-native";
+import { View, Text, FlatList, Pressable, Alert } from "react-native";
 import { useRouter } from "expo-router";
 
 import { HouseholdLocal } from "../models/household.model";
 import { HouseholdLocalRepository } from "../repositories/HouseholdLocalRepository";
 import { CreateHouseholdUseCase } from "../usecases/household/CreateHouseholdUseCase";
-import { DownloadHouseholdsUseCase } from "../usecases/household/DownloadHouseholdsUseCase";
-
-import { householdApiService, syncHouseholdUseCase } from "../di/container";
-
+import {
+  householdApiService,
+  globalSyncUseCase,
+  downloadHouseholdWithMembersUseCase,
+  householdMemberLocalRepository,
+} from "../di/container";
 import { useAuth } from "../auth/context/useAuth";
 import { SummaryBar } from "../components/SummaryBar";
 import { SyncBadge } from "../components/SyncBadge";
-import { NetworkServiceImpl } from "../utils/NetworkService";
+// import { NetworkServiceImpl } from "../utils/NetworkService";
 import NetInfo from "@react-native-community/netinfo";
 import { useFocusEffect } from "@react-navigation/native";
 import { AppLogger } from "../utils/AppLogger";
+import { Household } from "../domain/models/Household";
 
 interface Props {
   householdRepo: HouseholdLocalRepository;
   createHouseholdUseCase: CreateHouseholdUseCase;
 }
+
+// const downloadUseCase = new DownloadHouseholdWithMembersUseCase(
+//   householdRepo,
+//   memberRepo, // you must pass this
+//   memberApiService,
+// );
 
 function sortHouseholds(data: HouseholdLocal[]) {
   const priorityMap: Record<string, number> = {
@@ -54,6 +63,11 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [onlineHouseholds, setOnlineHouseholds] = useState<Household[]>([]);
+  const [activeTab, setActiveTab] = useState<"LOCAL" | "ONLINE">("LOCAL");
+  const [downloadedServerIds, setDownloadedServerIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Check CONNECTIVITY
   useEffect(() => {
@@ -66,9 +80,75 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
     return () => unsubscribe();
   }, []);
 
+  // Fetch Online List separately
+  const fetchOnlineHouseholds = async () => {
+    if (!chwProfile) return;
+    if (!isOnline) return;
+
+    try {
+      const response = await householdApiService.getHouseholdListing(
+        chwProfile.userName,
+      );
+
+      setOnlineHouseholds(response);
+    } catch (error: any) {
+      if (error?.response?.status === 401) {
+        expireSession();
+      }
+    }
+  };
+
+  // Adding Download Method:
+
+  const handleDownload = React.useCallback(
+    async (h: Household) => {
+      if (!chwProfile) return;
+
+      try {
+        await downloadHouseholdWithMembersUseCase.execute(
+          h,
+          chwProfile.userName,
+          chwProfile.idofCHW,
+        );
+
+        const updated = await householdRepo.listAllForCHW(chwProfile.userName);
+
+        setHouseholds(sortHouseholds(updated));
+
+        setDownloadedServerIds((prev) => {
+          const next = new Set(prev);
+          next.add(h.householdId);
+          return next;
+        });
+
+        alert("Household downloaded successfully.");
+
+        // 👇 ADD THIS BLOCK
+        const inserted = await householdRepo.getByHouseholdId(h.householdId);
+
+        if (inserted) {
+          const members = await householdMemberLocalRepository.listByHousehold(
+            inserted.localId,
+          );
+
+          console.log("📦 Members in local DB:", members.length);
+        }
+      } catch (error: any) {
+        if (error?.message === "ALREADY_DOWNLOADED") {
+          alert("Already downloaded.");
+          return;
+        }
+
+        alert("Download failed.");
+      }
+    },
+    [chwProfile, householdRepo],
+  );
+
   // -----------------------------
   // Initialize Dashboard
   // -----------------------------
+
   useEffect(() => {
     if (!chwProfile) return;
 
@@ -76,39 +156,25 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       setLoading(true);
 
       try {
-        // 1️⃣ ALWAYS load local first
-        const local = await householdRepo.listAllForCHW(chwProfile.userName);
-
-        try {
-          setHouseholds(sortHouseholds(local));
-        } catch (error) {
-          console.error("Sorting failed", error);
-          setHouseholds(local);
-        }
-
-        // 2️⃣ Then attempt background download (if online)
-        const downloadUseCase = new DownloadHouseholdsUseCase(
-          householdApiService,
-          householdRepo,
-          async () => chwProfile.userName,
+        // 🔥 STEP 1: Repair old broken rows FIRST
+        await householdRepo.repairMissingIdOfChw(
+          chwProfile.userName,
+          chwProfile.idofCHW,
         );
 
-        try {
-          await downloadUseCase.execute();
+        // 🔥 STEP 2: Now load corrected data
+        const local = await householdRepo.listAllForCHW(chwProfile.userName);
 
-          // Reload after download
-          const updated = await householdRepo.listAllForCHW(
-            chwProfile.userName,
-          );
+        setHouseholds(sortHouseholds(local));
 
-          setHouseholds(sortHouseholds(updated));
-        } catch (error: any) {
-          if (error?.response?.status === 401) {
-            console.log("Session expired during download");
+        // 🔥 STEP 3: Rebuild downloaded server id set
+        const ids = new Set(
+          local
+            .filter((h) => h.householdId)
+            .map((h) => h.householdId as string),
+        );
 
-            expireSession();
-          }
-        }
+        setDownloadedServerIds(ids);
       } catch (error) {
         console.error("Dashboard initialization failed", error);
       } finally {
@@ -117,7 +183,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
     };
 
     initialize();
-  }, [chwProfile, expireSession, householdRepo]);
+  }, [chwProfile, householdRepo]);
 
   // For Draft not showing immediately
 
@@ -129,6 +195,11 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         const data = await householdRepo.listAllForCHW(chwProfile.userName);
 
         setHouseholds(sortHouseholds(data));
+        const ids = new Set(
+          data.filter((h) => h.householdId).map((h) => h.householdId as string),
+        );
+
+        setDownloadedServerIds(ids);
       };
 
       reload();
@@ -148,24 +219,6 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       alert("System error. Please login again.");
       return;
     }
-
-    // 1 Check if draft already exists
-    // 1 Check if REAL draft (not submitted yet) exists
-    // const drafts = await householdRepo.listBySyncStatus(
-    //   chwProfile.userName,
-    //   "DRAFT",
-    // );
-
-    // if (drafts.length > 0) {
-    //   const existingDraft = drafts[0];
-
-    //   router.push({
-    //     pathname: "/(app)/households/[householdId]",
-    //     params: { householdId: existingDraft.localId },
-    //   });
-
-    //   return;
-    // }
 
     // 2. Otherwise create new draft
     const { localId } = await createHouseholdUseCase.execute({
@@ -188,12 +241,167 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   // -----------------------------
   // Edit Existing Household
   // -----------------------------
-  const handleEdit = (household: HouseholdLocal) => {
-    router.push({
-      pathname: "/(app)/households/[householdId]",
-      params: { householdId: household.localId },
-    });
-  };
+  const handleEdit = React.useCallback(
+    (household: HouseholdLocal) => {
+      router.push({
+        pathname: "/(app)/households/[householdId]",
+        params: { householdId: household.localId },
+      });
+    },
+    [router],
+  );
+
+  // Handler for deleting local list
+  const handleRemoveLocal = React.useCallback(
+    async (local: HouseholdLocal) => {
+      await householdRepo.deleteLocal(local.localId);
+
+      const updated = await householdRepo.listAllForCHW(chwProfile!.userName);
+
+      setHouseholds(sortHouseholds(updated));
+
+      const ids = new Set(
+        updated
+          .filter((h) => h.householdId)
+          .map((h) => h.householdId as string),
+      );
+
+      setDownloadedServerIds(ids);
+    },
+    [householdRepo, chwProfile],
+  );
+
+  const showOptions = React.useCallback(
+    (local: HouseholdLocal) => {
+      Alert.alert("Household Options", "", [
+        {
+          text: "Remove local copy",
+          style: "destructive",
+          onPress: () => handleRemoveLocal(local),
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]);
+    },
+    [handleRemoveLocal],
+  );
+
+  const currentData = React.useMemo(
+    () => (activeTab === "LOCAL" ? households : onlineHouseholds),
+    [activeTab, households, onlineHouseholds],
+  );
+
+  // Memoize renderItem
+  const renderItem = React.useCallback(
+    ({ item }: { item: HouseholdLocal | Household }) => {
+      if (activeTab === "LOCAL") {
+        const local = item as HouseholdLocal;
+        if (!local.localId) return null;
+
+        return (
+          <Pressable
+            onPress={() => handleEdit(local)}
+            className={`bg-white mx-4 mt-3 p-4 rounded-xl shadow-sm ${
+              local.syncStatus === "FAILED"
+                ? "border border-red-300"
+                : local.syncStatus === "PENDING"
+                  ? "border border-yellow-300"
+                  : local.syncStatus === "DRAFT"
+                    ? "border border-orange-300"
+                    : ""
+            }`}
+          >
+            <View className="flex-row justify-between items-start">
+              <View>
+                <Text className="text-base font-semibold">
+                  Ward {local.wardNo || "Not set"}
+                </Text>
+
+                {/* STATUS LABEL */}
+                {local.syncStatus === "DRAFT" && (
+                  <Text className="text-xs text-orange-700 bg-orange-100 px-2 py-1 rounded mt-1">
+                    Draft
+                  </Text>
+                )}
+
+                {local.syncStatus === "PENDING" && (
+                  <Text className="text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded mt-1">
+                    Pending Sync
+                  </Text>
+                )}
+
+                {local.syncStatus === "FAILED" && (
+                  <Text className="text-xs text-red-700 bg-red-100 px-2 py-1 rounded mt-1">
+                    Sync Failed
+                  </Text>
+                )}
+
+                {local.syncStatus === "SYNCED" && (
+                  <Text className="text-xs text-green-700 bg-green-100 px-2 py-1 rounded mt-1">
+                    Synced
+                  </Text>
+                )}
+              </View>
+
+              {/* RIGHT SIDE: Badge + Menu */}
+              <View className="items-end">
+                <SyncBadge status={local.syncStatus} />
+                {local.syncStatus === "SYNCED" && (
+                  <Pressable
+                    onPress={() => showOptions(local)}
+                    className="mt-2 px-2 py-1"
+                  >
+                    <Text style={{ fontSize: 18 }}>⋮</Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+
+            <Text className="text-gray-600 mt-2">
+              {local.address || "Address not specified"}
+            </Text>
+
+            <Text className="text-gray-500 text-sm mt-1">
+              {local.noofHHMembers} Members
+            </Text>
+          </Pressable>
+        );
+      }
+
+      const online = item as Household;
+      if (!online.householdId) return null;
+
+      return (
+        <View className="bg-white mx-4 mt-3 p-4 rounded-xl shadow-sm">
+          <Text className="text-base font-semibold">Ward {online.wardNo}</Text>
+
+          <Text className="text-gray-600 mt-2">{online.address}</Text>
+
+          <Text className="text-gray-500 text-sm mt-1">
+            {online.memberCount} Members
+          </Text>
+
+          {downloadedServerIds.has(online.householdId) ? (
+            <Text className="text-green-600 mt-3 font-medium">
+              Already Downloaded
+            </Text>
+          ) : (
+            <Pressable
+              onPress={() => handleDownload(online)}
+              className="mt-3 bg-blue-600 px-4 py-2 rounded-lg"
+            >
+              <Text className="text-white text-center font-medium">
+                Download
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      );
+    },
+    [activeTab, downloadedServerIds, handleDownload, handleEdit, showOptions],
+  );
 
   // -----------------------------
   // Manual Sync
@@ -201,28 +409,23 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const handleManualSync = async () => {
     if (!chwProfile || syncing) return;
 
-    const networkService = new NetworkServiceImpl();
-    const isOnline = await networkService.isOnline();
-
-    if (!isOnline) {
-      alert("You are offline. Cannot sync.");
-      return;
-    }
-
     try {
       setSyncing(true);
-      await syncHouseholdUseCase.execute(chwProfile.userName);
 
+      await globalSyncUseCase.execute(chwProfile.userName);
+
+      // Reload updated local data after sync
       const data = await householdRepo.listAllForCHW(chwProfile.userName);
-
       setHouseholds(sortHouseholds(data));
+
+      Alert.alert("Success", "Sync completed successfully.");
     } catch (error: any) {
       if (error?.message === "SESSION_EXPIRED") {
-        alert("Session expired. Please login again.");
+        Alert.alert("Session expired", "Please login again.");
         return;
       }
 
-      console.log("Sync error:", error?.message);
+      Alert.alert("Sync Failed", error?.message || "Unknown error");
     } finally {
       setSyncing(false);
     }
@@ -305,98 +508,94 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         <SummaryBar households={households} />
       </View>
 
+      {/* TAB SWITCH UI */}
+      <View className="flex-row mx-4 mt-4 bg-gray-200 rounded-lg overflow-hidden">
+        <Pressable
+          onPress={() => setActiveTab("LOCAL")}
+          className={`flex-1 py-2 ${activeTab === "LOCAL" ? "bg-white" : ""}`}
+        >
+          <Text className="text-center font-medium">Downloaded</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={async () => {
+            if (!isOnline) {
+              alert(
+                "You are offline. Connect to internet to view online households.",
+              );
+              return;
+            }
+
+            setActiveTab("ONLINE");
+            await fetchOnlineHouseholds();
+          }}
+          className={`flex-1 py-2 ${activeTab === "ONLINE" ? "bg-white" : ""}`}
+        >
+          <Text className="text-center font-medium">Online</Text>
+        </Pressable>
+      </View>
+
       {/* LIST */}
-      <FlatList
-        data={households}
-        keyExtractor={(item) =>
-          item.localId?.toString() ?? Math.random().toString()
-        }
+      <FlatList<HouseholdLocal | Household>
+        data={currentData}
+        keyExtractor={(item, index) => {
+          if (activeTab === "LOCAL") {
+            const local = item as HouseholdLocal;
+            return local.localId ?? `local-${index}`;
+          }
+
+          const online = item as Household;
+          return online.householdId ?? `online-${index}`;
+        }}
         contentContainerStyle={{
           paddingBottom: 120,
-          paddingTop: households.length === 0 ? 80 : 12,
+          paddingTop: currentData.length === 0 ? 80 : 12,
         }}
         ListEmptyComponent={
-          <View className="items-center px-6">
-            <Text className="text-5xl mb-4">🏠</Text>
+          activeTab === "ONLINE" && !isOnline ? (
+            <View className="items-center px-6">
+              <Text className="text-5xl mb-4">📡</Text>
 
-            <Text className="text-lg font-semibold text-gray-700 mb-2">
-              No households yet
-            </Text>
+              <Text className="text-lg font-semibold text-gray-700 mb-2">
+                No Internet Connection
+              </Text>
 
-            <Text className="text-gray-500 text-center">
-              Tap the + button below to create your first household listing.
-            </Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => handleEdit(item)}
-            className={`bg-white mx-4 mt-3 p-4 rounded-xl shadow-sm ${
-              item.syncStatus === "FAILED"
-                ? "border border-red-200"
-                : item.syncStatus === "PENDING"
-                  ? "border border-yellow-200"
-                  : ""
-            }`}
-          >
-            <View className="flex-row justify-between items-start">
-              <View>
-                <Text className="text-base font-semibold text-gray-900">
-                  {item.wardNo ? `Ward ${item.wardNo}` : "Ward not set"}
-                </Text>
-
-                {/* Lifecycle Labels */}
-
-                {!item.householdId && (
-                  <Text className="text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded mt-1">
-                    Local Draft
-                  </Text>
-                )}
-
-                {item.householdId && item.syncStatus === "SYNCED" && (
-                  <Text className="text-xs text-green-700 bg-green-100 px-2 py-1 rounded mt-1">
-                    Synced From Server
-                  </Text>
-                )}
-
-                {item.householdId && item.syncStatus === "PENDING" && (
-                  <Text className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded mt-1">
-                    Modified Locally
-                  </Text>
-                )}
-
-                {item.syncStatus === "FAILED" && (
-                  <Text className="text-xs text-red-700 bg-red-100 px-2 py-1 rounded mt-1">
-                    Sync Failed
-                  </Text>
-                )}
-              </View>
-
-              <SyncBadge status={item.syncStatus} />
+              <Text className="text-gray-500 text-center">
+                Connect to the internet to view and download online households.
+              </Text>
             </View>
+          ) : (
+            <View className="items-center px-6">
+              <Text className="text-5xl mb-4">🏠</Text>
 
-            <Text className="text-gray-700 mt-2">
-              {item.address || "Address not specified"}
-            </Text>
+              <Text className="text-lg font-semibold text-gray-700 mb-2">
+                No households yet
+              </Text>
 
-            <Text className="text-gray-500 text-sm mt-1">
-              {item.noofHHMembers} Members
-            </Text>
-
-            <Text className="text-gray-400 text-xs mt-1">
-              Updated {new Date(item.lastModifiedAt).toLocaleString()}
-            </Text>
-          </Pressable>
-        )}
+              <Text className="text-gray-500 text-center">
+                {activeTab === "LOCAL"
+                  ? "Tap the + button below to create your first household listing."
+                  : "No households available online."}
+              </Text>
+            </View>
+          )
+        }
+        renderItem={renderItem}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
       />
 
       {/* FLOATING ADD BUTTON */}
-      <Pressable
-        onPress={handleAddNew}
-        className="absolute bottom-8 right-6 w-16 h-16 rounded-full bg-blue-600 shadow-lg items-center justify-center"
-      >
-        <Text className="text-white text-3xl font-light">+</Text>
-      </Pressable>
+      {activeTab === "LOCAL" && (
+        <Pressable
+          onPress={handleAddNew}
+          className="absolute bottom-8 right-6 w-16 h-16 rounded-full bg-blue-600 shadow-lg items-center justify-center"
+        >
+          <Text className="text-white text-3xl font-light">+</Text>
+        </Pressable>
+      )}
     </View>
   );
 };

@@ -4,7 +4,7 @@
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
   },
-  "cSpell.words": ["surveyapp"],
+  "cSpell.words": ["surveyapp", "छान्नुहोस्", "जन्म", "विवाहित"],
   "tailwindCSS.experimental.classAttributes": ["class", "twClass"],
   "tailwindCSS.includeLanguages": {
     "plaintext": "html",

@@ -2,6 +2,7 @@
 
 import { HouseholdLocalRepository } from "@/src/repositories/HouseholdLocalRepository";
 import { HouseholdInfoRepository } from "@/src/repositories/HouseholdInfoRepository";
+import { HouseholdMemberLocalRepository } from "@/src/repositories/HouseholdMemberLocalRepository";
 
 interface SubmitHouseholdParams {
   localId: string;
@@ -11,6 +12,7 @@ export class SubmitHouseholdUseCase {
   constructor(
     private householdRepo: HouseholdLocalRepository,
     private householdInfoRepo: HouseholdInfoRepository,
+    private memberRepo: HouseholdMemberLocalRepository,
   ) {}
 
   async execute(params: SubmitHouseholdParams): Promise<void> {
@@ -21,15 +23,28 @@ export class SubmitHouseholdUseCase {
     if (!info) {
       throw new Error("Household info not found");
     }
+    if (household?.syncStatus === "SYNCED") {
+      // If household is already synced and not edited,
+      // do NOT re-validate.
+      return;
+    }
 
     const validation = this.householdInfoRepo.validateForSubmit(info);
 
     if (!validation.valid) {
-      throw new Error("Household data is not valid for submission");
+      console.log("VALIDATION FAILED. Missing:", validation.missingFields);
+      throw new Error(
+        "Household data is not valid for submission: " +
+          validation.missingFields.join(", "),
+      );
     }
 
     const action = household?.householdId ? "UPDATE" : "INSERT";
 
+    // Mark household pending
     await this.householdRepo.markPending(params.localId, action);
+
+    // Propagate to members
+    await this.memberRepo.markAllDraftMembersPending(params.localId);
   }
 }

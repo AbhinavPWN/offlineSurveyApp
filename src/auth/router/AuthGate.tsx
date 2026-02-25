@@ -60,8 +60,8 @@ export default function AuthGate() {
       {/* GLOBAL FOOTER */}
       <View
         style={{
-          position: "absolute",
-          bottom: 0,
+          // position: "absolute",
+          // bottom: 0,
           width: "100%",
           alignItems: "center",
           paddingVertical: 4,

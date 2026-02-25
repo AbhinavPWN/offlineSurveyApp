@@ -1,17 +1,18 @@
-import axios, { AxiosInstance } from "axios";
+// import axios, { AxiosInstance } from "axios";
 import { Household } from "../domain/models/Household";
 import { mapListingDtoToHousehold } from "./api/mappers/householdListingMapper";
 import { GetHHDataListResponse } from "./api/dto/GetHHDataListResponse";
 import { AppLogger } from "../utils/AppLogger";
 
-import { loadAuthSession } from "@/src/auth/storage/authStorage";
-import { isTokenValid } from "@/src/auth/service/token";
+// import { loadAuthSession } from "@/src/auth/storage/authStorage";
+// import { isTokenValid } from "@/src/auth/service/token";
+import { BaseApiClient } from "./api/BaseApiClient";
 
 // --------------------
 // API Base
 // --------------------
 
-const BASE_URL = "https://wecareapi.nirdhan.com.np:8085/api/SavingDeposit";
+// const BASE_URL = "https://wecareapi.nirdhan.com.np:8085/api/SavingDeposit";
 
 const HOUSEHOLD_ENTRY_ENDPOINT = "/Household_Entry";
 
@@ -72,100 +73,101 @@ export interface HouseholdApiService {
   getHouseholdListing(chwId: string): Promise<Household[]>;
 }
 
-declare module "axios" {
-  interface AxiosRequestConfig {
-    metadata?: any;
-  }
-}
+// declare module "axios" {
+//   interface AxiosRequestConfig {
+//     metadata?: any;
+//   }
+// }
 
 // --------------------
 // Implementation
 // --------------------
 
 export class HouseholdApiServiceImpl implements HouseholdApiService {
-  private client: AxiosInstance;
+  private client = BaseApiClient.getInstance();
+  // private client: AxiosInstance;
 
-  constructor() {
-    this.client = axios.create({
-      baseURL: BASE_URL,
-      timeout: 15000,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  // constructor() {
+  //   this.client = axios.create({
+  //     baseURL: BASE_URL,
+  //     timeout: 15000,
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //   });
 
-    // -----------------------------
-    // REQUEST INTERCEPTOR
-    // -----------------------------
-    this.client.interceptors.request.use(async (config) => {
-      config.metadata = { startTime: new Date().getTime() };
+  //   // -----------------------------
+  //   // REQUEST INTERCEPTOR
+  //   // -----------------------------
+  //   this.client.interceptors.request.use(async (config) => {
+  //     config.metadata = { startTime: new Date().getTime() };
 
-      await AppLogger.log("INFO", "API_REQUEST", {
-        method: config.method?.toUpperCase(),
-        url: `${config.baseURL ?? ""}${config.url ?? ""}`,
-        body: config.data ?? null,
-      });
+  //     await AppLogger.log("INFO", "API_REQUEST", {
+  //       method: config.method?.toUpperCase(),
+  //       url: `${config.baseURL ?? ""}${config.url ?? ""}`,
+  //       body: config.data ?? null,
+  //     });
 
-      try {
-        const session = await loadAuthSession();
+  //     try {
+  //       const session = await loadAuthSession();
 
-        if (session && session.accessToken && isTokenValid(session)) {
-          config.headers.Authorization = `Bearer ${session.accessToken}`;
-        } else {
-          await AppLogger.log("WARN", "API_REQUEST_NO_VALID_TOKEN", {
-            url: config.url,
-          });
-        }
-      } catch (error: any) {
-        await AppLogger.log("ERROR", "API_TOKEN_ATTACH_FAILED", {
-          message: error?.message,
-        });
-      }
+  //       if (session && session.accessToken && isTokenValid(session)) {
+  //         config.headers.Authorization = `Bearer ${session.accessToken}`;
+  //       } else {
+  //         await AppLogger.log("WARN", "API_REQUEST_NO_VALID_TOKEN", {
+  //           url: config.url,
+  //         });
+  //       }
+  //     } catch (error: any) {
+  //       await AppLogger.log("ERROR", "API_TOKEN_ATTACH_FAILED", {
+  //         message: error?.message,
+  //       });
+  //     }
 
-      return config;
-    });
+  //     return config;
+  //   });
 
-    // -----------------------------
-    // RESPONSE INTERCEPTOR
-    // -----------------------------
-    this.client.interceptors.response.use(
-      async (response) => {
-        const duration =
-          new Date().getTime() - (response.config.metadata?.startTime ?? 0);
+  //   // -----------------------------
+  //   // RESPONSE INTERCEPTOR
+  //   // -----------------------------
+  //   this.client.interceptors.response.use(
+  //     async (response) => {
+  //       const duration =
+  //         new Date().getTime() - (response.config.metadata?.startTime ?? 0);
 
-        await AppLogger.log("INFO", "API_RESPONSE", {
-          method: response.config.method?.toUpperCase(),
-          url: `${response.config.baseURL ?? ""}${response.config.url ?? ""}`,
+  //       await AppLogger.log("INFO", "API_RESPONSE", {
+  //         method: response.config.method?.toUpperCase(),
+  //         url: `${response.config.baseURL ?? ""}${response.config.url ?? ""}`,
 
-          status: response.status,
-          durationMs: duration,
-        });
+  //         status: response.status,
+  //         durationMs: duration,
+  //       });
 
-        return response;
-      },
-      async (error) => {
-        const config = error.config || {};
-        const duration =
-          new Date().getTime() - (config.metadata?.startTime ?? 0);
+  //       return response;
+  //     },
+  //     async (error) => {
+  //       const config = error.config || {};
+  //       const duration =
+  //         new Date().getTime() - (config.metadata?.startTime ?? 0);
 
-        await AppLogger.log("ERROR", "API_ERROR", {
-          method: config.method?.toUpperCase(),
-          url: config.baseURL + config.url,
-          status: error.response?.status ?? "NO_RESPONSE",
-          message: error.message,
-          durationMs: duration,
-        });
+  //       await AppLogger.log("ERROR", "API_ERROR", {
+  //         method: config.method?.toUpperCase(),
+  //         url: config.baseURL + config.url,
+  //         status: error.response?.status ?? "NO_RESPONSE",
+  //         message: error.message,
+  //         durationMs: duration,
+  //       });
 
-        if (error.response?.status === 401) {
-          await AppLogger.log("AUTH", "API_401_UNAUTHORIZED", {
-            url: config.url,
-          });
-        }
+  //       if (error.response?.status === 401) {
+  //         await AppLogger.log("AUTH", "API_401_UNAUTHORIZED", {
+  //           url: config.url,
+  //         });
+  //       }
 
-        return Promise.reject(error);
-      },
-    );
-  }
+  //       return Promise.reject(error);
+  //     },
+  //   );
+  // }
 
   // -----------------------------
   // INSERT

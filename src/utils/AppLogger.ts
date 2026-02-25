@@ -11,6 +11,7 @@ type LogLevel =
   | "SYNC_RECORD_PROCESSING"
   | "SYNC_INSERT_SUCCESS"
   | "SYNC_UPDATE_SUCCESS"
+  | "SYNC_DEBUG"
   | "AUTH";
 
 /**
@@ -27,6 +28,7 @@ const LEVEL_ORDER: LogLevel[] = [
   "SYNC_INSERT_SUCCESS",
   "SYNC_UPDATE_SUCCESS",
   "AUTH",
+  "SYNC_DEBUG",
 ];
 const MIN_LOG_LEVEL: LogLevel = "INFO";
 

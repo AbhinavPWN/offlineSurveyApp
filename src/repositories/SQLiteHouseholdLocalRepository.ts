@@ -330,16 +330,21 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
   }
 
   //   LISTING Integration
-  async insertFromListing(h: Household, chwUsername: string): Promise<void> {
+  async insertFromListing(
+    h: Household,
+    chwUsername: string,
+    idofCHW: string,
+  ): Promise<void> {
     const id = uuidv4();
     const now = new Date().toISOString();
 
     await db.runAsync(
       `
         INSERT INTO households (
-             id,
+        id,
         server_id,
         chw_id,
+        idof_chw,
         status,
         sync_action,
         province_code,
@@ -352,14 +357,16 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
         has_clean_water,
         has_sanitation,
         active_flag,
+        is_downloaded,
         created_at,
         updated_at  
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         `,
       [
         id,
         h.householdId,
         chwUsername,
+        idofCHW,
         "SYNCED",
         null,
         h.provinceId,
@@ -372,6 +379,7 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
         h.hasCleanWater ? "Y" : "N",
         h.hasSanitation ? "Y" : "N",
         h.isActive ? "Y" : "N",
+        1, // Downloaded
         now,
         now,
       ],
@@ -428,6 +436,40 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
 
     await AppLogger.log("SYNC", "Updated household from listing", {
       serverId: h.householdId,
+    });
+  }
+
+  async repairMissingIdOfChw(
+    chwUsername: string,
+    idofCHW: string,
+  ): Promise<void> {
+    await db.runAsync(
+      `
+    UPDATE households
+    SET idof_chw = ?
+    WHERE chw_id = ?
+      AND idof_chw IS NULL
+    `,
+      [idofCHW, chwUsername],
+    );
+
+    await AppLogger.log("INFO", "Repaired missing idof_chw rows", {
+      chwUsername,
+    });
+  }
+
+  // Deleting Local Copy
+  async deleteLocal(localId: string): Promise<void> {
+    await db.runAsync(
+      `
+    DELETE FROM households
+    WHERE id = ?
+    `,
+      [localId],
+    );
+
+    await AppLogger.log("INFO", "Household removed from device", {
+      localId,
     });
   }
 }
