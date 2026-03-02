@@ -4,7 +4,7 @@
     "slug": "nirdhan-survey",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/ni.png",
+    "icon": "./assets/images/nirdhan_Logo.jpg",
     "scheme": "surveyapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -48,6 +48,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d7c821e3-61b6-4642-8e45-4ab220578974"
+      }
     }
   }
 }
