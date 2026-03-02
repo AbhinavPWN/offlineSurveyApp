@@ -6,6 +6,7 @@ export interface HealthValidationErrors {
   disabilityDifficulty?: string;
   pregnancyDate?: string;
   vaccinationStatus?: string;
+  childDob?: string;
 }
 
 export function validateHealthStep(
@@ -44,11 +45,13 @@ export function validateHealthStep(
   }
 
   // Pregnancy rules
-  if (state.gender !== "F") {
-    // no validation needed here, just ignore
-  } else {
+  if (state.gender === "F") {
     if (state.pregnancyStatus === "Y" && !state.pregnancyDate) {
       errors.pregnancyDate = "Pregnancy date is required";
+    }
+
+    if (state.motherofChild && !state.childDob) {
+      errors.childDob = "Child date of birth is required";
     }
   }
 

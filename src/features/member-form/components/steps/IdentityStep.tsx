@@ -2,8 +2,9 @@ import React, { useEffect } from "react";
 import { View, Text, TextInput } from "react-native";
 import { MemberFormState } from "../../models/MemberFormState";
 import { FormDropdown } from "../FormDropdown";
-import { districtOptions } from "../../master/memberMasterData";
+// import { districtOptions } from "../../master/memberMasterData";
 import { BSDateInput } from "../BSDateInput";
+import { getAllDistricts } from "@/src/repositories/addressRepository";
 
 interface Props {
   form: MemberFormState;
@@ -14,15 +15,55 @@ interface Props {
   errors?: Record<string, string>;
 }
 
-export function IdentityStep({ form, updateField, errors }: Props) {
+export const IdentityStep = React.memo(function IdentityStep({
+  form,
+  updateField,
+  errors,
+}: Props) {
+  if (__DEV__) console.log("IdentityStep render");
+
+  const [districtOptions, setDistrictOptions] = React.useState<any[]>([]);
+
+  // load district on mount
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadDistricts() {
+      try {
+        const districts = await getAllDistricts();
+
+        if (!mounted) return;
+
+        setDistrictOptions(
+          districts.map((d) => ({
+            value: d.id,
+            labelEn: d.name_en,
+            labelNp: d.name_np,
+          })),
+        );
+      } catch (error) {
+        console.log("Issue district load error:", error);
+      }
+    }
+
+    loadDistricts();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const isMinor = form.minorYn;
 
   // Auto-set document type
   useEffect(() => {
     if (!form.idDocumentType) {
-      updateField("idDocumentType", "CITIZENSHIP");
+      setTimeout(() => {
+        updateField("idDocumentType", "CITIZENSHIP");
+      }, 0);
     }
-  }, [form.idDocumentType, updateField]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <View className="space-y-4">
@@ -60,6 +101,7 @@ export function IdentityStep({ form, updateField, errors }: Props) {
         value={form.idIssueDistrictCode}
         options={districtOptions}
         onChange={(val) => updateField("idIssueDistrictCode", val)}
+        showNepali={false}
       />
       {errors?.idIssueDistrictCode && (
         <Text className="text-red-500 text-xs mt-1">
@@ -80,4 +122,4 @@ export function IdentityStep({ form, updateField, errors }: Props) {
       )}
     </View>
   );
-}
+});

@@ -15,18 +15,22 @@ import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Location from "expo-location";
 import { HOUSING_TYPES } from "@/src/constants/housingTypes";
-import { LUMBINI_DISTRICTS } from "@/src/constants/lumbiniLocations";
+// import { LUMBINI_DISTRICTS } from "@/src/constants/lumbiniLocations";
 import { LABELS } from "@/src/constants/labels";
 
 import {
   householdLocalRepository,
-  householdInfoRepository,
+  // householdInfoRepository,
   householdMemberLocalRepository,
 } from "@/src/di/container";
 import type { HouseholdLocal } from "@/src/models/household.model";
 import { useAuth } from "@/src/auth/context/useAuth";
 import { ValidateHouseholdMembersForSubmitUseCase } from "@/src/usecases/household/ValidateHouseholdMembersForSubmitUseCase";
 import { SubmitHouseholdUseCase } from "@/src/usecases/household/SubmitHouseholdUseCase";
+import {
+  getDistrictsByProvince,
+  getMunicipalitiesByDistrict,
+} from "@/src/repositories/addressRepository";
 
 function formatDate(date: Date) {
   return date.toISOString().split("T")[0];
@@ -43,7 +47,8 @@ export default function HouseholdDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [household, setHousehold] = useState<HouseholdLocal | null>(null);
   // const isReadOnly = household?.syncStatus === "SYNCED";
-  const isReadOnly = household?.syncStatus === "PENDING";
+  // const isReadOnly = household?.syncStatus === "PENDING";
+  const isReadOnly = false;
 
   const progressAnim = useRef(new Animated.Value(0)).current;
 
@@ -67,6 +72,9 @@ export default function HouseholdDetailScreen() {
   const [initialSnapshot, setInitialSnapshot] =
     useState<Partial<HouseholdLocal> | null>(null);
 
+  // local dropdown state
+  const [districtOptions, setDistrictOptions] = useState<any[]>([]);
+  const [municipalityOptions, setMunicipalityOptions] = useState<any[]>([]);
   // State for member
   const [memberSummary, setMemberSummary] = useState({
     total: 0,
@@ -74,6 +82,32 @@ export default function HouseholdDetailScreen() {
     pendingCount: 0,
     failedCount: 0,
   });
+
+  // Load districts
+  useEffect(() => {
+    async function loadDistricts() {
+      const districts = await getDistrictsByProvince("5"); // Lumbini only
+
+      setDistrictOptions(districts);
+    }
+
+    loadDistricts();
+  }, []);
+
+  // Load municipalities
+  useEffect(() => {
+    async function loadMunicipalities() {
+      if (!districtCode) {
+        setMunicipalityOptions([]);
+        return;
+      }
+
+      const municipalities = await getMunicipalitiesByDistrict(districtCode);
+      setMunicipalityOptions(municipalities);
+    }
+
+    loadMunicipalities();
+  }, [districtCode]);
 
   // ---------------- LOAD ----------------
   useEffect(() => {
@@ -100,7 +134,10 @@ export default function HouseholdDetailScreen() {
         typeofHousing: result.typeofHousing,
         accesstoCleanWater: result.accesstoCleanWater,
         accesstoSanitation: result.accesstoSanitation,
-        gpsCoordinates: result.gpsCoordinates,
+        gpsCoordinates:
+          result.gpsCoordinates && result.gpsCoordinates !== "0"
+            ? result.gpsCoordinates
+            : "",
       });
 
       // now set form state
@@ -114,7 +151,11 @@ export default function HouseholdDetailScreen() {
       setTypeOfHousing(result.typeofHousing ?? "");
       setCleanWater(result.accesstoCleanWater ?? "");
       setSanitation(result.accesstoSanitation ?? "");
-      setGpsCoordinates(result.gpsCoordinates ?? "");
+      setGpsCoordinates(
+        result.gpsCoordinates && result.gpsCoordinates !== "0"
+          ? result.gpsCoordinates
+          : "",
+      );
 
       if (chwProfile) {
         setChwName(chwProfile.userName);
@@ -169,24 +210,38 @@ export default function HouseholdDetailScreen() {
         gpsCoordinates,
       });
 
+      function hasChanges(): boolean {
+        if (!initialSnapshot) return false;
+
+        const currentState = {
+          dateoflistingAD: dateOfListing,
+          provinceCode,
+          districtCode,
+          vdcnpCode,
+          wardNo,
+          address,
+          noofHHMembers: Number(membersCount),
+          typeofHousing: typeOfHousing,
+          accesstoCleanWater: cleanWater,
+          accesstoSanitation: sanitation,
+          gpsCoordinates,
+        };
+
+        return JSON.stringify(currentState) !== JSON.stringify(initialSnapshot);
+      }
+
       // 2️⃣ Only promote SYNCED → PENDING once
       if (
         household.syncStatus === "SYNCED" &&
         household.syncAction === null &&
-        initialSnapshot &&
-        (initialSnapshot.dateoflistingAD !== dateOfListing ||
-          initialSnapshot.provinceCode !== provinceCode ||
-          initialSnapshot.districtCode !== districtCode ||
-          initialSnapshot.vdcnpCode !== vdcnpCode ||
-          initialSnapshot.wardNo !== wardNo ||
-          initialSnapshot.address !== address ||
-          initialSnapshot.noofHHMembers !== Number(membersCount) ||
-          initialSnapshot.typeofHousing !== typeOfHousing ||
-          initialSnapshot.accesstoCleanWater !== cleanWater ||
-          initialSnapshot.accesstoSanitation !== sanitation ||
-          initialSnapshot.gpsCoordinates !== gpsCoordinates)
+        hasChanges()
       ) {
         await householdLocalRepository.markPending(household.localId, "UPDATE");
+
+        const updated = await householdLocalRepository.getByLocalId(
+          household.localId,
+        );
+        if (updated) setHousehold(updated);
       }
     }, 400);
 
@@ -229,21 +284,20 @@ export default function HouseholdDetailScreen() {
     }
 
     // District
-    const selectedDistrict = LUMBINI_DISTRICTS.find(
-      (d) => String(d.code) === String(districtCode),
-    );
+    // const selectedDistrict = LUMBINI_DISTRICTS.find(
+    //   (d) => String(d.code) === String(districtCode),
+    // );
 
-    if (!districtCode || !selectedDistrict) {
-      newErrors.district = "Valid district required";
+    // if (!districtCode || !selectedDistrict) {
+    //   newErrors.district = "Valid district required";
+    // }
+    if (!districtCode) {
+      newErrors.district = "District required";
     }
 
     // Municipality
-    const validMunicipality = selectedDistrict?.municipalities.find(
-      (m) => String(m.code) === String(vdcnpCode),
-    );
-
-    if (!vdcnpCode || !validMunicipality) {
-      newErrors.vdc = "Valid municipality required";
+    if (!vdcnpCode) {
+      newErrors.vdc = "Municipality required";
     }
 
     // Ward
@@ -301,7 +355,7 @@ export default function HouseholdDetailScreen() {
     () =>
       new SubmitHouseholdUseCase(
         householdLocalRepository,
-        householdInfoRepository,
+        // householdInfoRepository,
         householdMemberLocalRepository,
       ),
     [],
@@ -327,11 +381,18 @@ export default function HouseholdDetailScreen() {
   async function handleSubmit() {
     if (!household) return;
 
+    // Skip if already synced and no local changes
+    if (household.syncStatus === "SYNCED" && household.syncAction === null) {
+      Alert.alert("Already Synced", "No changes to submit.");
+      return;
+    }
+
     if (!validate()) {
       Alert.alert("Incomplete Form", "Please fix the highlighted fields.");
       return;
     }
 
+    // Validate household members
     const memberValidation = await validateMembersUseCase.execute({
       householdLocalId: household.localId,
     });
@@ -343,6 +404,7 @@ export default function HouseholdDetailScreen() {
       return;
     }
 
+    // Confirm Submission
     Alert.alert(
       "Confirm Submission",
       "Once submitted, this household and its members will be queued for sync. Please ensure all information is correct.",
@@ -351,12 +413,19 @@ export default function HouseholdDetailScreen() {
         {
           text: "Confirm & Submit",
           onPress: async () => {
-            await submitUseCase.execute({
-              localId: household.localId,
-            });
+            try {
+              await submitUseCase.execute({
+                localId: household.localId,
+              });
 
-            Alert.alert("Success", "Marked for sync.");
-            router.back();
+              Alert.alert("Success", "Marked for sync.");
+              router.back();
+            } catch (error: any) {
+              Alert.alert(
+                "Submission Failed",
+                error?.message ?? "Something went wrong.",
+              );
+            }
           },
         },
       ],
@@ -422,12 +491,6 @@ export default function HouseholdDetailScreen() {
       </View>
     );
   }
-
-  const selectedDistrict = LUMBINI_DISTRICTS.find(
-    (d) => String(d.code) === String(districtCode),
-  );
-  // console.log("districtCode:", districtCode);
-  // console.log("selectedDistrict:", selectedDistrict);
 
   // ---------------- UI ----------------
   return (
@@ -575,8 +638,8 @@ export default function HouseholdDetailScreen() {
               style={{ height: 50, color: "#000" }}
             >
               <Picker.Item label="Select District" value="" />
-              {LUMBINI_DISTRICTS.map((d) => (
-                <Picker.Item key={d.code} label={d.name} value={d.code} />
+              {districtOptions.map((d) => (
+                <Picker.Item key={d.id} label={d.name_en} value={d.id} />
               ))}
             </Picker>
           </View>
@@ -596,10 +659,9 @@ export default function HouseholdDetailScreen() {
               style={{ height: 50, color: "#000" }}
             >
               <Picker.Item label="Select Municipality" value="" />
-              {selectedDistrict &&
-                selectedDistrict.municipalities.map((m) => (
-                  <Picker.Item key={m.code} label={m.name} value={m.code} />
-                ))}
+              {municipalityOptions.map((m) => (
+                <Picker.Item key={m.id} label={m.name_en} value={m.id} />
+              ))}
             </Picker>
           </View>
           {errors.vdc && (

@@ -1,7 +1,19 @@
 import { BaseApiClient } from "./api/BaseApiClient";
 import { AppLogger } from "../utils/AppLogger";
 
-// Insert Payload
+/* ============================
+   API RESPONSE TYPE
+============================ */
+
+export interface MemberApiResponse {
+  response_code: string;
+  response_message: string;
+  client_id?: string;
+}
+
+/* ============================
+   INSERT PAYLOAD
+============================ */
 
 export interface InsertMemberPayload {
   enrollDate: string;
@@ -55,13 +67,17 @@ export interface InsertMemberPayload {
   disabilityStatus: string;
   pregnancyStatus: string;
   pregnancyDate: string;
+  motherofChild: string;
+  childDob: string;
   vaccinationStatus: string;
   healthInsCoverage: string;
   user: string;
   insertUpdate: "I";
 }
 
-// Update Payload
+/* ============================
+   UPDATE PAYLOAD
+============================ */
 
 export interface UpdateMemberPayload extends Omit<
   InsertMemberPayload,
@@ -71,66 +87,77 @@ export interface UpdateMemberPayload extends Omit<
   insertUpdate: "U";
 }
 
-// defining DTO For listing
+/* ============================
+   LISTING RESPONSE
+============================ */
+
 export interface GetHHMemberListResponse {
   response_code: string;
   response_message: string;
   properties: any[];
 }
 
-// Define Service Interface
+/* ============================
+   SERVICE INTERFACE
+============================ */
+
 export interface MemberApiService {
-  insertMember(payload: InsertMemberPayload): Promise<void>;
-  updateMember(payload: UpdateMemberPayload): Promise<void>;
+  insertMember(payload: InsertMemberPayload): Promise<MemberApiResponse>;
+  updateMember(payload: UpdateMemberPayload): Promise<MemberApiResponse>;
   getMemberListing(householdId: string): Promise<any[]>;
 }
 
-// Implementation
+/* ============================
+   IMPLEMENTATION
+============================ */
+
 export class MemberApiServiceImpl implements MemberApiService {
   private client = BaseApiClient.getInstance();
 
   private readonly INSERT_ENDPOINT = "/Household_Member_Entry";
   private readonly UPDATE_ENDPOINT = "/Household_Member_Update";
 
-  async insertMember(payload: InsertMemberPayload): Promise<void> {
-    const response = await this.client.post(this.INSERT_ENDPOINT, payload);
+  async insertMember(payload: InsertMemberPayload): Promise<MemberApiResponse> {
+    const response = await this.client.post<MemberApiResponse>(
+      this.INSERT_ENDPOINT,
+      payload,
+    );
 
-    console.log("===== INSERT MEMBER RESPONSE =====");
-    console.log("STATUS:", response.status);
-    console.log("DATA:", response.data);
-    console.log("===================================");
-
-    await AppLogger.log("SYNC", "Member Insert API success", {
+    await AppLogger.log("SYNC", "Member Insert API response", {
       householdId: payload.householdId,
       name: payload.fName,
       response: response.data,
     });
+
+    return response.data;
   }
 
-  async updateMember(payload: UpdateMemberPayload): Promise<void> {
-    await this.client.post(this.UPDATE_ENDPOINT, payload);
+  async updateMember(payload: UpdateMemberPayload): Promise<MemberApiResponse> {
+    const response = await this.client.post<MemberApiResponse>(
+      this.UPDATE_ENDPOINT,
+      payload,
+    );
 
-    await AppLogger.log("SYNC", "Member update API success", {
+    await AppLogger.log("SYNC", "Member Update API response", {
       clientNo: payload.clientNo,
+      response: response.data,
     });
+    if (__DEV__) {
+      console.log("🔵 MEMBER UPDATE RESPONSE:", JSON.stringify(response.data));
+    }
+    return response.data;
   }
 
   async getMemberListing(householdId: string): Promise<any[]> {
-    // console.log("📡 Calling GetHHMemberList for:", householdId);
-
     const response = await this.client.get<GetHHMemberListResponse>(
       `/GetHHMemberList/${householdId}`,
     );
 
     const data = response.data;
 
-    // console.log("📡 Member API response:", data);
-
     if (data.response_code !== "0") {
       throw new Error(data.response_message);
     }
-
-    // console.log("📡 Members received:", data.properties?.length);
 
     return data.properties ?? [];
   }

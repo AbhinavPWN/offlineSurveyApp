@@ -1,0 +1,5776 @@
+{
+  "provinces": [
+    {
+      "id": "1",
+      "name_en": "Koshi Province",
+      "name_np": "कोशी प्रदेश"
+    },
+    {
+      "id": "2",
+      "name_en": "Madhesh Province",
+      "name_np": "मधेश प्रदेश"
+    },
+    {
+      "id": "3",
+      "name_en": "Bagmati Province",
+      "name_np": "बागमती प्रदेश"
+    },
+    {
+      "id": "4",
+      "name_en": "Gandaki Province",
+      "name_np": "गण्डकी प्रदेश"
+    },
+    {
+      "id": "5",
+      "name_en": "Lumbini Province",
+      "name_np": "लुम्बिनी प्रदेश"
+    },
+    {
+      "id": "6",
+      "name_en": "Karnali Province",
+      "name_np": "कर्णाली प्रदेश"
+    },
+    {
+      "id": "7",
+      "name_en": "Sudurpashchim Province",
+      "name_np": "सुदूरपश्चिम प्रदेश"
+    }
+  ],
+  "districts": [
+    {
+      "id": "101",
+      "province_id": "1",
+      "name_en": "TAPLEJUNG",
+      "name_np": "TAPLEJUNG"
+    },
+    {
+      "id": "102",
+      "province_id": "1",
+      "name_en": "SANKHUWASABHA",
+      "name_np": "SANKHUWASABHA"
+    },
+    {
+      "id": "103",
+      "province_id": "1",
+      "name_en": "SOLUKHUMBU",
+      "name_np": "SOLUKHUMBU"
+    },
+    {
+      "id": "104",
+      "province_id": "1",
+      "name_en": "OKHALDHUNGA",
+      "name_np": "OKHALDHUNGA"
+    },
+    {
+      "id": "105",
+      "province_id": "1",
+      "name_en": "KHOTANG",
+      "name_np": "KHOTANG"
+    },
+    {
+      "id": "106",
+      "province_id": "1",
+      "name_en": "BHOJPUR",
+      "name_np": "BHOJPUR"
+    },
+    {
+      "id": "107",
+      "province_id": "1",
+      "name_en": "DHANKUTA",
+      "name_np": "DHANKUTA"
+    },
+    {
+      "id": "108",
+      "province_id": "1",
+      "name_en": "TERHATHUM",
+      "name_np": "TERHATHUM"
+    },
+    {
+      "id": "109",
+      "province_id": "1",
+      "name_en": "PANCHTHAR",
+      "name_np": "PANCHTHAR"
+    },
+    {
+      "id": "110",
+      "province_id": "1",
+      "name_en": "ILAM",
+      "name_np": "ILAM"
+    },
+    {
+      "id": "111",
+      "province_id": "1",
+      "name_en": "JHAPA",
+      "name_np": "JHAPA"
+    },
+    {
+      "id": "112",
+      "province_id": "1",
+      "name_en": "MORANG",
+      "name_np": "MORANG"
+    },
+    {
+      "id": "113",
+      "province_id": "1",
+      "name_en": "SUNSARI",
+      "name_np": "SUNSARI"
+    },
+    {
+      "id": "114",
+      "province_id": "1",
+      "name_en": "UDAYAPUR",
+      "name_np": "UDAYAPUR"
+    },
+    {
+      "id": "201",
+      "province_id": "2",
+      "name_en": "SAPTARI",
+      "name_np": "SAPTARI"
+    },
+    {
+      "id": "202",
+      "province_id": "2",
+      "name_en": "SIRAHA",
+      "name_np": "SIRAHA"
+    },
+    {
+      "id": "203",
+      "province_id": "2",
+      "name_en": "DHANUSHA",
+      "name_np": "DHANUSHA"
+    },
+    {
+      "id": "204",
+      "province_id": "2",
+      "name_en": "MAHOTTARI",
+      "name_np": "MAHOTTARI"
+    },
+    {
+      "id": "205",
+      "province_id": "2",
+      "name_en": "SARLAHI",
+      "name_np": "SARLAHI"
+    },
+    {
+      "id": "206",
+      "province_id": "2",
+      "name_en": "RAUTAHAT",
+      "name_np": "RAUTAHAT"
+    },
+    {
+      "id": "207",
+      "province_id": "2",
+      "name_en": "BARA",
+      "name_np": "BARA"
+    },
+    {
+      "id": "208",
+      "province_id": "2",
+      "name_en": "PARSA",
+      "name_np": "PARSA"
+    },
+    {
+      "id": "301",
+      "province_id": "3",
+      "name_en": "DOLAKHA",
+      "name_np": "DOLAKHA"
+    },
+    {
+      "id": "302",
+      "province_id": "3",
+      "name_en": "SINDHUPALCHOWK",
+      "name_np": "SINDHUPALCHOWK"
+    },
+    {
+      "id": "303",
+      "province_id": "3",
+      "name_en": "RASUWA",
+      "name_np": "RASUWA"
+    },
+    {
+      "id": "304",
+      "province_id": "3",
+      "name_en": "DHADING",
+      "name_np": "DHADING"
+    },
+    {
+      "id": "305",
+      "province_id": "3",
+      "name_en": "NUWAKOT",
+      "name_np": "NUWAKOT"
+    },
+    {
+      "id": "306",
+      "province_id": "3",
+      "name_en": "KATHMANDU",
+      "name_np": "KATHMANDU"
+    },
+    {
+      "id": "307",
+      "province_id": "3",
+      "name_en": "BHAKTAPUR",
+      "name_np": "BHAKTAPUR"
+    },
+    {
+      "id": "308",
+      "province_id": "3",
+      "name_en": "LALITPUR",
+      "name_np": "LALITPUR"
+    },
+    {
+      "id": "309",
+      "province_id": "3",
+      "name_en": "KAVRE",
+      "name_np": "KAVRE"
+    },
+    {
+      "id": "310",
+      "province_id": "3",
+      "name_en": "RAMECHHAP",
+      "name_np": "RAMECHHAP"
+    },
+    {
+      "id": "311",
+      "province_id": "3",
+      "name_en": "SINDHULI",
+      "name_np": "SINDHULI"
+    },
+    {
+      "id": "312",
+      "province_id": "3",
+      "name_en": "MAKAWANPUR",
+      "name_np": "MAKAWANPUR"
+    },
+    {
+      "id": "313",
+      "province_id": "3",
+      "name_en": "CHITWAN",
+      "name_np": "CHITWAN"
+    },
+    {
+      "id": "401",
+      "province_id": "4",
+      "name_en": "GORKHA",
+      "name_np": "GORKHA"
+    },
+    {
+      "id": "402",
+      "province_id": "4",
+      "name_en": "MANANG",
+      "name_np": "MANANG"
+    },
+    {
+      "id": "403",
+      "province_id": "4",
+      "name_en": "MUSTANG",
+      "name_np": "MUSTANG"
+    },
+    {
+      "id": "404",
+      "province_id": "4",
+      "name_en": "MYAGDI",
+      "name_np": "MYAGDI"
+    },
+    {
+      "id": "405",
+      "province_id": "4",
+      "name_en": "KASKI",
+      "name_np": "KASKI"
+    },
+    {
+      "id": "406",
+      "province_id": "4",
+      "name_en": "LAMJUNG",
+      "name_np": "LAMJUNG"
+    },
+    {
+      "id": "407",
+      "province_id": "4",
+      "name_en": "TANAHU",
+      "name_np": "TANAHU"
+    },
+    {
+      "id": "408",
+      "province_id": "4",
+      "name_en": "NAWALPARASI EAST",
+      "name_np": "NAWALPARASI EAST"
+    },
+    {
+      "id": "409",
+      "province_id": "4",
+      "name_en": "SYANGJA",
+      "name_np": "SYANGJA"
+    },
+    {
+      "id": "410",
+      "province_id": "4",
+      "name_en": "PARBAT",
+      "name_np": "PARBAT"
+    },
+    {
+      "id": "411",
+      "province_id": "4",
+      "name_en": "BAGLUNG",
+      "name_np": "BAGLUNG"
+    },
+    {
+      "id": "501",
+      "province_id": "5",
+      "name_en": "RUKUM EAST",
+      "name_np": "RUKUM EAST"
+    },
+    {
+      "id": "502",
+      "province_id": "5",
+      "name_en": "ROLPA",
+      "name_np": "ROLPA"
+    },
+    {
+      "id": "503",
+      "province_id": "5",
+      "name_en": "PYUTHAN",
+      "name_np": "PYUTHAN"
+    },
+    {
+      "id": "504",
+      "province_id": "5",
+      "name_en": "GULMI",
+      "name_np": "GULMI"
+    },
+    {
+      "id": "505",
+      "province_id": "5",
+      "name_en": "ARGHAKANCHI",
+      "name_np": "ARGHAKANCHI"
+    },
+    {
+      "id": "506",
+      "province_id": "5",
+      "name_en": "PALPA",
+      "name_np": "PALPA"
+    },
+    {
+      "id": "507",
+      "province_id": "5",
+      "name_en": "NAWALPARASI WEST",
+      "name_np": "NAWALPARASI WEST"
+    },
+    {
+      "id": "508",
+      "province_id": "5",
+      "name_en": "RUPANDEHI",
+      "name_np": "RUPANDEHI"
+    },
+    {
+      "id": "509",
+      "province_id": "5",
+      "name_en": "KAPILBASTU",
+      "name_np": "KAPILBASTU"
+    },
+    {
+      "id": "510",
+      "province_id": "5",
+      "name_en": "DANG",
+      "name_np": "DANG"
+    },
+    {
+      "id": "511",
+      "province_id": "5",
+      "name_en": "BANKE",
+      "name_np": "BANKE"
+    },
+    {
+      "id": "512",
+      "province_id": "5",
+      "name_en": "BARDIYA",
+      "name_np": "BARDIYA"
+    },
+    {
+      "id": "601",
+      "province_id": "6",
+      "name_en": "DOLPA",
+      "name_np": "DOLPA"
+    },
+    {
+      "id": "602",
+      "province_id": "6",
+      "name_en": "MUGU",
+      "name_np": "MUGU"
+    },
+    {
+      "id": "603",
+      "province_id": "6",
+      "name_en": "HUMLA",
+      "name_np": "HUMLA"
+    },
+    {
+      "id": "604",
+      "province_id": "6",
+      "name_en": "JUMLA",
+      "name_np": "JUMLA"
+    },
+    {
+      "id": "605",
+      "province_id": "6",
+      "name_en": "KALIKOT",
+      "name_np": "KALIKOT"
+    },
+    {
+      "id": "606",
+      "province_id": "6",
+      "name_en": "DAILEKH",
+      "name_np": "DAILEKH"
+    },
+    {
+      "id": "607",
+      "province_id": "6",
+      "name_en": "JAJARKOT",
+      "name_np": "JAJARKOT"
+    },
+    {
+      "id": "608",
+      "province_id": "6",
+      "name_en": "RUKUM WEST",
+      "name_np": "RUKUM WEST"
+    },
+    {
+      "id": "609",
+      "province_id": "6",
+      "name_en": "SALYAN",
+      "name_np": "SALYAN"
+    },
+    {
+      "id": "610",
+      "province_id": "6",
+      "name_en": "SURKHET",
+      "name_np": "SURKHET"
+    },
+    {
+      "id": "701",
+      "province_id": "7",
+      "name_en": "BAJURA",
+      "name_np": "BAJURA"
+    },
+    {
+      "id": "702",
+      "province_id": "7",
+      "name_en": "BAJHANG",
+      "name_np": "BAJHANG"
+    },
+    {
+      "id": "703",
+      "province_id": "7",
+      "name_en": "DARCHULA",
+      "name_np": "DARCHULA"
+    },
+    {
+      "id": "704",
+      "province_id": "7",
+      "name_en": "BAITADI",
+      "name_np": "BAITADI"
+    },
+    {
+      "id": "705",
+      "province_id": "7",
+      "name_en": "DADELDHURA",
+      "name_np": "DADELDHURA"
+    },
+    {
+      "id": "706",
+      "province_id": "7",
+      "name_en": "DOTI",
+      "name_np": "DOTI"
+    },
+    {
+      "id": "707",
+      "province_id": "7",
+      "name_en": "ACHHAM",
+      "name_np": "ACHHAM"
+    },
+    {
+      "id": "708",
+      "province_id": "7",
+      "name_en": "KAILALI",
+      "name_np": "KAILALI"
+    },
+    {
+      "id": "709",
+      "province_id": "7",
+      "name_en": "KANCHANPUR",
+      "name_np": "KANCHANPUR"
+    }
+  ],
+  "municipalities": [
+    {
+      "id": "40802",
+      "district_id": "408",
+      "province_id": "4",
+      "name_en": "Bulingtar Rural Municipality",
+      "name_np": "Bulingtar Rural Municipality"
+    },
+    {
+      "id": "40803",
+      "district_id": "408",
+      "province_id": "4",
+      "name_en": "Bungdikali Rural Municipality",
+      "name_np": "Bungdikali Rural Municipality"
+    },
+    {
+      "id": "40804",
+      "district_id": "408",
+      "province_id": "4",
+      "name_en": "Hupsekot Rural Municipality",
+      "name_np": "Hupsekot Rural Municipality"
+    },
+    {
+      "id": "40805",
+      "district_id": "408",
+      "province_id": "4",
+      "name_en": "Devchuli Municipality",
+      "name_np": "Devchuli Municipality"
+    },
+    {
+      "id": "40806",
+      "district_id": "408",
+      "province_id": "4",
+      "name_en": "Kawasoti Municipality",
+      "name_np": "Kawasoti Municipality"
+    },
+    {
+      "id": "40807",
+      "district_id": "408",
+      "province_id": "4",
+      "name_en": "Madhya Bindu Municipality",
+      "name_np": "Madhya Bindu Municipality"
+    },
+    {
+      "id": "40808",
+      "district_id": "408",
+      "province_id": "4",
+      "name_en": "Binayi Tribeni Rural Municipality",
+      "name_np": "Binayi Tribeni Rural Municipality"
+    },
+    {
+      "id": "40901",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Putalibazar Municipality",
+      "name_np": "Putalibazar Municipality"
+    },
+    {
+      "id": "40902",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Phedikhola Rural Municipality",
+      "name_np": "Phedikhola Rural Municipality"
+    },
+    {
+      "id": "40903",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Aandhikhola Rural Municipality",
+      "name_np": "Aandhikhola Rural Municipality"
+    },
+    {
+      "id": "40905",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Bhirkot Municipaity",
+      "name_np": "Bhirkot Municipaity"
+    },
+    {
+      "id": "40906",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Biruwa Rural Municipality",
+      "name_np": "Biruwa Rural Municipality"
+    },
+    {
+      "id": "40907",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Harinas Rural Municipality",
+      "name_np": "Harinas Rural Municipality"
+    },
+    {
+      "id": "40908",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Chapakot Municipality",
+      "name_np": "Chapakot Municipality"
+    },
+    {
+      "id": "40909",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Walling Municipality",
+      "name_np": "Walling Municipality"
+    },
+    {
+      "id": "40910",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Galyang Municipality",
+      "name_np": "Galyang Municipality"
+    },
+    {
+      "id": "40911",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Kaligandaki Rural Municipality",
+      "name_np": "Kaligandaki Rural Municipality"
+    },
+    {
+      "id": "41001",
+      "district_id": "410",
+      "province_id": "4",
+      "name_en": "Modi Rural Municipality",
+      "name_np": "Modi Rural Municipality"
+    },
+    {
+      "id": "41002",
+      "district_id": "410",
+      "province_id": "4",
+      "name_en": "Jaljala Rural Municipality",
+      "name_np": "Jaljala Rural Municipality"
+    },
+    {
+      "id": "41003",
+      "district_id": "410",
+      "province_id": "4",
+      "name_en": "Kushma Municipality",
+      "name_np": "Kushma Municipality"
+    },
+    {
+      "id": "41004",
+      "district_id": "410",
+      "province_id": "4",
+      "name_en": "Phalebas Municipality",
+      "name_np": "Phalebas Municipality"
+    },
+    {
+      "id": "41005",
+      "district_id": "410",
+      "province_id": "4",
+      "name_en": "Mahashila Rural Municipality",
+      "name_np": "Mahashila Rural Municipality"
+    },
+    {
+      "id": "41006",
+      "district_id": "410",
+      "province_id": "4",
+      "name_en": "Bihadi Rural Municipality",
+      "name_np": "Bihadi Rural Municipality"
+    },
+    {
+      "id": "41007",
+      "district_id": "410",
+      "province_id": "4",
+      "name_en": "Paiyu Rural Municipality",
+      "name_np": "Paiyu Rural Municipality"
+    },
+    {
+      "id": "41101",
+      "district_id": "411",
+      "province_id": "4",
+      "name_en": "Baglung Municipality",
+      "name_np": "Baglung Municipality"
+    },
+    {
+      "id": "41102",
+      "district_id": "411",
+      "province_id": "4",
+      "name_en": "Kathekhola Rural Municipality",
+      "name_np": "Kathekhola Rural Municipality"
+    },
+    {
+      "id": "41103",
+      "district_id": "411",
+      "province_id": "4",
+      "name_en": "Tarakhola Rural Municipality",
+      "name_np": "Tarakhola Rural Municipality"
+    },
+    {
+      "id": "41104",
+      "district_id": "411",
+      "province_id": "4",
+      "name_en": "Tamankhola Rural Municipality",
+      "name_np": "Tamankhola Rural Municipality"
+    },
+    {
+      "id": "41105",
+      "district_id": "411",
+      "province_id": "4",
+      "name_en": "Dhorpatan Municipality",
+      "name_np": "Dhorpatan Municipality"
+    },
+    {
+      "id": "41106",
+      "district_id": "411",
+      "province_id": "4",
+      "name_en": "Nisikhola Rural Municipality",
+      "name_np": "Nisikhola Rural Municipality"
+    },
+    {
+      "id": "41107",
+      "district_id": "411",
+      "province_id": "4",
+      "name_en": "Badigad Rural Municipality",
+      "name_np": "Badigad Rural Municipality"
+    },
+    {
+      "id": "41108",
+      "district_id": "411",
+      "province_id": "4",
+      "name_en": "Galkot Municipality",
+      "name_np": "Galkot Municipality"
+    },
+    {
+      "id": "41109",
+      "district_id": "411",
+      "province_id": "4",
+      "name_en": "Bareng Rural Municipality",
+      "name_np": "Bareng Rural Municipality"
+    },
+    {
+      "id": "41110",
+      "district_id": "411",
+      "province_id": "4",
+      "name_en": "Jaimuni Municipality",
+      "name_np": "Jaimuni Municipality"
+    },
+    {
+      "id": "50101",
+      "district_id": "501",
+      "province_id": "5",
+      "name_en": "Putha Uttanganga Rural Municipality",
+      "name_np": "Putha Uttanganga Rural Municipality"
+    },
+    {
+      "id": "50102",
+      "district_id": "501",
+      "province_id": "5",
+      "name_en": "Sisne Rural Municipality",
+      "name_np": "Sisne Rural Municipality"
+    },
+    {
+      "id": "50103",
+      "district_id": "501",
+      "province_id": "5",
+      "name_en": "Bhoome Rural Municipality",
+      "name_np": "Bhoome Rural Municipality"
+    },
+    {
+      "id": "50201",
+      "district_id": "502",
+      "province_id": "5",
+      "name_en": "Sunchhahari Rural Municipality",
+      "name_np": "Sunchhahari Rural Municipality"
+    },
+    {
+      "id": "50202",
+      "district_id": "502",
+      "province_id": "5",
+      "name_en": "Thawang Rural Municipality",
+      "name_np": "Thawang Rural Municipality"
+    },
+    {
+      "id": "50203",
+      "district_id": "502",
+      "province_id": "5",
+      "name_en": "Duikholi Rural Municipality",
+      "name_np": "Duikholi Rural Municipality"
+    },
+    {
+      "id": "50204",
+      "district_id": "502",
+      "province_id": "5",
+      "name_en": "Sukidaha Rural Municipality",
+      "name_np": "Sukidaha Rural Municipality"
+    },
+    {
+      "id": "50205",
+      "district_id": "502",
+      "province_id": "5",
+      "name_en": "Madi Rural Municipality",
+      "name_np": "Madi Rural Municipality"
+    },
+    {
+      "id": "50206",
+      "district_id": "502",
+      "province_id": "5",
+      "name_en": "Tribeni Rural Municipality",
+      "name_np": "Tribeni Rural Municipality"
+    },
+    {
+      "id": "50207",
+      "district_id": "502",
+      "province_id": "5",
+      "name_en": "Rolpa Municipality",
+      "name_np": "Rolpa Municipality"
+    },
+    {
+      "id": "50208",
+      "district_id": "502",
+      "province_id": "5",
+      "name_en": "Runtigadhi Rural Municipality",
+      "name_np": "Runtigadhi Rural Municipality"
+    },
+    {
+      "id": "50209",
+      "district_id": "502",
+      "province_id": "5",
+      "name_en": "Subarnabati Rural Municipality",
+      "name_np": "Subarnabati Rural Municipality"
+    },
+    {
+      "id": "50210",
+      "district_id": "502",
+      "province_id": "5",
+      "name_en": "Lungri Rural Municipality",
+      "name_np": "Lungri Rural Municipality"
+    },
+    {
+      "id": "50301",
+      "district_id": "503",
+      "province_id": "5",
+      "name_en": "Gaumukhi Rural Municipality",
+      "name_np": "Gaumukhi Rural Municipality"
+    },
+    {
+      "id": "50302",
+      "district_id": "503",
+      "province_id": "5",
+      "name_en": "Naubahini Rural Municipality",
+      "name_np": "Naubahini Rural Municipality"
+    },
+    {
+      "id": "50303",
+      "district_id": "503",
+      "province_id": "5",
+      "name_en": "Jhimaruk Rural Municipality",
+      "name_np": "Jhimaruk Rural Municipality"
+    },
+    {
+      "id": "50304",
+      "district_id": "503",
+      "province_id": "5",
+      "name_en": "Pyuthan Municipality",
+      "name_np": "Pyuthan Municipality"
+    },
+    {
+      "id": "50305",
+      "district_id": "503",
+      "province_id": "5",
+      "name_en": "Sworgadwari Municipality",
+      "name_np": "Sworgadwari Municipality"
+    },
+    {
+      "id": "50306",
+      "district_id": "503",
+      "province_id": "5",
+      "name_en": "Mandavi Rural Municipality",
+      "name_np": "Mandavi Rural Municipality"
+    },
+    {
+      "id": "50307",
+      "district_id": "503",
+      "province_id": "5",
+      "name_en": "Mallarani Rural Municipality",
+      "name_np": "Mallarani Rural Municipality"
+    },
+    {
+      "id": "50308",
+      "district_id": "503",
+      "province_id": "5",
+      "name_en": "Aairawati Rural Municipality",
+      "name_np": "Aairawati Rural Municipality"
+    },
+    {
+      "id": "50309",
+      "district_id": "503",
+      "province_id": "5",
+      "name_en": "Sarumarani Rural Municipality",
+      "name_np": "Sarumarani Rural Municipality"
+    },
+    {
+      "id": "50401",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Kali Gandaki Rural Municipality",
+      "name_np": "Kali Gandaki Rural Municipality"
+    },
+    {
+      "id": "50402",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Satyawoti Rural Municipality",
+      "name_np": "Satyawoti Rural Municipality"
+    },
+    {
+      "id": "50403",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Chandrakot Rural Municipality",
+      "name_np": "Chandrakot Rural Municipality"
+    },
+    {
+      "id": "50404",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Musikot Municipality",
+      "name_np": "Musikot Municipality"
+    },
+    {
+      "id": "50405",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Isma Rural Municipality",
+      "name_np": "Isma Rural Municipality"
+    },
+    {
+      "id": "50406",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Malika Rural Municipality",
+      "name_np": "Malika Rural Municipality"
+    },
+    {
+      "id": "50407",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Madane Rural Municipality",
+      "name_np": "Madane Rural Municipality"
+    },
+    {
+      "id": "50408",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Dhurkot Rural Municipality",
+      "name_np": "Dhurkot Rural Municipality"
+    },
+    {
+      "id": "50409",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Resunga Municipality",
+      "name_np": "Resunga Municipality"
+    },
+    {
+      "id": "50410",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Gulmi Durbar Gaunpaika",
+      "name_np": "Gulmi Durbar Gaunpaika"
+    },
+    {
+      "id": "50411",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Chhatrakot Rural Municipality",
+      "name_np": "Chhatrakot Rural Municipality"
+    },
+    {
+      "id": "50412",
+      "district_id": "504",
+      "province_id": "5",
+      "name_en": "Ruru Rural Municipality",
+      "name_np": "Ruru Rural Municipality"
+    },
+    {
+      "id": "50501",
+      "district_id": "505",
+      "province_id": "5",
+      "name_en": "Chhatradev Rural Municipality",
+      "name_np": "Chhatradev Rural Municipality"
+    },
+    {
+      "id": "50502",
+      "district_id": "505",
+      "province_id": "5",
+      "name_en": "Malarani Rural Municipality",
+      "name_np": "Malarani Rural Municipality"
+    },
+    {
+      "id": "50503",
+      "district_id": "505",
+      "province_id": "5",
+      "name_en": "Bhumikasthan Municipality",
+      "name_np": "Bhumikasthan Municipality"
+    },
+    {
+      "id": "50504",
+      "district_id": "505",
+      "province_id": "5",
+      "name_en": "Sandhikharka Municipality",
+      "name_np": "Sandhikharka Municipality"
+    },
+    {
+      "id": "50505",
+      "district_id": "505",
+      "province_id": "5",
+      "name_en": "Panini Rural Municipality",
+      "name_np": "Panini Rural Municipality"
+    },
+    {
+      "id": "50506",
+      "district_id": "505",
+      "province_id": "5",
+      "name_en": "Shitaganga Municipality",
+      "name_np": "Shitaganga Municipality"
+    },
+    {
+      "id": "50601",
+      "district_id": "506",
+      "province_id": "5",
+      "name_en": "Rampur Municipality",
+      "name_np": "Rampur Municipality"
+    },
+    {
+      "id": "50602",
+      "district_id": "506",
+      "province_id": "5",
+      "name_en": "Purbakhola Rural Municipality",
+      "name_np": "Purbakhola Rural Municipality"
+    },
+    {
+      "id": "50603",
+      "district_id": "506",
+      "province_id": "5",
+      "name_en": "Rambha Rural Municipality",
+      "name_np": "Rambha Rural Municipality"
+    },
+    {
+      "id": "50604",
+      "district_id": "506",
+      "province_id": "5",
+      "name_en": "Baganaskali Rural Municipality",
+      "name_np": "Baganaskali Rural Municipality"
+    },
+    {
+      "id": "50605",
+      "district_id": "506",
+      "province_id": "5",
+      "name_en": "Tansen Municipality",
+      "name_np": "Tansen Municipality"
+    },
+    {
+      "id": "50606",
+      "district_id": "506",
+      "province_id": "5",
+      "name_en": "Ribdikot Rural Municipality",
+      "name_np": "Ribdikot Rural Municipality"
+    },
+    {
+      "id": "50607",
+      "district_id": "506",
+      "province_id": "5",
+      "name_en": "Rainadevi Chhahara Rural Municipality",
+      "name_np": "Rainadevi Chhahara Rural Municipality"
+    },
+    {
+      "id": "50608",
+      "district_id": "506",
+      "province_id": "5",
+      "name_en": "Tinau Rural Municipality",
+      "name_np": "Tinau Rural Municipality"
+    },
+    {
+      "id": "50609",
+      "district_id": "506",
+      "province_id": "5",
+      "name_en": "Mathagadhi Rural Municipality",
+      "name_np": "Mathagadhi Rural Municipality"
+    },
+    {
+      "id": "50610",
+      "district_id": "506",
+      "province_id": "5",
+      "name_en": "Nisdi Rural Municipality",
+      "name_np": "Nisdi Rural Municipality"
+    },
+    {
+      "id": "50701",
+      "district_id": "507",
+      "province_id": "5",
+      "name_en": "Bardaghat Municipality",
+      "name_np": "Bardaghat Municipality"
+    },
+    {
+      "id": "50702",
+      "district_id": "507",
+      "province_id": "5",
+      "name_en": "Sunawal Municipality",
+      "name_np": "Sunawal Municipality"
+    },
+    {
+      "id": "50703",
+      "district_id": "507",
+      "province_id": "5",
+      "name_en": "Ramgram Municipality",
+      "name_np": "Ramgram Municipality"
+    },
+    {
+      "id": "50704",
+      "district_id": "507",
+      "province_id": "5",
+      "name_en": "Palhinandan Rural Municipality",
+      "name_np": "Palhinandan Rural Municipality"
+    },
+    {
+      "id": "50705",
+      "district_id": "507",
+      "province_id": "5",
+      "name_en": "Sarawal Rural Municipality",
+      "name_np": "Sarawal Rural Municipality"
+    },
+    {
+      "id": "50706",
+      "district_id": "507",
+      "province_id": "5",
+      "name_en": "Pratapapur Rural Municipality",
+      "name_np": "Pratapapur Rural Municipality"
+    },
+    {
+      "id": "50707",
+      "district_id": "507",
+      "province_id": "5",
+      "name_en": "Susta Rural Municipality",
+      "name_np": "Susta Rural Municipality"
+    },
+    {
+      "id": "50801",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Devdaha Municipality",
+      "name_np": "Devdaha Municipality"
+    },
+    {
+      "id": "50802",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Butwal Sub-Metropolitian City",
+      "name_np": "Butwal Sub-Metropolitian City"
+    },
+    {
+      "id": "50803",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Sainamaina Municipality",
+      "name_np": "Sainamaina Municipality"
+    },
+    {
+      "id": "50804",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Kanchan Rural Municipality",
+      "name_np": "Kanchan Rural Municipality"
+    },
+    {
+      "id": "50805",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Gaidahawa Rural Municipality",
+      "name_np": "Gaidahawa Rural Municipality"
+    },
+    {
+      "id": "50806",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Suddhodhan Rural Municipality",
+      "name_np": "Suddhodhan Rural Municipality"
+    },
+    {
+      "id": "50807",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Siyari Rural Municipality",
+      "name_np": "Siyari Rural Municipality"
+    },
+    {
+      "id": "50808",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Tilottama Municipality",
+      "name_np": "Tilottama Municipality"
+    },
+    {
+      "id": "50809",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Om Satiya Rural Municipality",
+      "name_np": "Om Satiya Rural Municipality"
+    },
+    {
+      "id": "50810",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Rohini Rural Municipality",
+      "name_np": "Rohini Rural Municipality"
+    },
+    {
+      "id": "50811",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Siddharthanagar Municipality",
+      "name_np": "Siddharthanagar Municipality"
+    },
+    {
+      "id": "50812",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Mayadevi Rural Municipality",
+      "name_np": "Mayadevi Rural Municipality"
+    },
+    {
+      "id": "50813",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Lumbini Sanskritik Municipality",
+      "name_np": "Lumbini Sanskritik Municipality"
+    },
+    {
+      "id": "50814",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Kotahimai Rural Municipality",
+      "name_np": "Kotahimai Rural Municipality"
+    },
+    {
+      "id": "50815",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Sammarimai Rural Municipality",
+      "name_np": "Sammarimai Rural Municipality"
+    },
+    {
+      "id": "50816",
+      "district_id": "508",
+      "province_id": "5",
+      "name_en": "Marchawari Rural Municipality",
+      "name_np": "Marchawari Rural Municipality"
+    },
+    {
+      "id": "50901",
+      "district_id": "509",
+      "province_id": "5",
+      "name_en": "Banganga Municipality",
+      "name_np": "Banganga Municipality"
+    },
+    {
+      "id": "50902",
+      "district_id": "509",
+      "province_id": "5",
+      "name_en": "Buddhabhumi Municipality",
+      "name_np": "Buddhabhumi Municipality"
+    },
+    {
+      "id": "50903",
+      "district_id": "509",
+      "province_id": "5",
+      "name_en": "Shivaraj Municipality",
+      "name_np": "Shivaraj Municipality"
+    },
+    {
+      "id": "50904",
+      "district_id": "509",
+      "province_id": "5",
+      "name_en": "Bijayanagar Rural Municipality",
+      "name_np": "Bijayanagar Rural Municipality"
+    },
+    {
+      "id": "50905",
+      "district_id": "509",
+      "province_id": "5",
+      "name_en": "Krishnanagar Municipality",
+      "name_np": "Krishnanagar Municipality"
+    },
+    {
+      "id": "50906",
+      "district_id": "509",
+      "province_id": "5",
+      "name_en": "Maharajganj Municipality",
+      "name_np": "Maharajganj Municipality"
+    },
+    {
+      "id": "50907",
+      "district_id": "509",
+      "province_id": "5",
+      "name_en": "Kapilbastu Municipality",
+      "name_np": "Kapilbastu Municipality"
+    },
+    {
+      "id": "50908",
+      "district_id": "509",
+      "province_id": "5",
+      "name_en": "Yasodhara Rural Municipality",
+      "name_np": "Yasodhara Rural Municipality"
+    },
+    {
+      "id": "50909",
+      "district_id": "509",
+      "province_id": "5",
+      "name_en": "Mayadevi Rural Municipality",
+      "name_np": "Mayadevi Rural Municipality"
+    },
+    {
+      "id": "50910",
+      "district_id": "509",
+      "province_id": "5",
+      "name_en": "Shuddhodhan Rural Municipality",
+      "name_np": "Shuddhodhan Rural Municipality"
+    },
+    {
+      "id": "51001",
+      "district_id": "510",
+      "province_id": "5",
+      "name_en": "Bangalachuli Rural Municipality",
+      "name_np": "Bangalachuli Rural Municipality"
+    },
+    {
+      "id": "51002",
+      "district_id": "510",
+      "province_id": "5",
+      "name_en": "Ghorahi Sub-Metropolitian City",
+      "name_np": "Ghorahi Sub-Metropolitian City"
+    },
+    {
+      "id": "51003",
+      "district_id": "510",
+      "province_id": "5",
+      "name_en": "Tulsipur Sub-Metropolitian City",
+      "name_np": "Tulsipur Sub-Metropolitian City"
+    },
+    {
+      "id": "51004",
+      "district_id": "510",
+      "province_id": "5",
+      "name_en": "Shantinagar Rural Municipality",
+      "name_np": "Shantinagar Rural Municipality"
+    },
+    {
+      "id": "51005",
+      "district_id": "510",
+      "province_id": "5",
+      "name_en": "Babai Rural Municipality",
+      "name_np": "Babai Rural Municipality"
+    },
+    {
+      "id": "51006",
+      "district_id": "510",
+      "province_id": "5",
+      "name_en": "Dangisharan Rural Municipality",
+      "name_np": "Dangisharan Rural Municipality"
+    },
+    {
+      "id": "51007",
+      "district_id": "510",
+      "province_id": "5",
+      "name_en": "Lamahi Municipality",
+      "name_np": "Lamahi Municipality"
+    },
+    {
+      "id": "51008",
+      "district_id": "510",
+      "province_id": "5",
+      "name_en": "Rapti Rural Municipality",
+      "name_np": "Rapti Rural Municipality"
+    },
+    {
+      "id": "51009",
+      "district_id": "510",
+      "province_id": "5",
+      "name_en": "Gadhawa Rural Municipality",
+      "name_np": "Gadhawa Rural Municipality"
+    },
+    {
+      "id": "51010",
+      "district_id": "510",
+      "province_id": "5",
+      "name_en": "Rajpur Rural Municipality",
+      "name_np": "Rajpur Rural Municipality"
+    },
+    {
+      "id": "51101",
+      "district_id": "511",
+      "province_id": "5",
+      "name_en": "Rapti Sonari Rural Municipality",
+      "name_np": "Rapti Sonari Rural Municipality"
+    },
+    {
+      "id": "51103",
+      "district_id": "511",
+      "province_id": "5",
+      "name_en": "Baijanath Rural Municipality",
+      "name_np": "Baijanath Rural Municipality"
+    },
+    {
+      "id": "51104",
+      "district_id": "511",
+      "province_id": "5",
+      "name_en": "Khajura Rural Municipality",
+      "name_np": "Khajura Rural Municipality"
+    },
+    {
+      "id": "51105",
+      "district_id": "511",
+      "province_id": "5",
+      "name_en": "Janaki Rural Municipality",
+      "name_np": "Janaki Rural Municipality"
+    },
+    {
+      "id": "51106",
+      "district_id": "511",
+      "province_id": "5",
+      "name_en": "Nepalganj Sub-Metropolitian City",
+      "name_np": "Nepalganj Sub-Metropolitian City"
+    },
+    {
+      "id": "51107",
+      "district_id": "511",
+      "province_id": "5",
+      "name_en": "Duduwa Rural Municipality",
+      "name_np": "Duduwa Rural Municipality"
+    },
+    {
+      "id": "51108",
+      "district_id": "511",
+      "province_id": "5",
+      "name_en": "Narainapur Rural Municipality",
+      "name_np": "Narainapur Rural Municipality"
+    },
+    {
+      "id": "51201",
+      "district_id": "512",
+      "province_id": "5",
+      "name_en": "Bansgadhi Municipality",
+      "name_np": "Bansgadhi Municipality"
+    },
+    {
+      "id": "51202",
+      "district_id": "512",
+      "province_id": "5",
+      "name_en": "Barbardiya Municipality",
+      "name_np": "Barbardiya Municipality"
+    },
+    {
+      "id": "51203",
+      "district_id": "512",
+      "province_id": "5",
+      "name_en": "Thakurbaba Municipality",
+      "name_np": "Thakurbaba Municipality"
+    },
+    {
+      "id": "51204",
+      "district_id": "512",
+      "province_id": "5",
+      "name_en": "Geruwa Rural Municipality",
+      "name_np": "Geruwa Rural Municipality"
+    },
+    {
+      "id": "51205",
+      "district_id": "512",
+      "province_id": "5",
+      "name_en": "Rajapur Municipality",
+      "name_np": "Rajapur Municipality"
+    },
+    {
+      "id": "51206",
+      "district_id": "512",
+      "province_id": "5",
+      "name_en": "Madhuwan Municipality",
+      "name_np": "Madhuwan Municipality"
+    },
+    {
+      "id": "51207",
+      "district_id": "512",
+      "province_id": "5",
+      "name_en": "Gulariya Municipality",
+      "name_np": "Gulariya Municipality"
+    },
+    {
+      "id": "51208",
+      "district_id": "512",
+      "province_id": "5",
+      "name_en": "Badhaiyatal Rural Municipality",
+      "name_np": "Badhaiyatal Rural Municipality"
+    },
+    {
+      "id": "60101",
+      "district_id": "601",
+      "province_id": "6",
+      "name_en": "Dolpo Buddha Rural Municipality",
+      "name_np": "Dolpo Buddha Rural Municipality"
+    },
+    {
+      "id": "60102",
+      "district_id": "601",
+      "province_id": "6",
+      "name_en": "Shey Phoksundo Rural Municipality",
+      "name_np": "Shey Phoksundo Rural Municipality"
+    },
+    {
+      "id": "60104",
+      "district_id": "601",
+      "province_id": "6",
+      "name_en": "Mudkechula Rural Municipality",
+      "name_np": "Mudkechula Rural Municipality"
+    },
+    {
+      "id": "60105",
+      "district_id": "601",
+      "province_id": "6",
+      "name_en": "Tripurasundari Municipality",
+      "name_np": "Tripurasundari Municipality"
+    },
+    {
+      "id": "60106",
+      "district_id": "601",
+      "province_id": "6",
+      "name_en": "Thulibheri Municipality",
+      "name_np": "Thulibheri Municipality"
+    },
+    {
+      "id": "60107",
+      "district_id": "601",
+      "province_id": "6",
+      "name_en": "Kaike Rural Municipality",
+      "name_np": "Kaike Rural Municipality"
+    },
+    {
+      "id": "60108",
+      "district_id": "601",
+      "province_id": "6",
+      "name_en": "Chharka Tangsong Rural Municipality",
+      "name_np": "Chharka Tangsong Rural Municipality"
+    },
+    {
+      "id": "60201",
+      "district_id": "602",
+      "province_id": "6",
+      "name_en": "Mugumakarmarog Rural Municipality",
+      "name_np": "Mugumakarmarog Rural Municipality"
+    },
+    {
+      "id": "60202",
+      "district_id": "602",
+      "province_id": "6",
+      "name_en": "Chhayanath Rara Municipality",
+      "name_np": "Chhayanath Rara Municipality"
+    },
+    {
+      "id": "60203",
+      "district_id": "602",
+      "province_id": "6",
+      "name_en": "Soru Rural Municipality",
+      "name_np": "Soru Rural Municipality"
+    },
+    {
+      "id": "60204",
+      "district_id": "602",
+      "province_id": "6",
+      "name_en": "Khatyad Rural Municipality",
+      "name_np": "Khatyad Rural Municipality"
+    },
+    {
+      "id": "60301",
+      "district_id": "603",
+      "province_id": "6",
+      "name_en": "Chankheli Rural Municipality",
+      "name_np": "Chankheli Rural Municipality"
+    },
+    {
+      "id": "60302",
+      "district_id": "603",
+      "province_id": "6",
+      "name_en": "Kharpunath Rural Municipality",
+      "name_np": "Kharpunath Rural Municipality"
+    },
+    {
+      "id": "60303",
+      "district_id": "603",
+      "province_id": "6",
+      "name_en": "Simkot Rural Municipality",
+      "name_np": "Simkot Rural Municipality"
+    },
+    {
+      "id": "60304",
+      "district_id": "603",
+      "province_id": "6",
+      "name_en": "Namkha Rural Municipality",
+      "name_np": "Namkha Rural Municipality"
+    },
+    {
+      "id": "60305",
+      "district_id": "603",
+      "province_id": "6",
+      "name_en": "Sarkegad Rural Municipality",
+      "name_np": "Sarkegad Rural Municipality"
+    },
+    {
+      "id": "60306",
+      "district_id": "603",
+      "province_id": "6",
+      "name_en": "Adanchuli Rural Municipality",
+      "name_np": "Adanchuli Rural Municipality"
+    },
+    {
+      "id": "60307",
+      "district_id": "603",
+      "province_id": "6",
+      "name_en": "Tanjakot Rural Municipality",
+      "name_np": "Tanjakot Rural Municipality"
+    },
+    {
+      "id": "60401",
+      "district_id": "604",
+      "province_id": "6",
+      "name_en": "Patarasi Rural Municipality",
+      "name_np": "Patarasi Rural Municipality"
+    },
+    {
+      "id": "60402",
+      "district_id": "604",
+      "province_id": "6",
+      "name_en": "Kanaka Sundari Gaun Palika",
+      "name_np": "Kanaka Sundari Gaun Palika"
+    },
+    {
+      "id": "60403",
+      "district_id": "604",
+      "province_id": "6",
+      "name_en": "Sinja Rural Municipality",
+      "name_np": "Sinja Rural Municipality"
+    },
+    {
+      "id": "60404",
+      "district_id": "604",
+      "province_id": "6",
+      "name_en": "Chandannath Municipality",
+      "name_np": "Chandannath Municipality"
+    },
+    {
+      "id": "60406",
+      "district_id": "604",
+      "province_id": "6",
+      "name_en": "Tatopani Rural Municipality",
+      "name_np": "Tatopani Rural Municipality"
+    },
+    {
+      "id": "60407",
+      "district_id": "604",
+      "province_id": "6",
+      "name_en": "Tila Rural Municipality",
+      "name_np": "Tila Rural Municipality"
+    },
+    {
+      "id": "60408",
+      "district_id": "604",
+      "province_id": "6",
+      "name_en": "Hima Rural Municipality",
+      "name_np": "Hima Rural Municipality"
+    },
+    {
+      "id": "60501",
+      "district_id": "605",
+      "province_id": "6",
+      "name_en": "Palata Rural Municipality",
+      "name_np": "Palata Rural Municipality"
+    },
+    {
+      "id": "60502",
+      "district_id": "605",
+      "province_id": "6",
+      "name_en": "Pachal Jharana Rural Municipality",
+      "name_np": "Pachal Jharana Rural Municipality"
+    },
+    {
+      "id": "60503",
+      "district_id": "605",
+      "province_id": "6",
+      "name_en": "Raskot Municipality",
+      "name_np": "Raskot Municipality"
+    },
+    {
+      "id": "60504",
+      "district_id": "605",
+      "province_id": "6",
+      "name_en": "Sanni Tribeni Rural Municipality",
+      "name_np": "Sanni Tribeni Rural Municipality"
+    },
+    {
+      "id": "60505",
+      "district_id": "605",
+      "province_id": "6",
+      "name_en": "Naraharinath Rural Municipality",
+      "name_np": "Naraharinath Rural Municipality"
+    },
+    {
+      "id": "60506",
+      "district_id": "605",
+      "province_id": "6",
+      "name_en": "Khandachakra Municipality",
+      "name_np": "Khandachakra Municipality"
+    },
+    {
+      "id": "60507",
+      "district_id": "605",
+      "province_id": "6",
+      "name_en": "Tilagupha Municipality",
+      "name_np": "Tilagupha Municipality"
+    },
+    {
+      "id": "60508",
+      "district_id": "605",
+      "province_id": "6",
+      "name_en": "Mahawai Rural Municipality",
+      "name_np": "Mahawai Rural Municipality"
+    },
+    {
+      "id": "60509",
+      "district_id": "605",
+      "province_id": "6",
+      "name_en": "Kalika Rural Municipality",
+      "name_np": "Kalika Rural Municipality"
+    },
+    {
+      "id": "60601",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Naumule Rural Municipality",
+      "name_np": "Naumule Rural Municipality"
+    },
+    {
+      "id": "60602",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Mahabu Rural Municipality",
+      "name_np": "Mahabu Rural Municipality"
+    },
+    {
+      "id": "60603",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Bhairabi Rural Municipality",
+      "name_np": "Bhairabi Rural Municipality"
+    },
+    {
+      "id": "60604",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Thantikandh Rural Municipality",
+      "name_np": "Thantikandh Rural Municipality"
+    },
+    {
+      "id": "60605",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Aathbis Municipality",
+      "name_np": "Aathbis Municipality"
+    },
+    {
+      "id": "60606",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Chamunda Bindrasaini Municipality",
+      "name_np": "Chamunda Bindrasaini Municipality"
+    },
+    {
+      "id": "60607",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Dullu Municipality",
+      "name_np": "Dullu Municipality"
+    },
+    {
+      "id": "60608",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Narayan Municipality",
+      "name_np": "Narayan Municipality"
+    },
+    {
+      "id": "60609",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Bhagawatimai Rural Municipality",
+      "name_np": "Bhagawatimai Rural Municipality"
+    },
+    {
+      "id": "60610",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Dungeshwor Rural Municipality",
+      "name_np": "Dungeshwor Rural Municipality"
+    },
+    {
+      "id": "60611",
+      "district_id": "606",
+      "province_id": "6",
+      "name_en": "Gurans Rural Municipality",
+      "name_np": "Gurans Rural Municipality"
+    },
+    {
+      "id": "60701",
+      "district_id": "607",
+      "province_id": "6",
+      "name_en": "Barekot Rural Municipality",
+      "name_np": "Barekot Rural Municipality"
+    },
+    {
+      "id": "60702",
+      "district_id": "607",
+      "province_id": "6",
+      "name_en": "Kuse Rural Municipality",
+      "name_np": "Kuse Rural Municipality"
+    },
+    {
+      "id": "60703",
+      "district_id": "607",
+      "province_id": "6",
+      "name_en": "Junichande Rural Municipality",
+      "name_np": "Junichande Rural Municipality"
+    },
+    {
+      "id": "60704",
+      "district_id": "607",
+      "province_id": "6",
+      "name_en": "Chhedagad Municipality",
+      "name_np": "Chhedagad Municipality"
+    },
+    {
+      "id": "60705",
+      "district_id": "607",
+      "province_id": "6",
+      "name_en": "Shivalaya Rural Municipality",
+      "name_np": "Shivalaya Rural Municipality"
+    },
+    {
+      "id": "60706",
+      "district_id": "607",
+      "province_id": "6",
+      "name_en": "Bheri Malika Municipality",
+      "name_np": "Bheri Malika Municipality"
+    },
+    {
+      "id": "60707",
+      "district_id": "607",
+      "province_id": "6",
+      "name_en": "Tribeni Nalagad Municipality",
+      "name_np": "Tribeni Nalagad Municipality"
+    },
+    {
+      "id": "60801",
+      "district_id": "608",
+      "province_id": "6",
+      "name_en": "Aathabisakot Municipality",
+      "name_np": "Aathabisakot Municipality"
+    },
+    {
+      "id": "60802",
+      "district_id": "608",
+      "province_id": "6",
+      "name_en": "Sanibheri Rural Municipality",
+      "name_np": "Sanibheri Rural Municipality"
+    },
+    {
+      "id": "60803",
+      "district_id": "608",
+      "province_id": "6",
+      "name_en": "Banphikot Rural Municipality",
+      "name_np": "Banphikot Rural Municipality"
+    },
+    {
+      "id": "60804",
+      "district_id": "608",
+      "province_id": "6",
+      "name_en": "Musikot Municipality",
+      "name_np": "Musikot Municipality"
+    },
+    {
+      "id": "60805",
+      "district_id": "608",
+      "province_id": "6",
+      "name_en": "Tribeni Rural Municipality",
+      "name_np": "Tribeni Rural Municipality"
+    },
+    {
+      "id": "60806",
+      "district_id": "608",
+      "province_id": "6",
+      "name_en": "Chaurjahari Municipality",
+      "name_np": "Chaurjahari Municipality"
+    },
+    {
+      "id": "60901",
+      "district_id": "609",
+      "province_id": "6",
+      "name_en": "Darma Rural Municipality",
+      "name_np": "Darma Rural Municipality"
+    },
+    {
+      "id": "60902",
+      "district_id": "609",
+      "province_id": "6",
+      "name_en": "Kumakh Malika Rural Municipality",
+      "name_np": "Kumakh Malika Rural Municipality"
+    },
+    {
+      "id": "60903",
+      "district_id": "609",
+      "province_id": "6",
+      "name_en": "Banagad Kupinde Municipality",
+      "name_np": "Banagad Kupinde Municipality"
+    },
+    {
+      "id": "60904",
+      "district_id": "609",
+      "province_id": "6",
+      "name_en": "Dhorchaur Rural Municipality",
+      "name_np": "Dhorchaur Rural Municipality"
+    },
+    {
+      "id": "60905",
+      "district_id": "609",
+      "province_id": "6",
+      "name_en": "Bagachour Municipality",
+      "name_np": "Bagachour Municipality"
+    },
+    {
+      "id": "60906",
+      "district_id": "609",
+      "province_id": "6",
+      "name_en": "Chhatreshwori Rural Municipality",
+      "name_np": "Chhatreshwori Rural Municipality"
+    },
+    {
+      "id": "60907",
+      "district_id": "609",
+      "province_id": "6",
+      "name_en": "Sharada Municipality",
+      "name_np": "Sharada Municipality"
+    },
+    {
+      "id": "60908",
+      "district_id": "609",
+      "province_id": "6",
+      "name_en": "Kalimati Rural Municipality",
+      "name_np": "Kalimati Rural Municipality"
+    },
+    {
+      "id": "60909",
+      "district_id": "609",
+      "province_id": "6",
+      "name_en": "Tribeni Rural Municipality",
+      "name_np": "Tribeni Rural Municipality"
+    },
+    {
+      "id": "60910",
+      "district_id": "609",
+      "province_id": "6",
+      "name_en": "Kapurkot Rural Municipality",
+      "name_np": "Kapurkot Rural Municipality"
+    },
+    {
+      "id": "61001",
+      "district_id": "610",
+      "province_id": "6",
+      "name_en": "Simta Rural Municipality",
+      "name_np": "Simta Rural Municipality"
+    },
+    {
+      "id": "61002",
+      "district_id": "610",
+      "province_id": "6",
+      "name_en": "Chingad Rural Municipality",
+      "name_np": "Chingad Rural Municipality"
+    },
+    {
+      "id": "61003",
+      "district_id": "610",
+      "province_id": "6",
+      "name_en": "Lekabeshi Municipality",
+      "name_np": "Lekabeshi Municipality"
+    },
+    {
+      "id": "61004",
+      "district_id": "610",
+      "province_id": "6",
+      "name_en": "Gurbhakot Municipality",
+      "name_np": "Gurbhakot Municipality"
+    },
+    {
+      "id": "61005",
+      "district_id": "610",
+      "province_id": "6",
+      "name_en": "Bheriganga Municipality",
+      "name_np": "Bheriganga Municipality"
+    },
+    {
+      "id": "61006",
+      "district_id": "610",
+      "province_id": "6",
+      "name_en": "Birendranagar Municipality",
+      "name_np": "Birendranagar Municipality"
+    },
+    {
+      "id": "61007",
+      "district_id": "610",
+      "province_id": "6",
+      "name_en": "Barahatal Rural Municipality",
+      "name_np": "Barahatal Rural Municipality"
+    },
+    {
+      "id": "61008",
+      "district_id": "610",
+      "province_id": "6",
+      "name_en": "Panchapuri Municipality",
+      "name_np": "Panchapuri Municipality"
+    },
+    {
+      "id": "61009",
+      "district_id": "610",
+      "province_id": "6",
+      "name_en": "Chaukune Rural Municipality",
+      "name_np": "Chaukune Rural Municipality"
+    },
+    {
+      "id": "70101",
+      "district_id": "701",
+      "province_id": "7",
+      "name_en": "Himali Rural Municipality",
+      "name_np": "Himali Rural Municipality"
+    },
+    {
+      "id": "70102",
+      "district_id": "701",
+      "province_id": "7",
+      "name_en": "Gaumul Rural Municipality",
+      "name_np": "Gaumul Rural Municipality"
+    },
+    {
+      "id": "70103",
+      "district_id": "701",
+      "province_id": "7",
+      "name_en": "Budhinanda Municipality",
+      "name_np": "Budhinanda Municipality"
+    },
+    {
+      "id": "70104",
+      "district_id": "701",
+      "province_id": "7",
+      "name_en": "Swami Kartik Rural Municipality",
+      "name_np": "Swami Kartik Rural Municipality"
+    },
+    {
+      "id": "70105",
+      "district_id": "701",
+      "province_id": "7",
+      "name_en": "Pandab Gufa Rural Municipality",
+      "name_np": "Pandab Gufa Rural Municipality"
+    },
+    {
+      "id": "70106",
+      "district_id": "701",
+      "province_id": "7",
+      "name_en": "Badimalika Municipality",
+      "name_np": "Badimalika Municipality"
+    },
+    {
+      "id": "70107",
+      "district_id": "701",
+      "province_id": "7",
+      "name_en": "Chhededaha Rural Municipality",
+      "name_np": "Chhededaha Rural Municipality"
+    },
+    {
+      "id": "70108",
+      "district_id": "701",
+      "province_id": "7",
+      "name_en": "Budhiganga Municipality",
+      "name_np": "Budhiganga Municipality"
+    },
+    {
+      "id": "70109",
+      "district_id": "701",
+      "province_id": "7",
+      "name_en": "Tribeni Municipality",
+      "name_np": "Tribeni Municipality"
+    },
+    {
+      "id": "70201",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Kanda Rural Municipality",
+      "name_np": "Kanda Rural Municipality"
+    },
+    {
+      "id": "70202",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Bungal Municipality",
+      "name_np": "Bungal Municipality"
+    },
+    {
+      "id": "70203",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Surma Rural Municipality",
+      "name_np": "Surma Rural Municipality"
+    },
+    {
+      "id": "70204",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Talkot Rural Municipality",
+      "name_np": "Talkot Rural Municipality"
+    },
+    {
+      "id": "70205",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Masta Rural Municipality",
+      "name_np": "Masta Rural Municipality"
+    },
+    {
+      "id": "70206",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Jayaprithbi Municipality",
+      "name_np": "Jayaprithbi Municipality"
+    },
+    {
+      "id": "70207",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Chhabis Pathibhara Rural Municipality",
+      "name_np": "Chhabis Pathibhara Rural Municipality"
+    },
+    {
+      "id": "70208",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Durgathali Rural Municipality",
+      "name_np": "Durgathali Rural Municipality"
+    },
+    {
+      "id": "70209",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Kedarsyun Rural Municipality",
+      "name_np": "Kedarsyun Rural Municipality"
+    },
+    {
+      "id": "70210",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Bitthadchir Rural Municipality",
+      "name_np": "Bitthadchir Rural Municipality"
+    },
+    {
+      "id": "70211",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Thalara Rural Municipality",
+      "name_np": "Thalara Rural Municipality"
+    },
+    {
+      "id": "70212",
+      "district_id": "702",
+      "province_id": "7",
+      "name_en": "Khaptad Chhanna Rural Municipality",
+      "name_np": "Khaptad Chhanna Rural Municipality"
+    },
+    {
+      "id": "70301",
+      "district_id": "703",
+      "province_id": "7",
+      "name_en": "Byas Rural Municipality",
+      "name_np": "Byas Rural Municipality"
+    },
+    {
+      "id": "70302",
+      "district_id": "703",
+      "province_id": "7",
+      "name_en": "Duhun Rural Municipality",
+      "name_np": "Duhun Rural Municipality"
+    },
+    {
+      "id": "70303",
+      "district_id": "703",
+      "province_id": "7",
+      "name_en": "Mahakali Municipality",
+      "name_np": "Mahakali Municipality"
+    },
+    {
+      "id": "70304",
+      "district_id": "703",
+      "province_id": "7",
+      "name_en": "Naugad  Rural Municipality",
+      "name_np": "Naugad  Rural Municipality"
+    },
+    {
+      "id": "70305",
+      "district_id": "703",
+      "province_id": "7",
+      "name_en": "Apihimal Rural Municipality",
+      "name_np": "Apihimal Rural Municipality"
+    },
+    {
+      "id": "70306",
+      "district_id": "703",
+      "province_id": "7",
+      "name_en": "Marma Rural Municipality",
+      "name_np": "Marma Rural Municipality"
+    },
+    {
+      "id": "70307",
+      "district_id": "703",
+      "province_id": "7",
+      "name_en": "Shailyashikhar Municipality",
+      "name_np": "Shailyashikhar Municipality"
+    },
+    {
+      "id": "70308",
+      "district_id": "703",
+      "province_id": "7",
+      "name_en": "Malikarjun Rural Municipality",
+      "name_np": "Malikarjun Rural Municipality"
+    },
+    {
+      "id": "70309",
+      "district_id": "703",
+      "province_id": "7",
+      "name_en": "Lekam Rural Municipality",
+      "name_np": "Lekam Rural Municipality"
+    },
+    {
+      "id": "70401",
+      "district_id": "704",
+      "province_id": "7",
+      "name_en": "Dilasaini Rural Municipality",
+      "name_np": "Dilasaini Rural Municipality"
+    },
+    {
+      "id": "70402",
+      "district_id": "704",
+      "province_id": "7",
+      "name_en": "Dogada Kedar Rural Municipality",
+      "name_np": "Dogada Kedar Rural Municipality"
+    },
+    {
+      "id": "70403",
+      "district_id": "704",
+      "province_id": "7",
+      "name_en": "Puchaundi Municipality",
+      "name_np": "Puchaundi Municipality"
+    },
+    {
+      "id": "70404",
+      "district_id": "704",
+      "province_id": "7",
+      "name_en": "Surnaya Rural Municipality",
+      "name_np": "Surnaya Rural Municipality"
+    },
+    {
+      "id": "70405",
+      "district_id": "704",
+      "province_id": "7",
+      "name_en": "Dasharathchand Municipality",
+      "name_np": "Dasharathchand Municipality"
+    },
+    {
+      "id": "70406",
+      "district_id": "704",
+      "province_id": "7",
+      "name_en": "Pancheshwor Rural Municipality",
+      "name_np": "Pancheshwor Rural Municipality"
+    },
+    {
+      "id": "70407",
+      "district_id": "704",
+      "province_id": "7",
+      "name_en": "Shivanath Rural Municipality",
+      "name_np": "Shivanath Rural Municipality"
+    },
+    {
+      "id": "70408",
+      "district_id": "704",
+      "province_id": "7",
+      "name_en": "Melauli Municipality",
+      "name_np": "Melauli Municipality"
+    },
+    {
+      "id": "70409",
+      "district_id": "704",
+      "province_id": "7",
+      "name_en": "Patam Municipality",
+      "name_np": "Patam Municipality"
+    },
+    {
+      "id": "70410",
+      "district_id": "704",
+      "province_id": "7",
+      "name_en": "Sigas Rural Municipality",
+      "name_np": "Sigas Rural Municipality"
+    },
+    {
+      "id": "70501",
+      "district_id": "705",
+      "province_id": "7",
+      "name_en": "Nawadurga Rural Municipality",
+      "name_np": "Nawadurga Rural Municipality"
+    },
+    {
+      "id": "70502",
+      "district_id": "705",
+      "province_id": "7",
+      "name_en": "Amargadhi Municipality",
+      "name_np": "Amargadhi Municipality"
+    },
+    {
+      "id": "70503",
+      "district_id": "705",
+      "province_id": "7",
+      "name_en": "Ajayameru Rural Municipality",
+      "name_np": "Ajayameru Rural Municipality"
+    },
+    {
+      "id": "70504",
+      "district_id": "705",
+      "province_id": "7",
+      "name_en": "Bhageshwor Rural Municipality",
+      "name_np": "Bhageshwor Rural Municipality"
+    },
+    {
+      "id": "70505",
+      "district_id": "705",
+      "province_id": "7",
+      "name_en": "Parashuram Municipality",
+      "name_np": "Parashuram Municipality"
+    },
+    {
+      "id": "70506",
+      "district_id": "705",
+      "province_id": "7",
+      "name_en": "Aalital Rural Municipality",
+      "name_np": "Aalital Rural Municipality"
+    },
+    {
+      "id": "70507",
+      "district_id": "705",
+      "province_id": "7",
+      "name_en": "Ganyapdhura Rural Municipality",
+      "name_np": "Ganyapdhura Rural Municipality"
+    },
+    {
+      "id": "70601",
+      "district_id": "706",
+      "province_id": "7",
+      "name_en": "Purbichouki Rural Municipality",
+      "name_np": "Purbichouki Rural Municipality"
+    },
+    {
+      "id": "70602",
+      "district_id": "706",
+      "province_id": "7",
+      "name_en": "Sayal Rural Municipality",
+      "name_np": "Sayal Rural Municipality"
+    },
+    {
+      "id": "70603",
+      "district_id": "706",
+      "province_id": "7",
+      "name_en": "Aadarsha Rural Municipality",
+      "name_np": "Aadarsha Rural Municipality"
+    },
+    {
+      "id": "70604",
+      "district_id": "706",
+      "province_id": "7",
+      "name_en": "Shikhar Municipality",
+      "name_np": "Shikhar Municipality"
+    },
+    {
+      "id": "70605",
+      "district_id": "706",
+      "province_id": "7",
+      "name_en": "Dipayal Silgadhi Municipality",
+      "name_np": "Dipayal Silgadhi Municipality"
+    },
+    {
+      "id": "70606",
+      "district_id": "706",
+      "province_id": "7",
+      "name_en": "K.I. Singh Rural Municipality",
+      "name_np": "K.I. Singh Rural Municipality"
+    },
+    {
+      "id": "70607",
+      "district_id": "706",
+      "province_id": "7",
+      "name_en": "Bogatan Rural Municipality",
+      "name_np": "Bogatan Rural Municipality"
+    },
+    {
+      "id": "70608",
+      "district_id": "706",
+      "province_id": "7",
+      "name_en": "Badi Kedar Rural Municipality",
+      "name_np": "Badi Kedar Rural Municipality"
+    },
+    {
+      "id": "70609",
+      "district_id": "706",
+      "province_id": "7",
+      "name_en": "Jorayal Rural Municipality",
+      "name_np": "Jorayal Rural Municipality"
+    },
+    {
+      "id": "70701",
+      "district_id": "707",
+      "province_id": "7",
+      "name_en": "Panchdebal Binayak Municipality",
+      "name_np": "Panchdebal Binayak Municipality"
+    },
+    {
+      "id": "70702",
+      "district_id": "707",
+      "province_id": "7",
+      "name_en": "Ramaroshan Rural Municipality",
+      "name_np": "Ramaroshan Rural Municipality"
+    },
+    {
+      "id": "70703",
+      "district_id": "707",
+      "province_id": "7",
+      "name_en": "Mellekh Rural Municipality",
+      "name_np": "Mellekh Rural Municipality"
+    },
+    {
+      "id": "70704",
+      "district_id": "707",
+      "province_id": "7",
+      "name_en": "Sanphebagar Municipality",
+      "name_np": "Sanphebagar Municipality"
+    },
+    {
+      "id": "70705",
+      "district_id": "707",
+      "province_id": "7",
+      "name_en": "Chaurpati Rural Municipality",
+      "name_np": "Chaurpati Rural Municipality"
+    },
+    {
+      "id": "70706",
+      "district_id": "707",
+      "province_id": "7",
+      "name_en": "Mangalsen Municipality",
+      "name_np": "Mangalsen Municipality"
+    },
+    {
+      "id": "70707",
+      "district_id": "707",
+      "province_id": "7",
+      "name_en": "Bannigadhi Jayagadh Rural Municipality",
+      "name_np": "Bannigadhi Jayagadh Rural Municipality"
+    },
+    {
+      "id": "70708",
+      "district_id": "707",
+      "province_id": "7",
+      "name_en": "Kamal Bazar Municipality",
+      "name_np": "Kamal Bazar Municipality"
+    },
+    {
+      "id": "70709",
+      "district_id": "707",
+      "province_id": "7",
+      "name_en": "Dhakari Rural Municipality",
+      "name_np": "Dhakari Rural Municipality"
+    },
+    {
+      "id": "70710",
+      "district_id": "707",
+      "province_id": "7",
+      "name_en": "Turmakhand Rural Municipality",
+      "name_np": "Turmakhand Rural Municipality"
+    },
+    {
+      "id": "70801",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Mohanyal Rural Municipality",
+      "name_np": "Mohanyal Rural Municipality"
+    },
+    {
+      "id": "70802",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Chure Rural Municipality",
+      "name_np": "Chure Rural Municipality"
+    },
+    {
+      "id": "70803",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Godawari Municipality",
+      "name_np": "Godawari Municipality"
+    },
+    {
+      "id": "70804",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Gauriganga Municipality",
+      "name_np": "Gauriganga Municipality"
+    },
+    {
+      "id": "70805",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Ghodaghodi Municipality",
+      "name_np": "Ghodaghodi Municipality"
+    },
+    {
+      "id": "70806",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Bardagoriya Rural Municipality",
+      "name_np": "Bardagoriya Rural Municipality"
+    },
+    {
+      "id": "70807",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Lamki Chuha Municipality",
+      "name_np": "Lamki Chuha Municipality"
+    },
+    {
+      "id": "70808",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Janaki Rural Municipality",
+      "name_np": "Janaki Rural Municipality"
+    },
+    {
+      "id": "70809",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Joshipur Rural Municipality",
+      "name_np": "Joshipur Rural Municipality"
+    },
+    {
+      "id": "70810",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Tikapur Municipality",
+      "name_np": "Tikapur Municipality"
+    },
+    {
+      "id": "70811",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Bhajani Municipality",
+      "name_np": "Bhajani Municipality"
+    },
+    {
+      "id": "70812",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Kailari Rural Municipality",
+      "name_np": "Kailari Rural Municipality"
+    },
+    {
+      "id": "70813",
+      "district_id": "708",
+      "province_id": "7",
+      "name_en": "Dhangadhi Sub-Metropolitian City",
+      "name_np": "Dhangadhi Sub-Metropolitian City"
+    },
+    {
+      "id": "70901",
+      "district_id": "709",
+      "province_id": "7",
+      "name_en": "Krishnapur Municipality",
+      "name_np": "Krishnapur Municipality"
+    },
+    {
+      "id": "70902",
+      "district_id": "709",
+      "province_id": "7",
+      "name_en": "Shuklaphanta Municipality",
+      "name_np": "Shuklaphanta Municipality"
+    },
+    {
+      "id": "70903",
+      "district_id": "709",
+      "province_id": "7",
+      "name_en": "Bedkot Municipality",
+      "name_np": "Bedkot Municipality"
+    },
+    {
+      "id": "70904",
+      "district_id": "709",
+      "province_id": "7",
+      "name_en": "Bhimdatta Municipality",
+      "name_np": "Bhimdatta Municipality"
+    },
+    {
+      "id": "70905",
+      "district_id": "709",
+      "province_id": "7",
+      "name_en": "Mahakali Municipality",
+      "name_np": "Mahakali Municipality"
+    },
+    {
+      "id": "70906",
+      "district_id": "709",
+      "province_id": "7",
+      "name_en": "Laljhadi Rural Municipality",
+      "name_np": "Laljhadi Rural Municipality"
+    },
+    {
+      "id": "70907",
+      "district_id": "709",
+      "province_id": "7",
+      "name_en": "Punarbas Municipality",
+      "name_np": "Punarbas Municipality"
+    },
+    {
+      "id": "70908",
+      "district_id": "709",
+      "province_id": "7",
+      "name_en": "Belouri Municipality",
+      "name_np": "Belouri Municipality"
+    },
+    {
+      "id": "70909",
+      "district_id": "709",
+      "province_id": "7",
+      "name_en": "Beldandi Rural Municipality",
+      "name_np": "Beldandi Rural Municipality"
+    },
+    {
+      "id": "40406",
+      "district_id": "404",
+      "province_id": "4",
+      "name_en": "Beni Municipality",
+      "name_np": "Beni Municipality"
+    },
+    {
+      "id": "40703",
+      "district_id": "407",
+      "province_id": "4",
+      "name_en": "Myagde Rural Municipality",
+      "name_np": "Myagde Rural Municipality"
+    },
+    {
+      "id": "40904",
+      "district_id": "409",
+      "province_id": "4",
+      "name_en": "Arjun Choupari Rural Municipality",
+      "name_np": "Arjun Choupari Rural Municipality"
+    },
+    {
+      "id": "51102",
+      "district_id": "511",
+      "province_id": "5",
+      "name_en": "Kohalpur Municipality",
+      "name_np": "Kohalpur Municipality"
+    },
+    {
+      "id": "60103",
+      "district_id": "601",
+      "province_id": "6",
+      "name_en": "Jagadulla Rural Municipality",
+      "name_np": "Jagadulla Rural Municipality"
+    },
+    {
+      "id": "60405",
+      "district_id": "604",
+      "province_id": "6",
+      "name_en": "Guthichaur Rural Municipality",
+      "name_np": "Guthichaur Rural Municipality"
+    },
+    {
+      "id": "10101",
+      "district_id": "101",
+      "province_id": "1",
+      "name_en": "Phaktanlung Rural Municipality",
+      "name_np": "Phaktanlung Rural Municipality"
+    },
+    {
+      "id": "10102",
+      "district_id": "101",
+      "province_id": "1",
+      "name_en": "Mikwakhola Rural Municipality",
+      "name_np": "Mikwakhola Rural Municipality"
+    },
+    {
+      "id": "10103",
+      "district_id": "101",
+      "province_id": "1",
+      "name_en": "Meringden Rural Municipality",
+      "name_np": "Meringden Rural Municipality"
+    },
+    {
+      "id": "10104",
+      "district_id": "101",
+      "province_id": "1",
+      "name_en": "Maiwakhola Rural Municipality",
+      "name_np": "Maiwakhola Rural Municipality"
+    },
+    {
+      "id": "10105",
+      "district_id": "101",
+      "province_id": "1",
+      "name_en": "Aatharai Tribeni Rural Municipality",
+      "name_np": "Aatharai Tribeni Rural Municipality"
+    },
+    {
+      "id": "10106",
+      "district_id": "101",
+      "province_id": "1",
+      "name_en": "Phungling Municipality",
+      "name_np": "Phungling Municipality"
+    },
+    {
+      "id": "10107",
+      "district_id": "101",
+      "province_id": "1",
+      "name_en": "Yangwarak Rural Municipality",
+      "name_np": "Yangwarak Rural Municipality"
+    },
+    {
+      "id": "10108",
+      "district_id": "101",
+      "province_id": "1",
+      "name_en": "Sirijanga Rural Municipality",
+      "name_np": "Sirijanga Rural Municipality"
+    },
+    {
+      "id": "10109",
+      "district_id": "101",
+      "province_id": "1",
+      "name_en": "Sidingba Rural Municipality",
+      "name_np": "Sidingba Rural Municipality"
+    },
+    {
+      "id": "10201",
+      "district_id": "102",
+      "province_id": "1",
+      "name_en": "Bhotkhola Rural Municipality",
+      "name_np": "Bhotkhola Rural Municipality"
+    },
+    {
+      "id": "10202",
+      "district_id": "102",
+      "province_id": "1",
+      "name_en": "Makalu Rural Municipality",
+      "name_np": "Makalu Rural Municipality"
+    },
+    {
+      "id": "10203",
+      "district_id": "102",
+      "province_id": "1",
+      "name_en": "Silichong Rural Municipality",
+      "name_np": "Silichong Rural Municipality"
+    },
+    {
+      "id": "10204",
+      "district_id": "102",
+      "province_id": "1",
+      "name_en": "Chichila Rural Municipality",
+      "name_np": "Chichila Rural Municipality"
+    },
+    {
+      "id": "10205",
+      "district_id": "102",
+      "province_id": "1",
+      "name_en": "Sabhapokhari Rural Municipality",
+      "name_np": "Sabhapokhari Rural Municipality"
+    },
+    {
+      "id": "10206",
+      "district_id": "102",
+      "province_id": "1",
+      "name_en": "Khandabari Municipality",
+      "name_np": "Khandabari Municipality"
+    },
+    {
+      "id": "10207",
+      "district_id": "102",
+      "province_id": "1",
+      "name_en": "Panchakhapan Municipality",
+      "name_np": "Panchakhapan Municipality"
+    },
+    {
+      "id": "10208",
+      "district_id": "102",
+      "province_id": "1",
+      "name_en": "Chainapur Municipality",
+      "name_np": "Chainapur Municipality"
+    },
+    {
+      "id": "10209",
+      "district_id": "102",
+      "province_id": "1",
+      "name_en": "Madi Municipality",
+      "name_np": "Madi Municipality"
+    },
+    {
+      "id": "10210",
+      "district_id": "102",
+      "province_id": "1",
+      "name_en": "Dharmadevi Municipality",
+      "name_np": "Dharmadevi Municipality"
+    },
+    {
+      "id": "10301",
+      "district_id": "103",
+      "province_id": "1",
+      "name_en": "Khumbu Pasanglhamu Rural Municipality",
+      "name_np": "Khumbu Pasanglhamu Rural Municipality"
+    },
+    {
+      "id": "10302",
+      "district_id": "103",
+      "province_id": "1",
+      "name_en": "Mahakulung Rural Municipality",
+      "name_np": "Mahakulung Rural Municipality"
+    },
+    {
+      "id": "10303",
+      "district_id": "103",
+      "province_id": "1",
+      "name_en": "Sotang Rural Municipality",
+      "name_np": "Sotang Rural Municipality"
+    },
+    {
+      "id": "10304",
+      "district_id": "103",
+      "province_id": "1",
+      "name_en": "Dhudhakoshi Rural Municipality",
+      "name_np": "Dhudhakoshi Rural Municipality"
+    },
+    {
+      "id": "10305",
+      "district_id": "103",
+      "province_id": "1",
+      "name_en": "Dhudha Koushika Rural Municipality",
+      "name_np": "Dhudha Koushika Rural Municipality"
+    },
+    {
+      "id": "10306",
+      "district_id": "103",
+      "province_id": "1",
+      "name_en": "Necha Salyan Rural Municipality",
+      "name_np": "Necha Salyan Rural Municipality"
+    },
+    {
+      "id": "10307",
+      "district_id": "103",
+      "province_id": "1",
+      "name_en": "Solu Dhudhakunda Municipality",
+      "name_np": "Solu Dhudhakunda Municipality"
+    },
+    {
+      "id": "10308",
+      "district_id": "103",
+      "province_id": "1",
+      "name_en": "Likhu Pike Rural Municipality",
+      "name_np": "Likhu Pike Rural Municipality"
+    },
+    {
+      "id": "10401",
+      "district_id": "104",
+      "province_id": "1",
+      "name_en": "Chishankhu Gadhi Rural Municipality",
+      "name_np": "Chishankhu Gadhi Rural Municipality"
+    },
+    {
+      "id": "10402",
+      "district_id": "104",
+      "province_id": "1",
+      "name_en": "Siddhicharan Municipality",
+      "name_np": "Siddhicharan Municipality"
+    },
+    {
+      "id": "10403",
+      "district_id": "104",
+      "province_id": "1",
+      "name_en": "Molung Rural Municipality",
+      "name_np": "Molung Rural Municipality"
+    },
+    {
+      "id": "10404",
+      "district_id": "104",
+      "province_id": "1",
+      "name_en": "Khiji Demba Rural Municipality",
+      "name_np": "Khiji Demba Rural Municipality"
+    },
+    {
+      "id": "10405",
+      "district_id": "104",
+      "province_id": "1",
+      "name_en": "Likhu Rural Municipality",
+      "name_np": "Likhu Rural Municipality"
+    },
+    {
+      "id": "10406",
+      "district_id": "104",
+      "province_id": "1",
+      "name_en": "Champadevi Rural Municipality",
+      "name_np": "Champadevi Rural Municipality"
+    },
+    {
+      "id": "10407",
+      "district_id": "104",
+      "province_id": "1",
+      "name_en": "Sunkoshi Rural Municipality",
+      "name_np": "Sunkoshi Rural Municipality"
+    },
+    {
+      "id": "10408",
+      "district_id": "104",
+      "province_id": "1",
+      "name_en": "Manebhanjyang Rural Municipality",
+      "name_np": "Manebhanjyang Rural Municipality"
+    },
+    {
+      "id": "10501",
+      "district_id": "105",
+      "province_id": "1",
+      "name_en": "Kepilasgadhi Rural Municipality",
+      "name_np": "Kepilasgadhi Rural Municipality"
+    },
+    {
+      "id": "10502",
+      "district_id": "105",
+      "province_id": "1",
+      "name_en": "Aiselukharka Rural Municipality",
+      "name_np": "Aiselukharka Rural Municipality"
+    },
+    {
+      "id": "10503",
+      "district_id": "105",
+      "province_id": "1",
+      "name_en": "Rawa Besi Gaunpalika",
+      "name_np": "Rawa Besi Gaunpalika"
+    },
+    {
+      "id": "10504",
+      "district_id": "105",
+      "province_id": "1",
+      "name_en": "Halesi Tuwachung Municipality",
+      "name_np": "Halesi Tuwachung Municipality"
+    },
+    {
+      "id": "10505",
+      "district_id": "105",
+      "province_id": "1",
+      "name_en": "Rupakot Majhuwagadhi Municipality",
+      "name_np": "Rupakot Majhuwagadhi Municipality"
+    },
+    {
+      "id": "10506",
+      "district_id": "105",
+      "province_id": "1",
+      "name_en": "Sakela Rural Municipality",
+      "name_np": "Sakela Rural Municipality"
+    },
+    {
+      "id": "10507",
+      "district_id": "105",
+      "province_id": "1",
+      "name_en": "Diprung Rural Municipality",
+      "name_np": "Diprung Rural Municipality"
+    },
+    {
+      "id": "10508",
+      "district_id": "105",
+      "province_id": "1",
+      "name_en": "Khotehang Rural Municipality",
+      "name_np": "Khotehang Rural Municipality"
+    },
+    {
+      "id": "10509",
+      "district_id": "105",
+      "province_id": "1",
+      "name_en": "Jante Dhunga Rural Municipality",
+      "name_np": "Jante Dhunga Rural Municipality"
+    },
+    {
+      "id": "10510",
+      "district_id": "105",
+      "province_id": "1",
+      "name_en": "Baraha Pokhari Rural Municipality",
+      "name_np": "Baraha Pokhari Rural Municipality"
+    },
+    {
+      "id": "10601",
+      "district_id": "106",
+      "province_id": "1",
+      "name_en": "Shadananda Municipality",
+      "name_np": "Shadananda Municipality"
+    },
+    {
+      "id": "10602",
+      "district_id": "106",
+      "province_id": "1",
+      "name_en": "Salpa Silichho Rural Municipality",
+      "name_np": "Salpa Silichho Rural Municipality"
+    },
+    {
+      "id": "10603",
+      "district_id": "106",
+      "province_id": "1",
+      "name_en": "Tyamke Maiyum Rural Municipality",
+      "name_np": "Tyamke Maiyum Rural Municipality"
+    },
+    {
+      "id": "10604",
+      "district_id": "106",
+      "province_id": "1",
+      "name_en": "Bhojpur Municipality",
+      "name_np": "Bhojpur Municipality"
+    },
+    {
+      "id": "10605",
+      "district_id": "106",
+      "province_id": "1",
+      "name_en": "Arun Rural Municipality",
+      "name_np": "Arun Rural Municipality"
+    },
+    {
+      "id": "10606",
+      "district_id": "106",
+      "province_id": "1",
+      "name_en": "Pauwa Dunma Rural Municipality",
+      "name_np": "Pauwa Dunma Rural Municipality"
+    },
+    {
+      "id": "10607",
+      "district_id": "106",
+      "province_id": "1",
+      "name_en": "Ramprasad Rai Rural Municipality",
+      "name_np": "Ramprasad Rai Rural Municipality"
+    },
+    {
+      "id": "10608",
+      "district_id": "106",
+      "province_id": "1",
+      "name_en": "Hatuwagadhi Rural Municipality",
+      "name_np": "Hatuwagadhi Rural Municipality"
+    },
+    {
+      "id": "10609",
+      "district_id": "106",
+      "province_id": "1",
+      "name_en": "Aamchowk Rural Municipality",
+      "name_np": "Aamchowk Rural Municipality"
+    },
+    {
+      "id": "10701",
+      "district_id": "107",
+      "province_id": "1",
+      "name_en": "Mahalaxmi Municipality",
+      "name_np": "Mahalaxmi Municipality"
+    },
+    {
+      "id": "10702",
+      "district_id": "107",
+      "province_id": "1",
+      "name_en": "Pakhribas Municipality",
+      "name_np": "Pakhribas Municipality"
+    },
+    {
+      "id": "10703",
+      "district_id": "107",
+      "province_id": "1",
+      "name_en": "Chhathar Jorpati Rural Municipality",
+      "name_np": "Chhathar Jorpati Rural Municipality"
+    },
+    {
+      "id": "10704",
+      "district_id": "107",
+      "province_id": "1",
+      "name_en": "Dhankuta Municipality",
+      "name_np": "Dhankuta Municipality"
+    },
+    {
+      "id": "10705",
+      "district_id": "107",
+      "province_id": "1",
+      "name_en": "Khalsa Chhintang Sahidbhumi Rural Municipality",
+      "name_np": "Khalsa Chhintang Sahidbhumi Rural Municipality"
+    },
+    {
+      "id": "10706",
+      "district_id": "107",
+      "province_id": "1",
+      "name_en": "Sangurigadhi Rural Municipality",
+      "name_np": "Sangurigadhi Rural Municipality"
+    },
+    {
+      "id": "10707",
+      "district_id": "107",
+      "province_id": "1",
+      "name_en": "Chaubise Rural Municipality",
+      "name_np": "Chaubise Rural Municipality"
+    },
+    {
+      "id": "10801",
+      "district_id": "108",
+      "province_id": "1",
+      "name_en": "Aatharai Rural Municipality",
+      "name_np": "Aatharai Rural Municipality"
+    },
+    {
+      "id": "10802",
+      "district_id": "108",
+      "province_id": "1",
+      "name_en": "Phedap Rural Municipality",
+      "name_np": "Phedap Rural Municipality"
+    },
+    {
+      "id": "10803",
+      "district_id": "108",
+      "province_id": "1",
+      "name_en": "Menchhayayem Rural Municipality",
+      "name_np": "Menchhayayem Rural Municipality"
+    },
+    {
+      "id": "10804",
+      "district_id": "108",
+      "province_id": "1",
+      "name_en": "Myanglung Municipality",
+      "name_np": "Myanglung Municipality"
+    },
+    {
+      "id": "10805",
+      "district_id": "108",
+      "province_id": "1",
+      "name_en": "Laligurans Municipality",
+      "name_np": "Laligurans Municipality"
+    },
+    {
+      "id": "10806",
+      "district_id": "108",
+      "province_id": "1",
+      "name_en": "Chhathar Rural Municipality",
+      "name_np": "Chhathar Rural Municipality"
+    },
+    {
+      "id": "10901",
+      "district_id": "109",
+      "province_id": "1",
+      "name_en": "Yangbarak Rural Municipality",
+      "name_np": "Yangbarak Rural Municipality"
+    },
+    {
+      "id": "10902",
+      "district_id": "109",
+      "province_id": "1",
+      "name_en": "Hilihan Rural Municipality",
+      "name_np": "Hilihan Rural Municipality"
+    },
+    {
+      "id": "10903",
+      "district_id": "109",
+      "province_id": "1",
+      "name_en": "Falelung Rural Municipality",
+      "name_np": "Falelung Rural Municipality"
+    },
+    {
+      "id": "10904",
+      "district_id": "109",
+      "province_id": "1",
+      "name_en": "Phidim Municipality",
+      "name_np": "Phidim Municipality"
+    },
+    {
+      "id": "10905",
+      "district_id": "109",
+      "province_id": "1",
+      "name_en": "Falgunanda Rural Municipality",
+      "name_np": "Falgunanda Rural Municipality"
+    },
+    {
+      "id": "10906",
+      "district_id": "109",
+      "province_id": "1",
+      "name_en": "Kummayak Rural Municipality",
+      "name_np": "Kummayak Rural Municipality"
+    },
+    {
+      "id": "10907",
+      "district_id": "109",
+      "province_id": "1",
+      "name_en": "Tumbewa Rural Municipality",
+      "name_np": "Tumbewa Rural Municipality"
+    },
+    {
+      "id": "10908",
+      "district_id": "109",
+      "province_id": "1",
+      "name_en": "Miklajung Rural Municipality",
+      "name_np": "Miklajung Rural Municipality"
+    },
+    {
+      "id": "11001",
+      "district_id": "110",
+      "province_id": "1",
+      "name_en": "Mai Jogmai Rural Municipality",
+      "name_np": "Mai Jogmai Rural Municipality"
+    },
+    {
+      "id": "11002",
+      "district_id": "110",
+      "province_id": "1",
+      "name_en": "Sandakpur Rural Municipality",
+      "name_np": "Sandakpur Rural Municipality"
+    },
+    {
+      "id": "11003",
+      "district_id": "110",
+      "province_id": "1",
+      "name_en": "Ilam Municipality",
+      "name_np": "Ilam Municipality"
+    },
+    {
+      "id": "11004",
+      "district_id": "110",
+      "province_id": "1",
+      "name_en": "Deumai Municipality",
+      "name_np": "Deumai Municipality"
+    },
+    {
+      "id": "11005",
+      "district_id": "110",
+      "province_id": "1",
+      "name_en": "Fakfokathum Rural Municipality",
+      "name_np": "Fakfokathum Rural Municipality"
+    },
+    {
+      "id": "11006",
+      "district_id": "110",
+      "province_id": "1",
+      "name_en": "Mangsebung Rural Municipality",
+      "name_np": "Mangsebung Rural Municipality"
+    },
+    {
+      "id": "11007",
+      "district_id": "110",
+      "province_id": "1",
+      "name_en": "Chulachuli Rural Municipality",
+      "name_np": "Chulachuli Rural Municipality"
+    },
+    {
+      "id": "11008",
+      "district_id": "110",
+      "province_id": "1",
+      "name_en": "Mai Municipality",
+      "name_np": "Mai Municipality"
+    },
+    {
+      "id": "11102",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Buddhashanti Rural Municipality",
+      "name_np": "Buddhashanti Rural Municipality"
+    },
+    {
+      "id": "11103",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Arjundhara Municipality",
+      "name_np": "Arjundhara Municipality"
+    },
+    {
+      "id": "11104",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Kankai Municipality",
+      "name_np": "Kankai Municipality"
+    },
+    {
+      "id": "11105",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Shivasatakshi Municipality",
+      "name_np": "Shivasatakshi Municipality"
+    },
+    {
+      "id": "11106",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Kamal Rural Municipality",
+      "name_np": "Kamal Rural Municipality"
+    },
+    {
+      "id": "11107",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Damak Municipality",
+      "name_np": "Damak Municipality"
+    },
+    {
+      "id": "11108",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Gauradaha Municipality",
+      "name_np": "Gauradaha Municipality"
+    },
+    {
+      "id": "11109",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Gauriganj Rural Municipality",
+      "name_np": "Gauriganj Rural Municipality"
+    },
+    {
+      "id": "11110",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Jhapa Rural Municipality",
+      "name_np": "Jhapa Rural Municipality"
+    },
+    {
+      "id": "11111",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Barhadashi Rural Municipality",
+      "name_np": "Barhadashi Rural Municipality"
+    },
+    {
+      "id": "11112",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Birtamod Municipality",
+      "name_np": "Birtamod Municipality"
+    },
+    {
+      "id": "11113",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Haldibari Rural Municipality",
+      "name_np": "Haldibari Rural Municipality"
+    },
+    {
+      "id": "11114",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Bhadrapur Municipality",
+      "name_np": "Bhadrapur Municipality"
+    },
+    {
+      "id": "11115",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Kachanakawal Rural Municipality",
+      "name_np": "Kachanakawal Rural Municipality"
+    },
+    {
+      "id": "11201",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Miklajung Rural Municipality",
+      "name_np": "Miklajung Rural Municipality"
+    },
+    {
+      "id": "11202",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Letang Municipality",
+      "name_np": "Letang Municipality"
+    },
+    {
+      "id": "11203",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Kerabari Rural Municipality",
+      "name_np": "Kerabari Rural Municipality"
+    },
+    {
+      "id": "11204",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Sundarharaicha Municipality",
+      "name_np": "Sundarharaicha Municipality"
+    },
+    {
+      "id": "11205",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Belbari Municipality",
+      "name_np": "Belbari Municipality"
+    },
+    {
+      "id": "11206",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Kanepokhari Rural Municipality",
+      "name_np": "Kanepokhari Rural Municipality"
+    },
+    {
+      "id": "11207",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Pathari Shanishchare Municipality",
+      "name_np": "Pathari Shanishchare Municipality"
+    },
+    {
+      "id": "11208",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Urlabari Municipality",
+      "name_np": "Urlabari Municipality"
+    },
+    {
+      "id": "11209",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Ratuwamai Municipality",
+      "name_np": "Ratuwamai Municipality"
+    },
+    {
+      "id": "11210",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Sunwarshi Municipality",
+      "name_np": "Sunwarshi Municipality"
+    },
+    {
+      "id": "11211",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Rangeli Municipality",
+      "name_np": "Rangeli Municipality"
+    },
+    {
+      "id": "11212",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Gramthan Rural Municipality",
+      "name_np": "Gramthan Rural Municipality"
+    },
+    {
+      "id": "11213",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Budhiganga Rural Municipality",
+      "name_np": "Budhiganga Rural Municipality"
+    },
+    {
+      "id": "11214",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Biratnagar Metropolitian City",
+      "name_np": "Biratnagar Metropolitian City"
+    },
+    {
+      "id": "11215",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Katahari Rural Municipality",
+      "name_np": "Katahari Rural Municipality"
+    },
+    {
+      "id": "11216",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Dhanapalthan Rural Municipality",
+      "name_np": "Dhanapalthan Rural Municipality"
+    },
+    {
+      "id": "11217",
+      "district_id": "112",
+      "province_id": "1",
+      "name_en": "Jahada Rural Municipality",
+      "name_np": "Jahada Rural Municipality"
+    },
+    {
+      "id": "11301",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Dharan Sub-Metropolitian City",
+      "name_np": "Dharan Sub-Metropolitian City"
+    },
+    {
+      "id": "11302",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Baraha Municipality",
+      "name_np": "Baraha Municipality"
+    },
+    {
+      "id": "11303",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Koshi Rural Municipality",
+      "name_np": "Koshi Rural Municipality"
+    },
+    {
+      "id": "11304",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Bhokraha Rural Municipality",
+      "name_np": "Bhokraha Rural Municipality"
+    },
+    {
+      "id": "11305",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Ramdhuni Municipality",
+      "name_np": "Ramdhuni Municipality"
+    },
+    {
+      "id": "11306",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Itahari Sub-Metropolitian City",
+      "name_np": "Itahari Sub-Metropolitian City"
+    },
+    {
+      "id": "11308",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Gadhi Rural Municipality",
+      "name_np": "Gadhi Rural Municipality"
+    },
+    {
+      "id": "11309",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Inaruwa Municipality",
+      "name_np": "Inaruwa Municipality"
+    },
+    {
+      "id": "11310",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Harinagara Rural Municipality",
+      "name_np": "Harinagara Rural Municipality"
+    },
+    {
+      "id": "11311",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Dewangunj Rural Municipality",
+      "name_np": "Dewangunj Rural Municipality"
+    },
+    {
+      "id": "11312",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Barju Rural Municipality",
+      "name_np": "Barju Rural Municipality"
+    },
+    {
+      "id": "11401",
+      "district_id": "114",
+      "province_id": "1",
+      "name_en": "Belaka Municipality",
+      "name_np": "Belaka Municipality"
+    },
+    {
+      "id": "11402",
+      "district_id": "114",
+      "province_id": "1",
+      "name_en": "Chaudandigadhi Municipality",
+      "name_np": "Chaudandigadhi Municipality"
+    },
+    {
+      "id": "11403",
+      "district_id": "114",
+      "province_id": "1",
+      "name_en": "Triyuga Municipality",
+      "name_np": "Triyuga Municipality"
+    },
+    {
+      "id": "11404",
+      "district_id": "114",
+      "province_id": "1",
+      "name_en": "Rautamai Rural Municipality",
+      "name_np": "Rautamai Rural Municipality"
+    },
+    {
+      "id": "11405",
+      "district_id": "114",
+      "province_id": "1",
+      "name_en": "Sunkoshi Rural Municipality",
+      "name_np": "Sunkoshi Rural Municipality"
+    },
+    {
+      "id": "11406",
+      "district_id": "114",
+      "province_id": "1",
+      "name_en": "Tapli Rural Municipality",
+      "name_np": "Tapli Rural Municipality"
+    },
+    {
+      "id": "11407",
+      "district_id": "114",
+      "province_id": "1",
+      "name_en": "Katari Municipality",
+      "name_np": "Katari Municipality"
+    },
+    {
+      "id": "11408",
+      "district_id": "114",
+      "province_id": "1",
+      "name_en": "Udayapurgadhi Rural Municipality",
+      "name_np": "Udayapurgadhi Rural Municipality"
+    },
+    {
+      "id": "20101",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Saptakoshi Municipality",
+      "name_np": "Saptakoshi Municipality"
+    },
+    {
+      "id": "20102",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Kanchanrup Municipality",
+      "name_np": "Kanchanrup Municipality"
+    },
+    {
+      "id": "20103",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Agnisair Krishna Sabaran Rural Municipality",
+      "name_np": "Agnisair Krishna Sabaran Rural Municipality"
+    },
+    {
+      "id": "20105",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Shambhunath Municipality",
+      "name_np": "Shambhunath Municipality"
+    },
+    {
+      "id": "20106",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Khadak Municipality",
+      "name_np": "Khadak Municipality"
+    },
+    {
+      "id": "20107",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Surunga Municipality",
+      "name_np": "Surunga Municipality"
+    },
+    {
+      "id": "20108",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Balan-Bihul Rural Municipality",
+      "name_np": "Balan-Bihul Rural Municipality"
+    },
+    {
+      "id": "20109",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "BodeBarsain Municipality",
+      "name_np": "BodeBarsain Municipality"
+    },
+    {
+      "id": "20110",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Dakneshwori Municipality",
+      "name_np": "Dakneshwori Municipality"
+    },
+    {
+      "id": "20111",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Rajgadh Rural Municipality",
+      "name_np": "Rajgadh Rural Municipality"
+    },
+    {
+      "id": "20112",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Bishnupur Rural Municipality",
+      "name_np": "Bishnupur Rural Municipality"
+    },
+    {
+      "id": "20113",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Rajbiraj Municipality",
+      "name_np": "Rajbiraj Municipality"
+    },
+    {
+      "id": "20114",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Mahadewa Rural Municipality",
+      "name_np": "Mahadewa Rural Municipality"
+    },
+    {
+      "id": "20115",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Tirahut Rural Municipality",
+      "name_np": "Tirahut Rural Municipality"
+    },
+    {
+      "id": "20116",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Hanumannagar Kankalini Municipality",
+      "name_np": "Hanumannagar Kankalini Municipality"
+    },
+    {
+      "id": "20117",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Tilathi Koiladi Rural Municipality",
+      "name_np": "Tilathi Koiladi Rural Municipality"
+    },
+    {
+      "id": "20118",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Chhinnamasta Rural Municipality",
+      "name_np": "Chhinnamasta Rural Municipality"
+    },
+    {
+      "id": "20201",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Lahan Municipality",
+      "name_np": "Lahan Municipality"
+    },
+    {
+      "id": "20202",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Dhangadhimai Municipality",
+      "name_np": "Dhangadhimai Municipality"
+    },
+    {
+      "id": "20203",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Golbazar Municipality",
+      "name_np": "Golbazar Municipality"
+    },
+    {
+      "id": "20204",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Mirchaiya Municipality",
+      "name_np": "Mirchaiya Municipality"
+    },
+    {
+      "id": "20205",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Karjanha Municipality",
+      "name_np": "Karjanha Municipality"
+    },
+    {
+      "id": "20206",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Kalyanpur Municipality",
+      "name_np": "Kalyanpur Municipality"
+    },
+    {
+      "id": "20207",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Naraha Rural Municipality",
+      "name_np": "Naraha Rural Municipality"
+    },
+    {
+      "id": "20208",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Bishnupur Rural Municipality",
+      "name_np": "Bishnupur Rural Municipality"
+    },
+    {
+      "id": "20209",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Arnama Rural Municipality",
+      "name_np": "Arnama Rural Municipality"
+    },
+    {
+      "id": "20210",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Sukhipur Municipality",
+      "name_np": "Sukhipur Municipality"
+    },
+    {
+      "id": "20211",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Laxmipur Patari Rural Municipality",
+      "name_np": "Laxmipur Patari Rural Municipality"
+    },
+    {
+      "id": "20212",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Sakhuwa Nankarkatti Rural Municipality",
+      "name_np": "Sakhuwa Nankarkatti Rural Municipality"
+    },
+    {
+      "id": "20213",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Bhagawanpur Rural Municipality",
+      "name_np": "Bhagawanpur Rural Municipality"
+    },
+    {
+      "id": "20214",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Nawarajpur Rural Municipality",
+      "name_np": "Nawarajpur Rural Municipality"
+    },
+    {
+      "id": "20215",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Bariyarpatti Rural Municipality",
+      "name_np": "Bariyarpatti Rural Municipality"
+    },
+    {
+      "id": "20216",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Aurahi Rural Municipality",
+      "name_np": "Aurahi Rural Municipality"
+    },
+    {
+      "id": "20217",
+      "district_id": "202",
+      "province_id": "2",
+      "name_en": "Siraha Municipality",
+      "name_np": "Siraha Municipality"
+    },
+    {
+      "id": "20301",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Ganeshman Charnath Municipality",
+      "name_np": "Ganeshman Charnath Municipality"
+    },
+    {
+      "id": "20302",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Dhanushadham Municipality",
+      "name_np": "Dhanushadham Municipality"
+    },
+    {
+      "id": "20303",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Mithila Municipality",
+      "name_np": "Mithila Municipality"
+    },
+    {
+      "id": "20304",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Bateshwor Rural Municipality",
+      "name_np": "Bateshwor Rural Municipality"
+    },
+    {
+      "id": "20305",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Chhireshwornath Municipality",
+      "name_np": "Chhireshwornath Municipality"
+    },
+    {
+      "id": "20306",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Laxminiya Rural Municipality",
+      "name_np": "Laxminiya Rural Municipality"
+    },
+    {
+      "id": "20307",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Mithila Bihari Municipality",
+      "name_np": "Mithila Bihari Municipality"
+    },
+    {
+      "id": "20308",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Hansapur Municipality",
+      "name_np": "Hansapur Municipality"
+    },
+    {
+      "id": "20309",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Sabaila Municipality",
+      "name_np": "Sabaila Municipality"
+    },
+    {
+      "id": "20310",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Shahidnagar Municipality",
+      "name_np": "Shahidnagar Municipality"
+    },
+    {
+      "id": "20311",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Kamala Municipality",
+      "name_np": "Kamala Municipality"
+    },
+    {
+      "id": "20312",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Janak Nandini Rural Municipality",
+      "name_np": "Janak Nandini Rural Municipality"
+    },
+    {
+      "id": "20313",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Bideha Municipality",
+      "name_np": "Bideha Municipality"
+    },
+    {
+      "id": "20314",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Aurahi Rural Municipality",
+      "name_np": "Aurahi Rural Municipality"
+    },
+    {
+      "id": "20315",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Janakpur Sub-Metropolitian City",
+      "name_np": "Janakpur Sub-Metropolitian City"
+    },
+    {
+      "id": "20316",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Dhanauji Rural Municipality",
+      "name_np": "Dhanauji Rural Municipality"
+    },
+    {
+      "id": "20317",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Nagarain Municipality",
+      "name_np": "Nagarain Municipality"
+    },
+    {
+      "id": "20318",
+      "district_id": "203",
+      "province_id": "2",
+      "name_en": "Mukhiyapatti Musaharmiya Rural Municipality",
+      "name_np": "Mukhiyapatti Musaharmiya Rural Municipality"
+    },
+    {
+      "id": "20401",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Bardibas Municipality",
+      "name_np": "Bardibas Municipality"
+    },
+    {
+      "id": "20402",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Gaushala Municipality",
+      "name_np": "Gaushala Municipality"
+    },
+    {
+      "id": "20403",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Sonama Rural Municipality",
+      "name_np": "Sonama Rural Municipality"
+    },
+    {
+      "id": "20404",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Aurahi Municipality",
+      "name_np": "Aurahi Municipality"
+    },
+    {
+      "id": "20405",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Bhangaha Municipality",
+      "name_np": "Bhangaha Municipality"
+    },
+    {
+      "id": "20406",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Loharpatti Municipality",
+      "name_np": "Loharpatti Municipality"
+    },
+    {
+      "id": "20407",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Balawa Municipality",
+      "name_np": "Balawa Municipality"
+    },
+    {
+      "id": "20408",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Ram Gopalpur Municipality",
+      "name_np": "Ram Gopalpur Municipality"
+    },
+    {
+      "id": "20409",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Samsi Rural Municipality",
+      "name_np": "Samsi Rural Municipality"
+    },
+    {
+      "id": "20410",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Manara Shisawa Municipality",
+      "name_np": "Manara Shisawa Municipality"
+    },
+    {
+      "id": "20411",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Ekadara Rural Municipality",
+      "name_np": "Ekadara Rural Municipality"
+    },
+    {
+      "id": "20412",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Mahottari Rural Municipality",
+      "name_np": "Mahottari Rural Municipality"
+    },
+    {
+      "id": "20413",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Pipara Rural Municipality",
+      "name_np": "Pipara Rural Municipality"
+    },
+    {
+      "id": "20414",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Matihani Municipality",
+      "name_np": "Matihani Municipality"
+    },
+    {
+      "id": "20415",
+      "district_id": "204",
+      "province_id": "2",
+      "name_en": "Jaleshwor Municipality",
+      "name_np": "Jaleshwor Municipality"
+    },
+    {
+      "id": "20501",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Lalbandi Municipality",
+      "name_np": "Lalbandi Municipality"
+    },
+    {
+      "id": "20502",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Hariwan Municipality",
+      "name_np": "Hariwan Municipality"
+    },
+    {
+      "id": "20503",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Bagmati Municipality",
+      "name_np": "Bagmati Municipality"
+    },
+    {
+      "id": "20504",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Barahathawa Municipality",
+      "name_np": "Barahathawa Municipality"
+    },
+    {
+      "id": "20505",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Haripur Municipality",
+      "name_np": "Haripur Municipality"
+    },
+    {
+      "id": "20506",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Ishworpur Municipality",
+      "name_np": "Ishworpur Municipality"
+    },
+    {
+      "id": "20507",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Haripurwa Municipality",
+      "name_np": "Haripurwa Municipality"
+    },
+    {
+      "id": "20508",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Parsa Rural Municipality",
+      "name_np": "Parsa Rural Municipality"
+    },
+    {
+      "id": "20509",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Brahmapuri Rural Municipality",
+      "name_np": "Brahmapuri Rural Municipality"
+    },
+    {
+      "id": "20510",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Chandranagar Rural Municipality",
+      "name_np": "Chandranagar Rural Municipality"
+    },
+    {
+      "id": "20511",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Kabilashi Municipality",
+      "name_np": "Kabilashi Municipality"
+    },
+    {
+      "id": "20512",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Chakraghatta Rural Municipality",
+      "name_np": "Chakraghatta Rural Municipality"
+    },
+    {
+      "id": "20513",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Basbariya Rural Municipality",
+      "name_np": "Basbariya Rural Municipality"
+    },
+    {
+      "id": "20514",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Dhanakaul Rural Municipality",
+      "name_np": "Dhanakaul Rural Municipality"
+    },
+    {
+      "id": "20515",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Ramnagar Rural Municipality",
+      "name_np": "Ramnagar Rural Municipality"
+    },
+    {
+      "id": "20516",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Balara Municipality",
+      "name_np": "Balara Municipality"
+    },
+    {
+      "id": "20517",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Godaita Municipality",
+      "name_np": "Godaita Municipality"
+    },
+    {
+      "id": "20518",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Bishnu Rural Municipality",
+      "name_np": "Bishnu Rural Municipality"
+    },
+    {
+      "id": "20519",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Kaudena Rural Municipality",
+      "name_np": "Kaudena Rural Municipality"
+    },
+    {
+      "id": "20520",
+      "district_id": "205",
+      "province_id": "2",
+      "name_en": "Malangawa Municipality",
+      "name_np": "Malangawa Municipality"
+    },
+    {
+      "id": "30412",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Thakre Rural Municipality",
+      "name_np": "Thakre Rural Municipality"
+    },
+    {
+      "id": "30413",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Dhunibenshi Municipality",
+      "name_np": "Dhunibenshi Municipality"
+    },
+    {
+      "id": "30501",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Dupcheshwor Rural Municipality",
+      "name_np": "Dupcheshwor Rural Municipality"
+    },
+    {
+      "id": "30502",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Tadi Rural Municipality",
+      "name_np": "Tadi Rural Municipality"
+    },
+    {
+      "id": "30503",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Suryagadhi Rural Municipality",
+      "name_np": "Suryagadhi Rural Municipality"
+    },
+    {
+      "id": "30504",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Bidur Municipality",
+      "name_np": "Bidur Municipality"
+    },
+    {
+      "id": "30505",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Kispang Rural Municipality",
+      "name_np": "Kispang Rural Municipality"
+    },
+    {
+      "id": "30506",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Meghang Rural Municipality",
+      "name_np": "Meghang Rural Municipality"
+    },
+    {
+      "id": "30507",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Tarakeshwor Rural Municipality",
+      "name_np": "Tarakeshwor Rural Municipality"
+    },
+    {
+      "id": "30508",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Belkotgadhi Municipality",
+      "name_np": "Belkotgadhi Municipality"
+    },
+    {
+      "id": "30509",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Likhu Rural Municipality",
+      "name_np": "Likhu Rural Municipality"
+    },
+    {
+      "id": "30510",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Panchakanya Rural Municipality",
+      "name_np": "Panchakanya Rural Municipality"
+    },
+    {
+      "id": "30511",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Shivapuri Rural Municipality",
+      "name_np": "Shivapuri Rural Municipality"
+    },
+    {
+      "id": "30512",
+      "district_id": "305",
+      "province_id": "3",
+      "name_en": "Kakani Rural Municipality",
+      "name_np": "Kakani Rural Municipality"
+    },
+    {
+      "id": "30601",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Shankharapur Municipality",
+      "name_np": "Shankharapur Municipality"
+    },
+    {
+      "id": "30602",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Kageshwori Manahara Municipality",
+      "name_np": "Kageshwori Manahara Municipality"
+    },
+    {
+      "id": "30603",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Gokarneshwor Municipality",
+      "name_np": "Gokarneshwor Municipality"
+    },
+    {
+      "id": "30604",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Budhanilkhantha Municipality",
+      "name_np": "Budhanilkhantha Municipality"
+    },
+    {
+      "id": "30605",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Tokha Municipality",
+      "name_np": "Tokha Municipality"
+    },
+    {
+      "id": "30606",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Tarakeshwor Municipality",
+      "name_np": "Tarakeshwor Municipality"
+    },
+    {
+      "id": "30607",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Nagarjun Municipality",
+      "name_np": "Nagarjun Municipality"
+    },
+    {
+      "id": "30608",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Kathmandu Metropolitian City",
+      "name_np": "Kathmandu Metropolitian City"
+    },
+    {
+      "id": "30609",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Kirtipur Municipality",
+      "name_np": "Kirtipur Municipality"
+    },
+    {
+      "id": "30610",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Chandragiri Municipality",
+      "name_np": "Chandragiri Municipality"
+    },
+    {
+      "id": "30611",
+      "district_id": "306",
+      "province_id": "3",
+      "name_en": "Dakshinkali Municipality",
+      "name_np": "Dakshinkali Municipality"
+    },
+    {
+      "id": "30701",
+      "district_id": "307",
+      "province_id": "3",
+      "name_en": "Changunarayan Municipality",
+      "name_np": "Changunarayan Municipality"
+    },
+    {
+      "id": "30702",
+      "district_id": "307",
+      "province_id": "3",
+      "name_en": "Bhaktapur Municipality",
+      "name_np": "Bhaktapur Municipality"
+    },
+    {
+      "id": "30703",
+      "district_id": "307",
+      "province_id": "3",
+      "name_en": "Madhyapur Thimi Municipality",
+      "name_np": "Madhyapur Thimi Municipality"
+    },
+    {
+      "id": "30704",
+      "district_id": "307",
+      "province_id": "3",
+      "name_en": "Suryabinayak Municipality",
+      "name_np": "Suryabinayak Municipality"
+    },
+    {
+      "id": "30801",
+      "district_id": "308",
+      "province_id": "3",
+      "name_en": "Mahalaxmi Municipality",
+      "name_np": "Mahalaxmi Municipality"
+    },
+    {
+      "id": "30802",
+      "district_id": "308",
+      "province_id": "3",
+      "name_en": "Lalitpur Metropolitian City",
+      "name_np": "Lalitpur Metropolitian City"
+    },
+    {
+      "id": "30803",
+      "district_id": "308",
+      "province_id": "3",
+      "name_en": "Godawari Municipality",
+      "name_np": "Godawari Municipality"
+    },
+    {
+      "id": "30804",
+      "district_id": "308",
+      "province_id": "3",
+      "name_en": "Konjyosom Rural Municipality",
+      "name_np": "Konjyosom Rural Municipality"
+    },
+    {
+      "id": "30805",
+      "district_id": "308",
+      "province_id": "3",
+      "name_en": "Mahankal Rural Municipality",
+      "name_np": "Mahankal Rural Municipality"
+    },
+    {
+      "id": "30806",
+      "district_id": "308",
+      "province_id": "3",
+      "name_en": "Bagmati Rural Municipality",
+      "name_np": "Bagmati Rural Municipality"
+    },
+    {
+      "id": "30901",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Chauri Deurali Rural Municipality",
+      "name_np": "Chauri Deurali Rural Municipality"
+    },
+    {
+      "id": "30902",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Bhumlu Rural Municipality",
+      "name_np": "Bhumlu Rural Municipality"
+    },
+    {
+      "id": "30903",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Mandan Deupur Municipality",
+      "name_np": "Mandan Deupur Municipality"
+    },
+    {
+      "id": "30904",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Banepa Municipality",
+      "name_np": "Banepa Municipality"
+    },
+    {
+      "id": "30905",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Dhulikhel Municipality",
+      "name_np": "Dhulikhel Municipality"
+    },
+    {
+      "id": "30906",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Panchkhal Municipality",
+      "name_np": "Panchkhal Municipality"
+    },
+    {
+      "id": "30907",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Temal Rural Municipality",
+      "name_np": "Temal Rural Municipality"
+    },
+    {
+      "id": "30908",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Namobuddha Municipality",
+      "name_np": "Namobuddha Municipality"
+    },
+    {
+      "id": "30909",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Panauti Municipality",
+      "name_np": "Panauti Municipality"
+    },
+    {
+      "id": "30910",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Bethanchowk Rural Municipality",
+      "name_np": "Bethanchowk Rural Municipality"
+    },
+    {
+      "id": "30911",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Roshi Rural Municipality",
+      "name_np": "Roshi Rural Municipality"
+    },
+    {
+      "id": "30912",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Mahabharat Rural Municipality",
+      "name_np": "Mahabharat Rural Municipality"
+    },
+    {
+      "id": "30913",
+      "district_id": "309",
+      "province_id": "3",
+      "name_en": "Khanikhola Rural Municipality",
+      "name_np": "Khanikhola Rural Municipality"
+    },
+    {
+      "id": "31001",
+      "district_id": "310",
+      "province_id": "3",
+      "name_en": "Umakunda Rural Municipality",
+      "name_np": "Umakunda Rural Municipality"
+    },
+    {
+      "id": "31002",
+      "district_id": "310",
+      "province_id": "3",
+      "name_en": "Gokulganga Rural Municipality",
+      "name_np": "Gokulganga Rural Municipality"
+    },
+    {
+      "id": "31003",
+      "district_id": "310",
+      "province_id": "3",
+      "name_en": "Likhu Rural Municipality",
+      "name_np": "Likhu Rural Municipality"
+    },
+    {
+      "id": "31004",
+      "district_id": "310",
+      "province_id": "3",
+      "name_en": "Ramechhap Municipality",
+      "name_np": "Ramechhap Municipality"
+    },
+    {
+      "id": "31005",
+      "district_id": "310",
+      "province_id": "3",
+      "name_en": "Manthali  Municipality",
+      "name_np": "Manthali  Municipality"
+    },
+    {
+      "id": "31006",
+      "district_id": "310",
+      "province_id": "3",
+      "name_en": "Khandadevi Rural Municipality",
+      "name_np": "Khandadevi Rural Municipality"
+    },
+    {
+      "id": "31007",
+      "district_id": "310",
+      "province_id": "3",
+      "name_en": "Doramba Rural Municipality",
+      "name_np": "Doramba Rural Municipality"
+    },
+    {
+      "id": "31008",
+      "district_id": "310",
+      "province_id": "3",
+      "name_en": "Sunapati Rural Municipality",
+      "name_np": "Sunapati Rural Municipality"
+    },
+    {
+      "id": "31101",
+      "district_id": "311",
+      "province_id": "3",
+      "name_en": "Dudhouli Municipality",
+      "name_np": "Dudhouli Municipality"
+    },
+    {
+      "id": "31102",
+      "district_id": "311",
+      "province_id": "3",
+      "name_en": "Phikkal Rural Municipality",
+      "name_np": "Phikkal Rural Municipality"
+    },
+    {
+      "id": "31103",
+      "district_id": "311",
+      "province_id": "3",
+      "name_en": "Tinpatan Rural Municipality",
+      "name_np": "Tinpatan Rural Municipality"
+    },
+    {
+      "id": "31104",
+      "district_id": "311",
+      "province_id": "3",
+      "name_en": "Golanjor Rural Municipality",
+      "name_np": "Golanjor Rural Municipality"
+    },
+    {
+      "id": "31105",
+      "district_id": "311",
+      "province_id": "3",
+      "name_en": "Kamalamai Municipality",
+      "name_np": "Kamalamai Municipality"
+    },
+    {
+      "id": "31106",
+      "district_id": "311",
+      "province_id": "3",
+      "name_en": "Sunkoshi Rural Municipality",
+      "name_np": "Sunkoshi Rural Municipality"
+    },
+    {
+      "id": "31107",
+      "district_id": "311",
+      "province_id": "3",
+      "name_en": "Ghyanglekha Rural Municipality",
+      "name_np": "Ghyanglekha Rural Municipality"
+    },
+    {
+      "id": "31108",
+      "district_id": "311",
+      "province_id": "3",
+      "name_en": "Marin Rural Municipality",
+      "name_np": "Marin Rural Municipality"
+    },
+    {
+      "id": "31109",
+      "district_id": "311",
+      "province_id": "3",
+      "name_en": "Hariharpurgaghi Rural Municipality",
+      "name_np": "Hariharpurgaghi Rural Municipality"
+    },
+    {
+      "id": "31201",
+      "district_id": "312",
+      "province_id": "3",
+      "name_en": "Indrasarowar Rural Municipality",
+      "name_np": "Indrasarowar Rural Municipality"
+    },
+    {
+      "id": "31202",
+      "district_id": "312",
+      "province_id": "3",
+      "name_en": "Thaha Municipality",
+      "name_np": "Thaha Municipality"
+    },
+    {
+      "id": "31203",
+      "district_id": "312",
+      "province_id": "3",
+      "name_en": "Kailash Rural Municipality",
+      "name_np": "Kailash Rural Municipality"
+    },
+    {
+      "id": "31204",
+      "district_id": "312",
+      "province_id": "3",
+      "name_en": "Raksirang Rural Municipality",
+      "name_np": "Raksirang Rural Municipality"
+    },
+    {
+      "id": "31205",
+      "district_id": "312",
+      "province_id": "3",
+      "name_en": "Manahari Rural Municipality",
+      "name_np": "Manahari Rural Municipality"
+    },
+    {
+      "id": "31206",
+      "district_id": "312",
+      "province_id": "3",
+      "name_en": "Hetauda Sub-Metropolitian City",
+      "name_np": "Hetauda Sub-Metropolitian City"
+    },
+    {
+      "id": "31207",
+      "district_id": "312",
+      "province_id": "3",
+      "name_en": "Bhimphedi Rural Municipality",
+      "name_np": "Bhimphedi Rural Municipality"
+    },
+    {
+      "id": "31208",
+      "district_id": "312",
+      "province_id": "3",
+      "name_en": "Makawanpurgadhi Rural Municipality",
+      "name_np": "Makawanpurgadhi Rural Municipality"
+    },
+    {
+      "id": "31209",
+      "district_id": "312",
+      "province_id": "3",
+      "name_en": "Bakaiya Rural Municipality",
+      "name_np": "Bakaiya Rural Municipality"
+    },
+    {
+      "id": "31210",
+      "district_id": "312",
+      "province_id": "3",
+      "name_en": "Bagmati Rural Municipality",
+      "name_np": "Bagmati Rural Municipality"
+    },
+    {
+      "id": "31301",
+      "district_id": "313",
+      "province_id": "3",
+      "name_en": "Rapti Municipality",
+      "name_np": "Rapti Municipality"
+    },
+    {
+      "id": "31302",
+      "district_id": "313",
+      "province_id": "3",
+      "name_en": "Kalika Municipality",
+      "name_np": "Kalika Municipality"
+    },
+    {
+      "id": "31303",
+      "district_id": "313",
+      "province_id": "3",
+      "name_en": "Ichchha Kamana Rural Municipality",
+      "name_np": "Ichchha Kamana Rural Municipality"
+    },
+    {
+      "id": "31304",
+      "district_id": "313",
+      "province_id": "3",
+      "name_en": "Bharatpur Metropolitian City",
+      "name_np": "Bharatpur Metropolitian City"
+    },
+    {
+      "id": "31305",
+      "district_id": "313",
+      "province_id": "3",
+      "name_en": "Ratnanagar Municipality",
+      "name_np": "Ratnanagar Municipality"
+    },
+    {
+      "id": "31306",
+      "district_id": "313",
+      "province_id": "3",
+      "name_en": "Khairahani Municipality",
+      "name_np": "Khairahani Municipality"
+    },
+    {
+      "id": "31307",
+      "district_id": "313",
+      "province_id": "3",
+      "name_en": "Madi Municipality",
+      "name_np": "Madi Municipality"
+    },
+    {
+      "id": "40101",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Chumanubri Rural Municipality",
+      "name_np": "Chumanubri Rural Municipality"
+    },
+    {
+      "id": "40102",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Ajirkot Rural Municipality",
+      "name_np": "Ajirkot Rural Municipality"
+    },
+    {
+      "id": "40103",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Sulikot Rural Municipality",
+      "name_np": "Sulikot Rural Municipality"
+    },
+    {
+      "id": "40104",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Dharche Rural Municipality",
+      "name_np": "Dharche Rural Municipality"
+    },
+    {
+      "id": "40105",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Aarughat Rural Municipality",
+      "name_np": "Aarughat Rural Municipality"
+    },
+    {
+      "id": "40106",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Bhimsen Rural Municipality",
+      "name_np": "Bhimsen Rural Municipality"
+    },
+    {
+      "id": "40107",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Siranchowk Rural Municipality",
+      "name_np": "Siranchowk Rural Municipality"
+    },
+    {
+      "id": "40108",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Palungtar Municipality",
+      "name_np": "Palungtar Municipality"
+    },
+    {
+      "id": "40109",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Gorkha Municipality",
+      "name_np": "Gorkha Municipality"
+    },
+    {
+      "id": "40110",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Shahid Lakhan Rural Municipality",
+      "name_np": "Shahid Lakhan Rural Municipality"
+    },
+    {
+      "id": "40111",
+      "district_id": "401",
+      "province_id": "4",
+      "name_en": "Gandaki Rural Municipality",
+      "name_np": "Gandaki Rural Municipality"
+    },
+    {
+      "id": "40201",
+      "district_id": "402",
+      "province_id": "4",
+      "name_en": "Naraphu Rural Municipality",
+      "name_np": "Naraphu Rural Municipality"
+    },
+    {
+      "id": "40202",
+      "district_id": "402",
+      "province_id": "4",
+      "name_en": "Neshang Rural Municipality",
+      "name_np": "Neshang Rural Municipality"
+    },
+    {
+      "id": "40203",
+      "district_id": "402",
+      "province_id": "4",
+      "name_en": "Chame Rural Municipality",
+      "name_np": "Chame Rural Municipality"
+    },
+    {
+      "id": "40204",
+      "district_id": "402",
+      "province_id": "4",
+      "name_en": "Nashong Rural Municipality",
+      "name_np": "Nashong Rural Municipality"
+    },
+    {
+      "id": "40301",
+      "district_id": "403",
+      "province_id": "4",
+      "name_en": "Dalome Rural Municipality",
+      "name_np": "Dalome Rural Municipality"
+    },
+    {
+      "id": "40302",
+      "district_id": "403",
+      "province_id": "4",
+      "name_en": "Gharpajhong Rural Municipality",
+      "name_np": "Gharpajhong Rural Municipality"
+    },
+    {
+      "id": "40303",
+      "district_id": "403",
+      "province_id": "4",
+      "name_en": "Bahragaun Muktikshetra Rural Municipality",
+      "name_np": "Bahragaun Muktikshetra Rural Municipality"
+    },
+    {
+      "id": "40304",
+      "district_id": "403",
+      "province_id": "4",
+      "name_en": "Lomanthang Rural Municipality",
+      "name_np": "Lomanthang Rural Municipality"
+    },
+    {
+      "id": "40305",
+      "district_id": "403",
+      "province_id": "4",
+      "name_en": "Thasang Rural Municipality",
+      "name_np": "Thasang Rural Municipality"
+    },
+    {
+      "id": "40401",
+      "district_id": "404",
+      "province_id": "4",
+      "name_en": "Annapurna Rural Municipality",
+      "name_np": "Annapurna Rural Municipality"
+    },
+    {
+      "id": "40402",
+      "district_id": "404",
+      "province_id": "4",
+      "name_en": "Raghuganga Rural Municipality",
+      "name_np": "Raghuganga Rural Municipality"
+    },
+    {
+      "id": "40403",
+      "district_id": "404",
+      "province_id": "4",
+      "name_en": "Dhawalagiri Rural Municipality",
+      "name_np": "Dhawalagiri Rural Municipality"
+    },
+    {
+      "id": "40404",
+      "district_id": "404",
+      "province_id": "4",
+      "name_en": "Malika Rural Municipality",
+      "name_np": "Malika Rural Municipality"
+    },
+    {
+      "id": "40405",
+      "district_id": "404",
+      "province_id": "4",
+      "name_en": "Mangala Rural Municipality",
+      "name_np": "Mangala Rural Municipality"
+    },
+    {
+      "id": "40501",
+      "district_id": "405",
+      "province_id": "4",
+      "name_en": "Madi Rural Municipality",
+      "name_np": "Madi Rural Municipality"
+    },
+    {
+      "id": "40502",
+      "district_id": "405",
+      "province_id": "4",
+      "name_en": "Machhapuchchhre Rural Municipality",
+      "name_np": "Machhapuchchhre Rural Municipality"
+    },
+    {
+      "id": "40503",
+      "district_id": "405",
+      "province_id": "4",
+      "name_en": "Annapurna Rural Municipality",
+      "name_np": "Annapurna Rural Municipality"
+    },
+    {
+      "id": "40504",
+      "district_id": "405",
+      "province_id": "4",
+      "name_en": "Pokhara Lekhnath Metropolitian City",
+      "name_np": "Pokhara Lekhnath Metropolitian City"
+    },
+    {
+      "id": "40505",
+      "district_id": "405",
+      "province_id": "4",
+      "name_en": "Rupa Rural Municipality",
+      "name_np": "Rupa Rural Municipality"
+    },
+    {
+      "id": "40601",
+      "district_id": "406",
+      "province_id": "4",
+      "name_en": "Dordi Rural Municipality",
+      "name_np": "Dordi Rural Municipality"
+    },
+    {
+      "id": "40602",
+      "district_id": "406",
+      "province_id": "4",
+      "name_en": "Marshyangdi Rural Municipality",
+      "name_np": "Marshyangdi Rural Municipality"
+    },
+    {
+      "id": "40603",
+      "district_id": "406",
+      "province_id": "4",
+      "name_en": "Kwhola Sothar Rural Municipality",
+      "name_np": "Kwhola Sothar Rural Municipality"
+    },
+    {
+      "id": "40604",
+      "district_id": "406",
+      "province_id": "4",
+      "name_en": "Madhya Nepal Municipality",
+      "name_np": "Madhya Nepal Municipality"
+    },
+    {
+      "id": "40605",
+      "district_id": "406",
+      "province_id": "4",
+      "name_en": "Bensi Shahar Municipality",
+      "name_np": "Bensi Shahar Municipality"
+    },
+    {
+      "id": "40606",
+      "district_id": "406",
+      "province_id": "4",
+      "name_en": "Sundarbazar Municipality",
+      "name_np": "Sundarbazar Municipality"
+    },
+    {
+      "id": "40607",
+      "district_id": "406",
+      "province_id": "4",
+      "name_en": "Rainas Municipality",
+      "name_np": "Rainas Municipality"
+    },
+    {
+      "id": "40608",
+      "district_id": "406",
+      "province_id": "4",
+      "name_en": "Dudhapokhari Rural Municipality",
+      "name_np": "Dudhapokhari Rural Municipality"
+    },
+    {
+      "id": "40701",
+      "district_id": "407",
+      "province_id": "4",
+      "name_en": "Bhanu Municipality",
+      "name_np": "Bhanu Municipality"
+    },
+    {
+      "id": "40702",
+      "district_id": "407",
+      "province_id": "4",
+      "name_en": "Byas Municipality",
+      "name_np": "Byas Municipality"
+    },
+    {
+      "id": "40704",
+      "district_id": "407",
+      "province_id": "4",
+      "name_en": "Shuklagandaki Municipality",
+      "name_np": "Shuklagandaki Municipality"
+    },
+    {
+      "id": "40705",
+      "district_id": "407",
+      "province_id": "4",
+      "name_en": "Bhimad Municipality",
+      "name_np": "Bhimad Municipality"
+    },
+    {
+      "id": "40706",
+      "district_id": "407",
+      "province_id": "4",
+      "name_en": "Ghiring Rural Municipality",
+      "name_np": "Ghiring Rural Municipality"
+    },
+    {
+      "id": "40707",
+      "district_id": "407",
+      "province_id": "4",
+      "name_en": "Rhishing Rural Municipality",
+      "name_np": "Rhishing Rural Municipality"
+    },
+    {
+      "id": "40708",
+      "district_id": "407",
+      "province_id": "4",
+      "name_en": "Devghat Rural Municipality",
+      "name_np": "Devghat Rural Municipality"
+    },
+    {
+      "id": "40709",
+      "district_id": "407",
+      "province_id": "4",
+      "name_en": "Bandipur Rural Municipality",
+      "name_np": "Bandipur Rural Municipality"
+    },
+    {
+      "id": "40710",
+      "district_id": "407",
+      "province_id": "4",
+      "name_en": "Aanbu Khaireni Rural Municipality",
+      "name_np": "Aanbu Khaireni Rural Municipality"
+    },
+    {
+      "id": "40801",
+      "district_id": "408",
+      "province_id": "4",
+      "name_en": "Gaidakot Municipality",
+      "name_np": "Gaidakot Municipality"
+    },
+    {
+      "id": "11009",
+      "district_id": "110",
+      "province_id": "1",
+      "name_en": "Suryodaya Municipality",
+      "name_np": "Suryodaya Municipality"
+    },
+    {
+      "id": "11010",
+      "district_id": "110",
+      "province_id": "1",
+      "name_en": "Rong Rural Municipality",
+      "name_np": "Rong Rural Municipality"
+    },
+    {
+      "id": "11101",
+      "district_id": "111",
+      "province_id": "1",
+      "name_en": "Mechinagar Municipality",
+      "name_np": "Mechinagar Municipality"
+    },
+    {
+      "id": "20601",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Chandrapur Municipality",
+      "name_np": "Chandrapur Municipality"
+    },
+    {
+      "id": "20602",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Gujara Municipality",
+      "name_np": "Gujara Municipality"
+    },
+    {
+      "id": "20603",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Phatuwa Bijayapur Municipality",
+      "name_np": "Phatuwa Bijayapur Municipality"
+    },
+    {
+      "id": "20604",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Katahariya Municipality",
+      "name_np": "Katahariya Municipality"
+    },
+    {
+      "id": "20605",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Brindaban Municipality",
+      "name_np": "Brindaban Municipality"
+    },
+    {
+      "id": "20606",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Gadhimai Municipality",
+      "name_np": "Gadhimai Municipality"
+    },
+    {
+      "id": "20607",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Madhav Narayan Municipality",
+      "name_np": "Madhav Narayan Municipality"
+    },
+    {
+      "id": "20608",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Garuda Municipality",
+      "name_np": "Garuda Municipality"
+    },
+    {
+      "id": "20609",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Dewahi Gonahi Municipality",
+      "name_np": "Dewahi Gonahi Municipality"
+    },
+    {
+      "id": "20610",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Maulapur Municipality",
+      "name_np": "Maulapur Municipality"
+    },
+    {
+      "id": "20611",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Boudhimai Municipality",
+      "name_np": "Boudhimai Municipality"
+    },
+    {
+      "id": "20612",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Paroha Municipality",
+      "name_np": "Paroha Municipality"
+    },
+    {
+      "id": "20613",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Rajpur Municipality",
+      "name_np": "Rajpur Municipality"
+    },
+    {
+      "id": "20614",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Yamunamai Rural Municipality",
+      "name_np": "Yamunamai Rural Municipality"
+    },
+    {
+      "id": "20615",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Durga Bhagawati Rural Municipality",
+      "name_np": "Durga Bhagawati Rural Municipality"
+    },
+    {
+      "id": "20616",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Rajdevi Municipality",
+      "name_np": "Rajdevi Municipality"
+    },
+    {
+      "id": "20617",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Gaur Municipality",
+      "name_np": "Gaur Municipality"
+    },
+    {
+      "id": "20618",
+      "district_id": "206",
+      "province_id": "2",
+      "name_en": "Ishanath Municipality",
+      "name_np": "Ishanath Municipality"
+    },
+    {
+      "id": "20701",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Nijagadh Municipality",
+      "name_np": "Nijagadh Municipality"
+    },
+    {
+      "id": "20702",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Kolhabi Municipality",
+      "name_np": "Kolhabi Municipality"
+    },
+    {
+      "id": "20703",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Jitpur Simara Sub-Metropolitian City",
+      "name_np": "Jitpur Simara Sub-Metropolitian City"
+    },
+    {
+      "id": "20704",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Parawanipur Rural Municipality",
+      "name_np": "Parawanipur Rural Municipality"
+    },
+    {
+      "id": "20705",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Prasauni Rural Municipality",
+      "name_np": "Prasauni Rural Municipality"
+    },
+    {
+      "id": "20706",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Bishrampur Rural Municipality",
+      "name_np": "Bishrampur Rural Municipality"
+    },
+    {
+      "id": "20707",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Pheta Rural Municipality",
+      "name_np": "Pheta Rural Municipality"
+    },
+    {
+      "id": "20708",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Kalaiya Sub-Metropolitian City",
+      "name_np": "Kalaiya Sub-Metropolitian City"
+    },
+    {
+      "id": "20709",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Karaiyamai Rural Municipality",
+      "name_np": "Karaiyamai Rural Municipality"
+    },
+    {
+      "id": "20710",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Baragadhi Rural Municipality",
+      "name_np": "Baragadhi Rural Municipality"
+    },
+    {
+      "id": "20711",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Aadarsha Kotwal Rural Municipality",
+      "name_np": "Aadarsha Kotwal Rural Municipality"
+    },
+    {
+      "id": "20712",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Simroungadh Municipality",
+      "name_np": "Simroungadh Municipality"
+    },
+    {
+      "id": "20713",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Pacharauta Municipality",
+      "name_np": "Pacharauta Municipality"
+    },
+    {
+      "id": "20714",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Mahagadhimai Municipality",
+      "name_np": "Mahagadhimai Municipality"
+    },
+    {
+      "id": "20715",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Devtal Rural Municipality",
+      "name_np": "Devtal Rural Municipality"
+    },
+    {
+      "id": "20716",
+      "district_id": "207",
+      "province_id": "2",
+      "name_en": "Subarna Rural Municipality",
+      "name_np": "Subarna Rural Municipality"
+    },
+    {
+      "id": "20802",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Jirabhawani Rural Municipality",
+      "name_np": "Jirabhawani Rural Municipality"
+    },
+    {
+      "id": "20803",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Jagarnathpur Rural Municipality",
+      "name_np": "Jagarnathpur Rural Municipality"
+    },
+    {
+      "id": "20804",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Paterwa Sugauli Rural Municipality",
+      "name_np": "Paterwa Sugauli Rural Municipality"
+    },
+    {
+      "id": "20805",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Sakhuwa Prasauni Rural Municipality",
+      "name_np": "Sakhuwa Prasauni Rural Municipality"
+    },
+    {
+      "id": "20806",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Parsagadhi Municipality",
+      "name_np": "Parsagadhi Municipality"
+    },
+    {
+      "id": "20807",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Birgunj Metropolitian City",
+      "name_np": "Birgunj Metropolitian City"
+    },
+    {
+      "id": "20808",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Bahudarmai Municipality",
+      "name_np": "Bahudarmai Municipality"
+    },
+    {
+      "id": "20809",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Pokhariya Municipality",
+      "name_np": "Pokhariya Municipality"
+    },
+    {
+      "id": "20810",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Kalikamai Rural Municipality",
+      "name_np": "Kalikamai Rural Municipality"
+    },
+    {
+      "id": "20811",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Dhobini Rural Municipality",
+      "name_np": "Dhobini Rural Municipality"
+    },
+    {
+      "id": "20812",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Chhipaharmai Rural Municipality",
+      "name_np": "Chhipaharmai Rural Municipality"
+    },
+    {
+      "id": "20813",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Pakaha Mainpur Rural Municipality",
+      "name_np": "Pakaha Mainpur Rural Municipality"
+    },
+    {
+      "id": "20814",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Bindabasini Rural Municipality",
+      "name_np": "Bindabasini Rural Municipality"
+    },
+    {
+      "id": "30101",
+      "district_id": "301",
+      "province_id": "3",
+      "name_en": "Gaurishankar Rural Municipality",
+      "name_np": "Gaurishankar Rural Municipality"
+    },
+    {
+      "id": "30102",
+      "district_id": "301",
+      "province_id": "3",
+      "name_en": "Bigu Rural Municipality",
+      "name_np": "Bigu Rural Municipality"
+    },
+    {
+      "id": "30103",
+      "district_id": "301",
+      "province_id": "3",
+      "name_en": "Kalinchowk Rural Municipality",
+      "name_np": "Kalinchowk Rural Municipality"
+    },
+    {
+      "id": "30104",
+      "district_id": "301",
+      "province_id": "3",
+      "name_en": "Baitedhar Rural Municipality",
+      "name_np": "Baitedhar Rural Municipality"
+    },
+    {
+      "id": "30106",
+      "district_id": "301",
+      "province_id": "3",
+      "name_en": "Tamakoshi Rural Municipality",
+      "name_np": "Tamakoshi Rural Municipality"
+    },
+    {
+      "id": "30107",
+      "district_id": "301",
+      "province_id": "3",
+      "name_en": "Melung Rural Municipality",
+      "name_np": "Melung Rural Municipality"
+    },
+    {
+      "id": "30108",
+      "district_id": "301",
+      "province_id": "3",
+      "name_en": "Shailung Rural Municipality",
+      "name_np": "Shailung Rural Municipality"
+    },
+    {
+      "id": "30109",
+      "district_id": "301",
+      "province_id": "3",
+      "name_en": "Bhimeshwor Municipality",
+      "name_np": "Bhimeshwor Municipality"
+    },
+    {
+      "id": "30201",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Bhotekoshi Rural Municipality",
+      "name_np": "Bhotekoshi Rural Municipality"
+    },
+    {
+      "id": "30202",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Jugal Rural Municipality",
+      "name_np": "Jugal Rural Municipality"
+    },
+    {
+      "id": "30203",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Panchpokhari Thangpal Rural Municipality",
+      "name_np": "Panchpokhari Thangpal Rural Municipality"
+    },
+    {
+      "id": "30204",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Helambu Rural Municipality",
+      "name_np": "Helambu Rural Municipality"
+    },
+    {
+      "id": "30205",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Melanchi Municipality",
+      "name_np": "Melanchi Municipality"
+    },
+    {
+      "id": "30206",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Indrawoti Rural Municipality",
+      "name_np": "Indrawoti Rural Municipality"
+    },
+    {
+      "id": "30207",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Choutara Sangachowkgadhi Municipality",
+      "name_np": "Choutara Sangachowkgadhi Municipality"
+    },
+    {
+      "id": "30208",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Balephi Rural Municipality",
+      "name_np": "Balephi Rural Municipality"
+    },
+    {
+      "id": "30209",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Bahrabise Municipality",
+      "name_np": "Bahrabise Municipality"
+    },
+    {
+      "id": "30210",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Tripurasundari Rural Municipality",
+      "name_np": "Tripurasundari Rural Municipality"
+    },
+    {
+      "id": "30211",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Lisankhu Pakhar Rural Municipality",
+      "name_np": "Lisankhu Pakhar Rural Municipality"
+    },
+    {
+      "id": "30301",
+      "district_id": "303",
+      "province_id": "3",
+      "name_en": "Gosaikunda Rural Municipality",
+      "name_np": "Gosaikunda Rural Municipality"
+    },
+    {
+      "id": "30302",
+      "district_id": "303",
+      "province_id": "3",
+      "name_en": "Parbatikunda Rural Municipality",
+      "name_np": "Parbatikunda Rural Municipality"
+    },
+    {
+      "id": "30303",
+      "district_id": "303",
+      "province_id": "3",
+      "name_en": "Uttargaya Rural Municipality",
+      "name_np": "Uttargaya Rural Municipality"
+    },
+    {
+      "id": "30304",
+      "district_id": "303",
+      "province_id": "3",
+      "name_en": "Kalika Rural Municipality",
+      "name_np": "Kalika Rural Municipality"
+    },
+    {
+      "id": "30305",
+      "district_id": "303",
+      "province_id": "3",
+      "name_en": "Naukunda Rural Municipality",
+      "name_np": "Naukunda Rural Municipality"
+    },
+    {
+      "id": "30401",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Rubi Valley Rural Municipality",
+      "name_np": "Rubi Valley Rural Municipality"
+    },
+    {
+      "id": "30402",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Khaniyabas Rural Municipality",
+      "name_np": "Khaniyabas Rural Municipality"
+    },
+    {
+      "id": "30403",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Ganga Jamuna Rural Municipality",
+      "name_np": "Ganga Jamuna Rural Municipality"
+    },
+    {
+      "id": "30404",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Tripurasundari Rural Municipality",
+      "name_np": "Tripurasundari Rural Municipality"
+    },
+    {
+      "id": "30405",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Netrawati Rural Municipality",
+      "name_np": "Netrawati Rural Municipality"
+    },
+    {
+      "id": "30406",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Nilkhantha Municipality",
+      "name_np": "Nilkhantha Municipality"
+    },
+    {
+      "id": "30407",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Jwalamukhi Rural Municipality",
+      "name_np": "Jwalamukhi Rural Municipality"
+    },
+    {
+      "id": "30408",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Siddhalek Rural Municipality",
+      "name_np": "Siddhalek Rural Municipality"
+    },
+    {
+      "id": "30409",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Benighat Rorang Rural Municipality",
+      "name_np": "Benighat Rorang Rural Municipality"
+    },
+    {
+      "id": "30410",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Gajuri Rural Municipality",
+      "name_np": "Gajuri Rural Municipality"
+    },
+    {
+      "id": "30411",
+      "district_id": "304",
+      "province_id": "3",
+      "name_en": "Galchhi Rural Municipality",
+      "name_np": "Galchhi Rural Municipality"
+    },
+    {
+      "id": "11307",
+      "district_id": "113",
+      "province_id": "1",
+      "name_en": "Duhabi Municipality",
+      "name_np": "Duhabi Municipality"
+    },
+    {
+      "id": "20104",
+      "district_id": "201",
+      "province_id": "2",
+      "name_en": "Rupani Rural Municipality",
+      "name_np": "Rupani Rural Municipality"
+    },
+    {
+      "id": "20801",
+      "district_id": "208",
+      "province_id": "2",
+      "name_en": "Thori Rural Municipality",
+      "name_np": "Thori Rural Municipality"
+    },
+    {
+      "id": "30105",
+      "district_id": "301",
+      "province_id": "3",
+      "name_en": "Jiri Municipality",
+      "name_np": "Jiri Municipality"
+    },
+    {
+      "id": "30212",
+      "district_id": "302",
+      "province_id": "3",
+      "name_en": "Sunkoshi Rural Municipality",
+      "name_np": "Sunkoshi Rural Municipality"
+    }
+  ]
+}

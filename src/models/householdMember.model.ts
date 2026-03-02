@@ -81,7 +81,9 @@ export interface HouseholdMemberLocal {
   communicating?: string | null;
   disabilityStatus?: string | null;
   pregnancyStatus?: string | null;
-  pregnancyDate?: string | null;
+  pregnancyDateAD?: string | null;
+  motherofChild?: "Y" | "N" | null;
+  childDobAD?: string | null;
   vaccinationStatus?: string | null;
   healthInsCoverage?: string | null;
 

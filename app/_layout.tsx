@@ -1,28 +1,27 @@
 import { useEffect, useState } from "react";
 import { AuthProvider } from "@/src/auth/context/AuthProvider";
 import AuthGate from "@/src/auth/router/AuthGate";
-import { ensureDbReady, isDbReady } from "@/src/db/bootstrap";
+import { ensureDbReady } from "@/src/db/bootstrap";
 import { AppBootstrap } from "@/src/bootstrap/AppBootstrap";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "react-native-get-random-values";
 import "../global.css";
 import { AppLogger } from "@/src/utils/AppLogger";
+import { AppErrorBoundary } from "@/src/components/AppErrorBoundary";
 
 export default function RootLayout() {
-  // const [dbReady, setDbReady] = useState(false);
-  const [, forceRender] = useState(0);
+  const [dbReady, setDbReady] = useState(false);
 
   useEffect(() => {
     async function bootstrap() {
       try {
         await AppLogger.initialize();
-
         await ensureDbReady();
-
         await AppLogger.log("INFO", "DATABASE_READY");
-
-        forceRender((x) => x + 1);
+        console.log("DATABASE_READY");
+        setDbReady(true); // 🔥 THIS is the correct trigger
       } catch (error: any) {
+        console.log("APP_BOOTSTRAP_FAILED", error);
         await AppLogger.log("ERROR", "APP_BOOTSTRAP_FAILED", {
           message: error?.message,
         });
@@ -32,17 +31,18 @@ export default function RootLayout() {
     bootstrap();
   }, []);
 
-  if (!isDbReady) {
-    AppLogger.log("WARN", "DATABASE_NOT_READY_RENDER_BLOCKED");
-    return null; // splash later
+  if (!dbReady) {
+    return null; // later you can show splash screen
   }
 
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <AppBootstrap />
-        <AuthGate />
-      </AuthProvider>
-    </SafeAreaProvider>
+    <AppErrorBoundary>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <AppBootstrap />
+          <AuthGate />
+        </AuthProvider>
+      </SafeAreaProvider>
+    </AppErrorBoundary>
   );
 }

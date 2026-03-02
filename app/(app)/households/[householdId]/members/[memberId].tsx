@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -30,14 +30,7 @@ import { OccupationStep } from "@/src/features/member-form/components/steps/Occu
 import { FinancialStep } from "@/src/features/member-form/components/steps/FinancialStep";
 import { HealthStep } from "@/src/features/member-form/components/steps/HealthStep";
 import { ReviewStep } from "@/src/features/member-form/components/steps/ReviewStep";
-
-// TODO: import other steps properly when ready
-// import { IdentityStep } from ...
-// import { AddressStep } from ...
-// import { OccupationStep } from ...
-// import { FinancialStep } from ...
-// import { HealthStep } from ...
-// import { ReviewStep } from ...
+import { AppLogger } from "@/src/utils/AppLogger";
 
 const steps = [
   "Basic Info",
@@ -60,44 +53,80 @@ export default function MemberFormScreen() {
 
   const router = useRouter();
 
-  // Type-safe updates
-  const updateField = <K extends keyof MemberFormState>(
-    key: K,
-    value: MemberFormState[K],
-  ) => {
-    setForm((prev) => {
-      if (!prev) return prev;
-      return { ...prev, [key]: value };
-    });
+  // For DEbugging
+  const renderCount = React.useRef(0);
+  renderCount.current++;
+  console.log(
+    "MemberFormScreen render:",
+    renderCount.current,
+    "Step:",
+    currentStep,
+  );
 
-    // Clear field error when user edits it
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors[key as string];
-      return newErrors;
-    });
-  };
+  // Type-safe updates (optimized)
+  const updateField = useCallback(
+    <K extends keyof MemberFormState>(key: K, value: MemberFormState[K]) => {
+      setForm((prev) => {
+        if (!prev) return prev;
+
+        // 🔥 Prevent unnecessary re-render
+        if (prev[key] === value) {
+          return prev;
+        }
+
+        return { ...prev, [key]: value };
+      });
+
+      setErrors((prev) => {
+        // 🔥 Only update errors if needed
+        if (!prev[key as string]) return prev;
+
+        const newErrors = { ...prev };
+        delete newErrors[key as string];
+        return newErrors;
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
+    let mounted = true;
+
     async function loadMember() {
-      if (!localId) {
-        setForm(createEmptyMemberFormState());
+      try {
+        if (!localId) {
+          if (mounted) {
+            setForm(createEmptyMemberFormState());
+            setLoading(false);
+          }
+          return;
+        }
+
+        const member =
+          await householdMemberLocalRepository.getByLocalId(localId);
+
+        if (!mounted) return;
+
+        if (member) {
+          setForm(mapLocalToForm(member));
+        } else {
+          setForm(createEmptyMemberFormState());
+        }
+
         setLoading(false);
-        return;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (error) {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-
-      const member = await householdMemberLocalRepository.getByLocalId(localId);
-
-      if (member) {
-        setForm(mapLocalToForm(member));
-      } else {
-        setForm(createEmptyMemberFormState());
-      }
-
-      setLoading(false);
     }
 
     loadMember();
+
+    return () => {
+      mounted = false;
+    };
   }, [localId]);
 
   if (loading || !form) {
@@ -113,13 +142,18 @@ export default function MemberFormScreen() {
 
   // Save Function
   const saveDraftToLocal = async () => {
-    if (!localId || !form) return;
-
-    const patch = mapFormToLocalPatch(form);
-    await householdMemberLocalRepository.updateDraft(localId, patch);
-    console.log("PATCH:", patch);
+    try {
+      if (!localId || !form) return;
+      const patch = mapFormToLocalPatch(form);
+      await householdMemberLocalRepository.updateDraft(localId, patch);
+    } catch (error) {
+      console.log("Draft save failed:", error);
+      AppLogger.log("ERROR", "Member DRAFT Save Failed", {
+        message: { error },
+      });
+    }
   };
-
+  console.log("MemberFormScreen render", currentStep);
   // Handle Next button Function
 
   const handleNext = async () => {
@@ -180,46 +214,55 @@ export default function MemberFormScreen() {
   // Handle Finish
 
   const handleFinish = async () => {
-    if (!form || !localId) return;
+    try {
+      if (!form || !localId) return;
 
-    // Run ALL validations
-    const basic = validateBasicInfo(form);
-    const identity = validateIdentityInfo(form);
-    const address = validateAddressInfo(form);
-    const occupation = validateOccupationInfo(form);
-    const financial = validateFinancialInfo(form);
-    const health = validateHealthStep(form);
+      // Run ALL validations
+      const basic = validateBasicInfo(form);
+      const identity = validateIdentityInfo(form);
+      const address = validateAddressInfo(form);
+      const occupation = validateOccupationInfo(form);
+      const financial = validateFinancialInfo(form);
+      const health = validateHealthStep(form);
 
-    const allErrors = {
-      ...(basic.errors ?? {}),
-      ...(identity.errors ?? {}),
-      ...(address.errors ?? {}),
-      ...(occupation.errors ?? {}),
-      ...(financial.errors ?? {}),
-      ...(health ?? {}),
-    };
+      const allErrors = {
+        ...(basic.errors ?? {}),
+        ...(identity.errors ?? {}),
+        ...(address.errors ?? {}),
+        ...(occupation.errors ?? {}),
+        ...(financial.errors ?? {}),
+        ...(health ?? {}),
+      };
 
-    if (Object.keys(allErrors).length > 0) {
-      setErrors(allErrors);
-      // Optionally go to first step if serious
-      setCurrentStep(0);
-      return;
+      if (Object.keys(allErrors).length > 0) {
+        setErrors(allErrors);
+        // Optionally go to first step if serious
+        setCurrentStep(0);
+        return;
+      }
+
+      // Save latest draft
+      const patch = mapFormToLocalPatch(form);
+
+      if (__DEV__) console.log("FINISH START");
+      await householdMemberLocalRepository.updateDraft(localId, patch);
+
+      // Determine sync action
+      const existing =
+        await householdMemberLocalRepository.getByLocalId(localId);
+
+      const syncAction = existing?.clientNo ? "UPDATE" : "INSERT";
+      if (__DEV__) console.log("DRAFT UPDATED");
+      await householdMemberLocalRepository.markPending(localId, syncAction);
+      if (__DEV__) console.log("MARKED PENDING");
+      // Navigate back
+      router.back();
+    } catch (error) {
+      // console.log("Finish failed:", error);
+      AppLogger.log("ERROR", "Finish button working Failed", {
+        message: { error },
+      });
     }
-
-    // Save latest draft
-    const patch = mapFormToLocalPatch(form);
-
-    await householdMemberLocalRepository.updateDraft(localId, patch);
-
-    // Determine sync action
-    const existing = await householdMemberLocalRepository.getByLocalId(localId);
-
-    const syncAction = existing?.clientNo ? "UPDATE" : "INSERT";
-
-    await householdMemberLocalRepository.markPending(localId, syncAction);
-
-    // Navigate back
-    router.back();
   };
 
   return (

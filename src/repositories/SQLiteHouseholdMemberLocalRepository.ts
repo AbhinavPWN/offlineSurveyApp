@@ -7,6 +7,7 @@ import {
 } from "../models/householdMember.model";
 import { HouseholdMemberLocalRepository } from "./HouseholdMemberLocalRepository";
 import { convertApiDateToISO } from "../utils/dateUtils";
+import { mapServerMemberToDb } from "../services/api/mappers/ServerMemberMapper";
 
 function mapRowToMember(row: any): HouseholdMemberLocal {
   return {
@@ -77,7 +78,12 @@ function mapRowToMember(row: any): HouseholdMemberLocal {
     communicating: row.communicating ?? undefined,
     disabilityStatus: row.disability_status ?? undefined,
     pregnancyStatus: row.pregnancy_status ?? undefined,
-    pregnancyDate: row.pregnancy_date ?? undefined,
+    pregnancyDateAD: row.pregnancy_date ?? undefined,
+    childDobAD: row.child_dob ?? undefined,
+
+    motherofChild: row.mother_of_child ?? undefined,
+    // childDob: row.child_dob ?? undefined,
+
     vaccinationStatus: row.vaccination_status ?? undefined,
     healthInsCoverage: row.health_ins_coverage ?? undefined,
 
@@ -153,17 +159,9 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
     localId: string,
     patch: Partial<HouseholdMemberLocal>,
   ): Promise<void> {
-    const existing = await this.getByLocalId(localId);
-    if (!existing) {
-      throw new Error("Member not found");
-    }
-
     const fieldMap: Record<string, string> = {
       enrollDateAD: "enroll_date_ad",
-      enrollDateBS: "enroll_date_bs",
       firstName: "first_name",
-      middleName: "middle_name",
-      lastName: "last_name",
       gender: "gender",
       maritalStatus: "marital_status",
       religionCode: "religion_code",
@@ -174,9 +172,7 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
       idDocumentNo: "id_document_no",
       idIssueDistrictCode: "id_issue_district_code",
       idIssueDateAD: "id_issue_date_ad",
-      idIssueDateBS: "id_issue_date_bs",
       dobAD: "dob_ad",
-      dobBS: "dob_bs",
       mobileNo: "mobile_no",
       minorYn: "minor_yn",
       address1Type: "address1_type",
@@ -187,10 +183,9 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
       address1Province: "address1_province",
       occupationCode: "occupation_code",
       educationCode: "education_code",
-      employeeId: "employee_id",
-      tranOfficeCode: "tran_office_code",
       totalAsset: "total_asset",
       totalLiabilities: "total_liabilities",
+      netWorth: "net_worth",
       soiSalary: "soi_salary",
       soiBusIncome: "soi_bus_income",
       soiReturnfrmInvest: "soi_returnfrminvest",
@@ -210,27 +205,17 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
       communicating: "communicating",
       disabilityStatus: "disability_status",
       pregnancyStatus: "pregnancy_status",
-      pregnancyDate: "pregnancy_date",
+      pregnancyDateAD: "pregnancy_date",
+      motherofChild: "mother_of_child",
+      childDobAD: "child_dob",
       vaccinationStatus: "vaccination_status",
       healthInsCoverage: "health_ins_coverage",
       clientBehaviour: "client_behaviour",
       imagePath: "image_path",
-      imageUploadStatus: "image_upload_status",
     };
 
     const setClauses: string[] = [];
     const values: any[] = [];
-
-    // Auto net worth calculation
-    const totalAsset = patch.totalAsset ?? existing.totalAsset ?? "0";
-    const totalLiabilities =
-      patch.totalLiabilities ?? existing.totalLiabilities ?? "0";
-
-    const netWorth = Number(totalAsset || 0) - Number(totalLiabilities || 0);
-
-    patch.netWorth = String(netWorth);
-
-    fieldMap["netWorth"] = "net_worth";
 
     for (const key of Object.keys(patch)) {
       const column = fieldMap[key];
@@ -241,24 +226,10 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
       values.push(value);
     }
 
-    // Head rule enforcement
-    if (patch.headHousehold === "Y") {
-      await this.clearHeadFlagForHousehold(existing.householdLocalId);
-    }
-
     if (setClauses.length === 0) return;
 
     setClauses.push("updated_at = ?");
     values.push(new Date().toISOString());
-
-    // If already synced → mark pending
-    if (existing.syncStatus === "SYNCED") {
-      setClauses.push("sync_status = ?");
-      values.push("PENDING");
-
-      setClauses.push("sync_action = ?");
-      values.push("UPDATE");
-    }
 
     await db.runAsync(
       `
@@ -315,7 +286,7 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
   }
 
   async listBySyncStatus(status: string): Promise<HouseholdMemberLocal[]> {
-    const rows = await db.getAllSync<any>(
+    const rows = await db.getAllAsync<any>(
       `
         SELECT *
         FROM household_members
@@ -324,6 +295,7 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
         `,
       [status],
     );
+
     return rows.map(mapRowToMember);
   }
 
@@ -409,158 +381,187 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
     householdLocalId: string,
   ): Promise<void> {
     console.log("💾 Inserting members:", members.length);
+
     const nowIso = new Date().toISOString();
 
     for (const m of members) {
       const localId = uuidv4();
 
+      // 🔐 Hardened normalization layer
+      const mapped = mapServerMemberToDb(m, householdLocalId);
+
       const values = [
         localId,
-        m.clienT_NO,
-        householdLocalId,
+        mapped.clientNo ?? null,
+        mapped.householdLocalId,
         "SYNCED",
-        null,
-        convertApiDateToISO(m.enrolL_DATE),
-        m.enrolL_DATE_BS,
-        m.fname,
-        m.middlE_NAME,
-        m.lname,
-        m.gender,
-        m.maritaL_STATUS,
-        m.religioN_CODE,
-        m.castE_CODE,
-        m.relationshiP_TO_HEAD_HOUSEHOLD,
-        m.heaD_HOUSEHOLD ?? "N",
-        m.iD_DOCUMENT_TYPE,
-        m.iD_DOCUMENT_NO,
-        m.iD_ISSUE_DISTRICT_CODE,
-        convertApiDateToISO(m.meM_IDENTITY_ISSUE_DATE),
-        m.meM_IDENTITY_ISSUE_DATE_BS,
-        convertApiDateToISO(m.dob),
-        m.doB_BS,
-        m.mobilE_NO,
-        m.minoR_Y_N,
-        m.addresS_1_TYPE,
-        m.address,
-        m.addresS_1_LINE2,
-        m.addresS_1_LINE3,
-        m.addresS_1_DISTRICT,
-        m.provincE1,
-        m.occupatioN_CODE,
-        m.educatioN_CODE,
-        m.employeE_ID,
-        m.traN_OFFICE_CODE,
-        String(m.totaL_ASSET ?? ""),
-        String(m.totaL_LIABILITIES ?? ""),
-        String(m.neT_WORTH ?? ""),
-        m.soI_SALARY,
-        m.soI_BUS_INCOME,
-        m.soI_RETURN_FRM_INVEST,
-        m.soI_INHERITANCE,
-        m.soI_REMITTANCE,
-        m.soI_OTHERS,
-        m.soI_AGRICULTURE,
-        m.healtH_CONDITIONS ? "Y" : "N",
-        m.healtH_CONDITIONS,
-        m.disabilitY_IDENTIFICATION ? "Y" : "N",
-        m.disabilitY_IDENTIFICATION,
-        m.seeing,
-        m.hearing,
-        m.walking,
-        m.remembering,
-        m.selF_CARE,
-        m.communicating,
-        m.disabilitY_STATUS,
-        m.pregnancY_STATUS,
-        convertApiDateToISO(m.pregnancY_DATE),
-        m.vaccinatioN_STATUS,
-        m.healtH_INSURANCE_COVERAGE,
-        m.clienT_BEHAVIOUR,
-        m.imagE_PATH,
+        null, // sync_action
+
+        mapped.enrollDateAD ?? null,
+        mapped.enrollDateBS ?? null,
+
+        mapped.firstName ?? null,
+        mapped.middleName ?? null,
+        mapped.lastName ?? null,
+
+        mapped.gender ?? null,
+        mapped.maritalStatus ?? null,
+        mapped.religionCode ?? null,
+        mapped.casteCode ?? null,
+        mapped.relationToHH ?? null,
+
+        mapped.headHousehold ?? "N",
+
+        mapped.idDocumentType ?? null,
+        mapped.idDocumentNo ?? null,
+        mapped.idIssueDistrictCode ?? null,
+        mapped.idIssueDateAD ?? null,
+        mapped.idIssueDateBS ?? null,
+
+        mapped.dobAD ?? null,
+        mapped.dobBS ?? null,
+
+        mapped.mobileNo ?? null,
+        mapped.minorYn ?? "N",
+
+        mapped.address1Type ?? null,
+        mapped.address ?? null,
+        mapped.address1Line2 ?? null,
+        mapped.address1Line3 ?? null,
+        mapped.address1DistrictCode ?? null,
+        mapped.address1Province ?? null,
+
+        mapped.occupationCode ?? null,
+        mapped.educationCode ?? null,
+        mapped.employeeId ?? null,
+        mapped.tranOfficeCode ?? null,
+
+        mapped.totalAsset ?? "0",
+        mapped.totalLiabilities ?? "0",
+        mapped.netWorth ?? "0",
+
+        mapped.soiSalary ?? "N",
+        mapped.soiBusIncome ?? "N",
+        mapped.soiReturnfrmInvest ?? "N",
+        mapped.soiInheritance ?? "N",
+        mapped.soiRemittance ?? "N",
+        mapped.soiOthers ?? "N",
+        mapped.soiAgriculture ?? "N",
+
+        mapped.healthConditionsYn ?? "N",
+        mapped.healthConditions ?? null,
+
+        mapped.disabilityIdentYn ?? "N",
+        mapped.disabilityIdent ?? null,
+
+        mapped.seeing ?? "N",
+        mapped.hearing ?? "N",
+        mapped.walking ?? "N",
+        mapped.remembering ?? "N",
+        mapped.selfCare ?? "N",
+        mapped.communicating ?? "N",
+
+        mapped.disabilityStatus ?? "N",
+
+        mapped.pregnancyStatus ?? "N",
+        mapped.pregnancyDateAD ?? null,
+
+        mapped.motherofChild ?? "N",
+        mapped.childDobAD ?? null,
+
+        mapped.vaccinationStatus ?? "N",
+        mapped.healthInsCoverage ?? "N",
+
+        mapped.clientBehaviour ?? null,
+        mapped.imagePath ?? null,
+
         nowIso,
         nowIso,
+
         null, // image_upload_status
         null, // deleted_at
       ];
 
-      // Generate placeholders automatically
       const placeholders = values.map(() => "?").join(",");
-
+      const sanitizedValues = values.map((v) => (v === undefined ? null : v));
       await db.runAsync(
         `
-  INSERT INTO household_members (
-    id,
-    client_no,
-    household_local_id,
-    sync_status,
-    sync_action,
-    enroll_date_ad,
-    enroll_date_bs,
-    first_name,
-    middle_name,
-    last_name,
-    gender,
-    marital_status,
-    religion_code,
-    caste_code,
-    relation_to_hh,
-    head_household,
-    id_document_type,
-    id_document_no,
-    id_issue_district_code,
-    id_issue_date_ad,
-    id_issue_date_bs,
-    dob_ad,
-    dob_bs,
-    mobile_no,
-    minor_yn,
-    address1_type,
-    address,
-    address1_line2,
-    address1_line3,
-    address1_district_code,
-    address1_province,
-    occupation_code,
-    education_code,
-    employee_id,
-    tran_office_code,
-    total_asset,
-    total_liabilities,
-    net_worth,
-    soi_salary,
-    soi_bus_income,
-    soi_returnfrminvest,
-    soi_inheritance,
-    soi_remittance,
-    soi_others,
-    soi_agriculture,
-    health_conditions_yn,
-    health_conditions,
-    disability_ident_yn,
-    disability_ident,
-    seeing,
-    hearing,
-    walking,
-    remembering,
-    self_care,
-    communicating,
-    disability_status,
-    pregnancy_status,
-    pregnancy_date,
-    vaccination_status,
-    health_ins_coverage,
-    client_behaviour,
-    image_path,
-    created_at,
-    updated_at,
-    image_upload_status,
-    deleted_at
-  )
-  VALUES (${placeholders})
-  `,
-        values,
+      INSERT INTO household_members (
+        id,
+        client_no,
+        household_local_id,
+        sync_status,
+        sync_action,
+        enroll_date_ad,
+        enroll_date_bs,
+        first_name,
+        middle_name,
+        last_name,
+        gender,
+        marital_status,
+        religion_code,
+        caste_code,
+        relation_to_hh,
+        head_household,
+        id_document_type,
+        id_document_no,
+        id_issue_district_code,
+        id_issue_date_ad,
+        id_issue_date_bs,
+        dob_ad,
+        dob_bs,
+        mobile_no,
+        minor_yn,
+        address1_type,
+        address,
+        address1_line2,
+        address1_line3,
+        address1_district_code,
+        address1_province,
+        occupation_code,
+        education_code,
+        employee_id,
+        tran_office_code,
+        total_asset,
+        total_liabilities,
+        net_worth,
+        soi_salary,
+        soi_bus_income,
+        soi_returnfrminvest,
+        soi_inheritance,
+        soi_remittance,
+        soi_others,
+        soi_agriculture,
+        health_conditions_yn,
+        health_conditions,
+        disability_ident_yn,
+        disability_ident,
+        seeing,
+        hearing,
+        walking,
+        remembering,
+        self_care,
+        communicating,
+        disability_status,
+        pregnancy_status,
+        pregnancy_date,
+        mother_of_child,
+        child_dob,
+        vaccination_status,
+        health_ins_coverage,
+        client_behaviour,
+        image_path,
+        created_at,
+        updated_at,
+        image_upload_status,
+        deleted_at
+      )
+      VALUES (${placeholders})
+      `,
+        sanitizedValues,
       );
-      console.log("💾 Inserting member clientNo:", m.clienT_NO);
+
+      console.log("💾 Inserted member clientNo:", mapped.clientNo);
     }
 
     await this.recalculateMemberCount(householdLocalId);

@@ -14,22 +14,24 @@ import {
 import { useAuth } from "../auth/context/useAuth";
 import { SummaryBar } from "../components/SummaryBar";
 import { SyncBadge } from "../components/SyncBadge";
-// import { NetworkServiceImpl } from "../utils/NetworkService";
 import NetInfo from "@react-native-community/netinfo";
 import { useFocusEffect } from "@react-navigation/native";
 import { AppLogger } from "../utils/AppLogger";
 import { Household } from "../domain/models/Household";
+import { resolveHouseholdAggregateStatus } from "../utils/resolveHouseholdAggregateStatus";
+import { AggregateSyncStatus } from "../models/AggregateSyncStatus";
 
 interface Props {
   householdRepo: HouseholdLocalRepository;
   createHouseholdUseCase: CreateHouseholdUseCase;
 }
 
-// const downloadUseCase = new DownloadHouseholdWithMembersUseCase(
-//   householdRepo,
-//   memberRepo, // you must pass this
-//   memberApiService,
-// );
+type HouseholdWithAggregate = {
+  household: HouseholdLocal;
+  aggregateStatus: AggregateSyncStatus;
+  totalMembers: number;
+  syncedMembers: number;
+};
 
 function sortHouseholds(data: HouseholdLocal[]) {
   const priorityMap: Record<string, number> = {
@@ -59,7 +61,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const router = useRouter();
   const { chwProfile, state, loading: authLoading, expireSession } = useAuth();
 
-  const [households, setHouseholds] = useState<HouseholdLocal[]>([]);
+  const [households, setHouseholds] = useState<HouseholdWithAggregate[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
@@ -98,8 +100,40 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
     }
   };
 
-  // Adding Download Method:
+  // Helper Function
+  const buildAggregateHouseholds = React.useCallback(
+    async (raw: HouseholdLocal[]): Promise<HouseholdWithAggregate[]> => {
+      const sorted = sortHouseholds(raw);
 
+      const enriched = await Promise.all(
+        sorted.map(async (h) => {
+          const members = await householdMemberLocalRepository.listByHousehold(
+            h.localId,
+          );
+
+          const aggregateStatus = resolveHouseholdAggregateStatus(h, members);
+
+          const totalMembers = members.length;
+
+          const syncedMembers = members.filter(
+            (m) => m.syncStatus === "SYNCED",
+          ).length;
+
+          return {
+            household: h,
+            aggregateStatus,
+            totalMembers,
+            syncedMembers,
+          };
+        }),
+      );
+
+      return enriched;
+    },
+    [],
+  );
+
+  // Adding Download Method:
   const handleDownload = React.useCallback(
     async (h: Household) => {
       if (!chwProfile) return;
@@ -112,8 +146,8 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         );
 
         const updated = await householdRepo.listAllForCHW(chwProfile.userName);
-
-        setHouseholds(sortHouseholds(updated));
+        const enriched = await buildAggregateHouseholds(updated);
+        setHouseholds(enriched);
 
         setDownloadedServerIds((prev) => {
           const next = new Set(prev);
@@ -142,7 +176,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         alert("Download failed.");
       }
     },
-    [chwProfile, householdRepo],
+    [buildAggregateHouseholds, chwProfile, householdRepo],
   );
 
   // -----------------------------
@@ -165,7 +199,9 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         // 🔥 STEP 2: Now load corrected data
         const local = await householdRepo.listAllForCHW(chwProfile.userName);
 
-        setHouseholds(sortHouseholds(local));
+        const enriched = await buildAggregateHouseholds(local);
+
+        setHouseholds(enriched);
 
         // 🔥 STEP 3: Rebuild downloaded server id set
         const ids = new Set(
@@ -182,8 +218,10 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       }
     };
 
-    initialize();
-  }, [chwProfile, householdRepo]);
+    setTimeout(() => {
+      initialize();
+    }, 0);
+  }, [buildAggregateHouseholds, chwProfile, householdRepo]);
 
   // For Draft not showing immediately
 
@@ -194,7 +232,9 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       const reload = async () => {
         const data = await householdRepo.listAllForCHW(chwProfile.userName);
 
-        setHouseholds(sortHouseholds(data));
+        const enriched = await buildAggregateHouseholds(data);
+
+        setHouseholds(enriched);
         const ids = new Set(
           data.filter((h) => h.householdId).map((h) => h.householdId as string),
         );
@@ -203,7 +243,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       };
 
       reload();
-    }, [chwProfile, householdRepo]),
+    }, [buildAggregateHouseholds, chwProfile, householdRepo]),
   );
 
   // -----------------------------
@@ -258,7 +298,8 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
       const updated = await householdRepo.listAllForCHW(chwProfile!.userName);
 
-      setHouseholds(sortHouseholds(updated));
+      const enriched = await buildAggregateHouseholds(updated);
+      setHouseholds(enriched);
 
       const ids = new Set(
         updated
@@ -268,7 +309,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
       setDownloadedServerIds(ids);
     },
-    [householdRepo, chwProfile],
+    [householdRepo, chwProfile, buildAggregateHouseholds],
   );
 
   const showOptions = React.useCallback(
@@ -295,20 +336,27 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
   // Memoize renderItem
   const renderItem = React.useCallback(
-    ({ item }: { item: HouseholdLocal | Household }) => {
+    ({ item }: { item: HouseholdWithAggregate | Household }) => {
       if (activeTab === "LOCAL") {
-        const local = item as HouseholdLocal;
+        const {
+          household: local,
+          aggregateStatus,
+          totalMembers,
+          syncedMembers,
+        } = item as HouseholdWithAggregate;
         if (!local.localId) return null;
 
         return (
           <Pressable
             onPress={() => handleEdit(local)}
             className={`bg-white mx-4 mt-3 p-4 rounded-xl shadow-sm ${
-              local.syncStatus === "FAILED"
+              aggregateStatus === "FAILED" ||
+              aggregateStatus === "PARTIAL_FAILED"
                 ? "border border-red-300"
-                : local.syncStatus === "PENDING"
+                : aggregateStatus === "PENDING" ||
+                    aggregateStatus === "PARTIAL_PENDING"
                   ? "border border-yellow-300"
-                  : local.syncStatus === "DRAFT"
+                  : aggregateStatus === "DRAFT"
                     ? "border border-orange-300"
                     : ""
             }`}
@@ -320,35 +368,47 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
                 </Text>
 
                 {/* STATUS LABEL */}
-                {local.syncStatus === "DRAFT" && (
+                {aggregateStatus === "DRAFT" && (
                   <Text className="text-xs text-orange-700 bg-orange-100 px-2 py-1 rounded mt-1">
                     Draft
                   </Text>
                 )}
 
-                {local.syncStatus === "PENDING" && (
+                {aggregateStatus === "PENDING" && (
                   <Text className="text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded mt-1">
-                    Pending Sync
+                    Household Pending
                   </Text>
                 )}
 
-                {local.syncStatus === "FAILED" && (
+                {aggregateStatus === "PARTIAL_PENDING" && (
+                  <Text className="text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded mt-1">
+                    Member Pending
+                  </Text>
+                )}
+
+                {aggregateStatus === "FAILED" && (
                   <Text className="text-xs text-red-700 bg-red-100 px-2 py-1 rounded mt-1">
-                    Sync Failed
+                    Household Failed
                   </Text>
                 )}
 
-                {local.syncStatus === "SYNCED" && (
+                {aggregateStatus === "PARTIAL_FAILED" && (
+                  <Text className="text-xs text-red-700 bg-red-100 px-2 py-1 rounded mt-1">
+                    Member Failed
+                  </Text>
+                )}
+
+                {aggregateStatus === "FULLY_SYNCED" && (
                   <Text className="text-xs text-green-700 bg-green-100 px-2 py-1 rounded mt-1">
-                    Synced
+                    Fully Synced
                   </Text>
                 )}
               </View>
 
               {/* RIGHT SIDE: Badge + Menu */}
               <View className="items-end">
-                <SyncBadge status={local.syncStatus} />
-                {local.syncStatus === "SYNCED" && (
+                <SyncBadge status={aggregateStatus} />
+                {aggregateStatus === "FULLY_SYNCED" && (
                   <Pressable
                     onPress={() => showOptions(local)}
                     className="mt-2 px-2 py-1"
@@ -363,9 +423,29 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
               {local.address || "Address not specified"}
             </Text>
 
-            <Text className="text-gray-500 text-sm mt-1">
-              {local.noofHHMembers} Members
-            </Text>
+            <View className="mt-1">
+              {totalMembers === 0 ? (
+                <Text className="text-gray-400 text-sm">No Members Added</Text>
+              ) : (
+                <>
+                  <Text className="text-gray-500 text-sm">
+                    {totalMembers} Members
+                  </Text>
+
+                  <Text
+                    className={`text-xs mt-0.5 ${
+                      syncedMembers === totalMembers
+                        ? "text-green-600"
+                        : syncedMembers === 0
+                          ? "text-red-600"
+                          : "text-yellow-600"
+                    }`}
+                  >
+                    {syncedMembers} / {totalMembers} Members Synced
+                  </Text>
+                </>
+              )}
+            </View>
           </Pressable>
         );
       }
@@ -416,7 +496,9 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
       // Reload updated local data after sync
       const data = await householdRepo.listAllForCHW(chwProfile.userName);
-      setHouseholds(sortHouseholds(data));
+
+      const enriched = await buildAggregateHouseholds(data);
+      setHouseholds(enriched);
 
       Alert.alert("Success", "Sync completed successfully.");
     } catch (error: any) {
@@ -505,7 +587,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
       {/* SUMMARY */}
       <View className="px-4 mt-4">
-        <SummaryBar households={households} />
+        <SummaryBar households={households.map((h) => h.household)} />
       </View>
 
       {/* TAB SWITCH UI */}
@@ -536,11 +618,11 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       </View>
 
       {/* LIST */}
-      <FlatList<HouseholdLocal | Household>
+      <FlatList<HouseholdWithAggregate | Household>
         data={currentData}
         keyExtractor={(item, index) => {
           if (activeTab === "LOCAL") {
-            const local = item as HouseholdLocal;
+            const local = (item as HouseholdWithAggregate).household;
             return local.localId ?? `local-${index}`;
           }
 

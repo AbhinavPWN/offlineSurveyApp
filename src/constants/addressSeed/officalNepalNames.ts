@@ -1,0 +1,100 @@
+export const officialDistrictNames: Record<string, string> = {
+  // Province 1
+  TAPLEJUNG: "ताप्लेजुङ",
+  SANKHUWASABHA: "सङ्खुवासभा",
+  SOLUKHUMBU: "सोलुखुम्बु",
+  OKHALDHUNGA: "ओखलढुङ्गा",
+  KHOTANG: "खोटाङ",
+  BHOJPUR: "भोजपुर",
+  DHANKUTA: "धनकुटा",
+  TERHATHUM: "तेह्रथुम",
+  PANCHTHAR: "पाँचथर",
+  ILAM: "इलाम",
+  JHAPA: "झापा",
+  MORANG: "मोरङ",
+  SUNSARI: "सुनसरी",
+  UDAYAPUR: "उदयपुर",
+
+  // Province 2
+  SAPTARI: "सप्तरी",
+  SIRAHA: "सिराहा",
+  DHANUSHA: "धनुषा",
+  MAHOTTARI: "महोत्तरी",
+  SARLAHI: "सर्लाही",
+  RAUTAHAT: "रौतहट",
+  BARA: "बारा",
+  PARSA: "पर्सा",
+
+  // Province 3 (Bagmati)
+  DOLAKHA: "दोलखा",
+  SINDHUPALCHOWK: "सिन्धुपाल्चोक",
+  RASUWA: "रसुवा",
+  DHADING: "धादिङ",
+  NUWAKOT: "नुवाकोट",
+  KATHMANDU: "काठमाडौं",
+  BHAKTAPUR: "भक्तपुर",
+  LALITPUR: "ललितपुर",
+  KAVRE: "काभ्रेपलाञ्चोक",
+  RAMECHHAP: "रामेछाप",
+  SINDHULI: "सिन्धुली",
+  CHITWAN: "चितवन",
+  MAKWANPUR: "मकवानपुर",
+
+  // Province 4 (Gandaki)
+  GORKHA: "गोरखा",
+  LAMJUNG: "लमजुङ",
+  TANAHU: "तनहुँ",
+  SYANGJA: "स्याङ्जा",
+  KASKI: "कास्की",
+  MANANG: "मनाङ",
+  MUSTANG: "मुस्ताङ",
+  MYAGDI: "म्याग्दी",
+  PARBAT: "पर्वत",
+  BAGLUNG: "बागलुङ",
+  NAWALPUR: "नवलपुर",
+
+  // Province 5 (Lumbini)
+  RUPANDEHI: "रुपन्देही",
+  KAPILVASTU: "कपिलवस्तु",
+  PARASI: "परासी",
+  GULMI: "गुल्मी",
+  PALPA: "पाल्पा",
+  ARGHAKHANCHI: "अर्घाखाँची",
+  PYUTHAN: "प्युठान",
+  ROLPA: "रोल्पा",
+  EASTERN_RUKUM: "पूर्वी रुकुम",
+  BANKE: "बाँके",
+  BARDIYA: "बर्दिया",
+  DANG: "दाङ",
+
+  // Province 6 (Karnali)
+  WESTERN_RUKUM: "पश्चिम रुकुम",
+  SALYAN: "सल्यान",
+  DOLPA: "डोल्पा",
+  HUMlA: "हुम्ला",
+  JUMLA: "जुम्ला",
+  KALIKOT: "कालिकोट",
+  MUGU: "मुगु",
+  SURKHET: "सुर्खेत",
+  DAILEKH: "दैलेख",
+  JAJARKOT: "जाजरकोट",
+
+  // Province 7 (Sudurpashchim)
+  BAJURA: "बाजुरा",
+  BAJHANG: "बझाङ",
+  DARCHULA: "दार्चुला",
+  BAITADI: "बैतडी",
+  DADHELDUHRA: "डडेलधुरा",
+  DOTI: "डोटी",
+  ACHHAM: "अछाम",
+  KAILALI: "कैलाली",
+  KANCHANPUR: "कञ्चनपुर",
+};
+
+export const officialMunicipalityNames: Record<string, string> = {
+  "Bulingtar Rural Municipality": "बुलिङटार गाउँपालिका",
+  "Devchuli Municipality": "देवचुली नगरपालिका",
+  "Kawasoti Municipality": "कावासोती नगरपालिका",
+  "Putalibazar Municipality": "पुतलीबजार नगरपालिका",
+  // continue...
+};

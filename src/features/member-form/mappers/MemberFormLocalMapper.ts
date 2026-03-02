@@ -2,20 +2,21 @@ import { HouseholdMemberLocal } from "@/src/models/householdMember.model";
 import { MemberFormState } from "../models/MemberFormState";
 
 export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
+  const isHead = local.headHousehold === "Y";
   return {
     // Basic
     enrollDate: local.enrollDateAD ?? null,
     fName: local.firstName ?? "",
     gender: local.gender ?? null,
     maritalStatus: local.maritalStatus ?? null,
-    relationtoHH: local.relationToHH ?? null,
-    headHousehold: local.headHousehold === "Y",
+    relationtoHH: isHead ? "HHH" : (local.relationToHH ?? null),
+    headHousehold: isHead,
     mobileNo: local.mobileNo ?? "",
 
     // Identity
-    idDocumentType: local.idDocumentType ?? null,
+    idDocumentType: local.idDocumentType ?? "",
     idDocumentNo: local.idDocumentNo ?? "",
-    idIssueDistrictCode: local.idIssueDistrictCode ?? null,
+    idIssueDistrictCode: local.idIssueDistrictCode ?? "",
     memIdIssueDate: local.idIssueDateAD ?? null,
     dob: local.dobAD ?? null,
     minorYn: local.minorYn === "Y",
@@ -23,16 +24,16 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     // Address
     address1Type: local.address1Type ?? null,
     address: local.address ?? "",
-    address1Line2: local.address1Line2 ?? null,
+    address1Line2: local.address1Line2 ?? "",
     address1Line3: local.address1Line3 ?? "",
-    address1DistrictCode: local.address1DistrictCode ?? null,
-    address1Province: local.address1Province ?? null,
+    address1DistrictCode: local.address1DistrictCode ?? "",
+    address1Province: local.address1Province ?? "",
 
     // Occupation
-    casteCode: local.casteCode ?? null,
-    religionCode: local.religionCode ?? null,
-    occupationCode: local.occupationCode ?? null,
-    educationCode: local.educationCode ?? null,
+    casteCode: local.casteCode ?? "",
+    religionCode: local.religionCode ?? "",
+    occupationCode: local.occupationCode ?? "",
+    educationCode: local.educationCode ?? "",
 
     // Financial
     totalAsset: Number(local.totalAsset ?? 0),
@@ -64,9 +65,12 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     disabilityStatus: local.disabilityStatus ?? null,
 
     pregnancyStatus: local.pregnancyStatus ?? "N",
-    pregnancyDate: local.pregnancyDate ?? null,
+    pregnancyDate: local.pregnancyDateAD ?? "",
 
-    vaccinationStatus: local.vaccinationStatus ?? null,
+    motherofChild: local.motherofChild === "Y",
+    childDob: local.childDobAD ?? "",
+
+    vaccinationStatus: local.vaccinationStatus ?? "",
     healthInsCoverage: local.healthInsCoverage ?? "N",
 
     // Misc
@@ -83,7 +87,7 @@ export function mapFormToLocalPatch(
     firstName: form.fName,
     gender: form.gender ?? null,
     maritalStatus: form.maritalStatus ?? null,
-    relationToHH: form.relationtoHH ?? null,
+    relationToHH: form.headHousehold ? "HHH" : (form.relationtoHH ?? null),
     headHousehold: form.headHousehold ? "Y" : "N",
     mobileNo: form.mobileNo,
 
@@ -108,7 +112,9 @@ export function mapFormToLocalPatch(
 
     totalAsset: String(form.totalAsset),
     totalLiabilities: String(form.totalLiabilities),
-    netWorth: String(form.netWorth),
+    netWorth: String(
+      Number(form.totalAsset || 0) - Number(form.totalLiabilities || 0),
+    ),
 
     soiSalary: form.soiSalary ? "Y" : "N",
     soiBusIncome: form.soiBusIncome ? "Y" : "N",
@@ -139,10 +145,14 @@ export function mapFormToLocalPatch(
 
     pregnancyStatus: form.gender === "F" ? (form.pregnancyStatus ?? "N") : null,
 
-    pregnancyDate:
+    pregnancyDateAD:
       form.gender === "F" && form.pregnancyStatus === "Y"
         ? (form.pregnancyDate ?? null)
         : null,
+
+    childDobAD: form.motherofChild && form.childDob ? form.childDob : null,
+
+    motherofChild: form.motherofChild ? "Y" : "N",
 
     vaccinationStatus: form.minorYn ? (form.vaccinationStatus ?? "N") : null,
 

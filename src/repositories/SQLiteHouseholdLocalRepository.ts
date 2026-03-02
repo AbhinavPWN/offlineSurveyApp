@@ -352,6 +352,7 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
         vdc_code,
         ward_no,
         address,
+        gps_coordinates,
         household_member_count,
         housing_type_code,
         has_clean_water,
@@ -360,7 +361,7 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
         is_downloaded,
         created_at,
         updated_at  
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         `,
       [
         id,
@@ -374,6 +375,7 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
         h.municipalityCode,
         String(h.wardNo),
         h.address,
+        h.gpsCoordinates ?? "",
         h.memberCount,
         h.housingType,
         h.hasCleanWater ? "Y" : "N",
@@ -383,6 +385,14 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
         now,
         now,
       ],
+    );
+
+    await db.runAsync(
+      `
+  INSERT INTO household_info (household_id, date_of_listing)
+  VALUES (?, ?)
+  `,
+      [id, h.dateOfListingAD ?? ""],
     );
 
     await AppLogger.log("SYNC", "Inserted household from listing ", {
@@ -410,6 +420,7 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
         vdc_code = ?,
         ward_no = ?,
         address = ?,
+        gps_coordinates = ?, 
         household_member_count = ?,
         housing_type_code = ?,
         has_clean_water = ?,
@@ -424,6 +435,7 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
         h.municipalityCode,
         String(h.wardNo),
         h.address,
+        h.gpsCoordinates ?? "",
         h.memberCount,
         h.housingType,
         h.hasCleanWater ? "Y" : "N",
@@ -432,6 +444,15 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
         new Date().toISOString(),
         h.householdId,
       ],
+    );
+
+    await db.runAsync(
+      `
+  UPDATE household_info
+  SET date_of_listing = ?
+  WHERE household_id = ?
+  `,
+      [h.dateOfListingAD ?? "", existing.localId],
     );
 
     await AppLogger.log("SYNC", "Updated household from listing", {

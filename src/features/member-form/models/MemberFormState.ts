@@ -21,10 +21,10 @@ export interface MemberFormState {
 
   address1Type: string | null;
   address: string;
-  address1Line2: string | null;
   address1Line3: string;
-  address1DistrictCode: string | null;
-  address1Province: string | null;
+  address1Province: string;
+  address1DistrictCode: string;
+  address1Line2: string;
 
   // Occupation & Social
 
@@ -66,6 +66,9 @@ export interface MemberFormState {
 
   pregnancyStatus: string | null;
   pregnancyDate: string | null;
+
+  motherofChild: boolean;
+  childDob: string | null;
 
   vaccinationStatus: string | null;
   healthInsCoverage: string | null;

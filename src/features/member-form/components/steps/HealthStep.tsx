@@ -19,7 +19,13 @@ interface Props {
   errors?: Record<string, string>;
 }
 
-export function HealthStep({ form, updateField, errors }: Props) {
+export const HealthStep = React.memo(function HealthStep({
+  form,
+  updateField,
+  errors,
+}: Props) {
+  if (__DEV__) console.log("HealthStep render");
+
   const isFemale = form.gender === "F";
 
   return (
@@ -75,7 +81,7 @@ export function HealthStep({ form, updateField, errors }: Props) {
       {/* Disability Status */}
       <FormDropdown
         label="Disability Status (अपाङ्गता स्थिति)"
-        value={form.disabilityStatus}
+        value={form.disabilityStatus ?? "N"}
         options={yesNoOptions}
         onChange={(val) => updateField("disabilityStatus", val)}
       />
@@ -140,7 +146,7 @@ export function HealthStep({ form, updateField, errors }: Props) {
         <>
           <FormDropdown
             label="Pregnancy Status (गर्भावस्था स्थिति)"
-            value={form.pregnancyStatus}
+            value={form.pregnancyStatus ?? "N"}
             options={yesNoOptions}
             onChange={(val) => updateField("pregnancyStatus", val)}
           />
@@ -159,6 +165,37 @@ export function HealthStep({ form, updateField, errors }: Props) {
               )}
             </>
           )}
+
+          {/* Mother of Child */}
+          <FormDropdown
+            label="Mother of Child? (बच्चाको आमा हो?)"
+            value={form.motherofChild ? "Y" : "N"}
+            options={yesNoOptions}
+            onChange={(val) => {
+              const isMother = val === "Y";
+              updateField("motherofChild", isMother);
+
+              // Auto-clear child DOB if switched to No
+              if (!isMother) {
+                updateField("childDob", "");
+              }
+            }}
+          />
+
+          {form.motherofChild && (
+            <>
+              <BSDateInput
+                label="Child Date of Birth (B.S.)"
+                adValue={form.childDob}
+                onChangeAD={(adIso) => updateField("childDob", adIso)}
+              />
+              {errors?.childDob && (
+                <Text className="text-red-500 text-xs mt-1">
+                  {errors.childDob}
+                </Text>
+              )}
+            </>
+          )}
         </>
       )}
 
@@ -167,7 +204,7 @@ export function HealthStep({ form, updateField, errors }: Props) {
         <>
           <FormDropdown
             label="Vaccination Status (खोप स्थिति)"
-            value={form.vaccinationStatus}
+            value={form.vaccinationStatus ?? "N"}
             options={yesNoOptions}
             onChange={(val) => updateField("vaccinationStatus", val)}
           />
@@ -188,4 +225,4 @@ export function HealthStep({ form, updateField, errors }: Props) {
       />
     </View>
   );
-}
+});

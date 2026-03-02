@@ -19,6 +19,8 @@ interface Props {
 }
 
 export function OccupationStep({ form, updateField, errors }: Props) {
+  if (__DEV__) console.log("OccupationStep render");
+
   return (
     <View className="space-y-4">
       <FormDropdown

@@ -30,11 +30,11 @@ export const relationToHHOptions: DropdownOption[] = [
   { value: "MIL", labelEn: "Mother in Law", labelNp: "सासु" },
 ];
 
-export const districtOptions: DropdownOption[] = [
-  { value: "106", labelEn: "Bhojpur", labelNp: "भोजपुर" },
-  { value: "306", labelEn: "Kathmandu", labelNp: "काठमाडौं" },
-  { value: "308", labelEn: "Lalitpur", labelNp: "ललितपुर" },
-  { value: "508", labelEn: "Rupandehi", labelNp: "रुपन्देही" },
-  { value: "113", labelEn: "Sunsari", labelNp: "सुनसरी" },
-  // ⚠️ Add remaining gradually (do not paste 77 districts inline now)
-];
+// export const districtOptions: DropdownOption[] = [
+//   { value: "106", labelEn: "Bhojpur", labelNp: "भोजपुर" },
+//   { value: "306", labelEn: "Kathmandu", labelNp: "काठमाडौं" },
+//   { value: "308", labelEn: "Lalitpur", labelNp: "ललितपुर" },
+//   { value: "508", labelEn: "Rupandehi", labelNp: "रुपन्देही" },
+//   { value: "113", labelEn: "Sunsari", labelNp: "सुनसरी" },
+//   // ⚠️ Add remaining gradually (do not paste 77 districts inline now)
+// ];

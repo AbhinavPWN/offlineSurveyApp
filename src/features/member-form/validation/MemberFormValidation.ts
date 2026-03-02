@@ -124,6 +124,8 @@ export function validateAddressInfo(form: MemberFormState): ValidationResult {
     errors.address1Type = "Address type is required.";
   }
 
+  if (!form.address1Province) errors.address1Province = "Province is required";
+
   if (!form.address1DistrictCode) {
     errors.address1DistrictCode = "District is required.";
   }

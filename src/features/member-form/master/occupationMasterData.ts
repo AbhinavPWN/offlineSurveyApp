@@ -3,20 +3,6 @@ import { DropdownOption } from "../models/DropdownOptions";
 /**
  * Caste Options
  */
-// export const casteOptions: DropdownOption[] = [
-//   { value: "1", labelEn: "Brahmin", labelNp: "ब्राह्मण" },
-//   { value: "2", labelEn: "Chhetri", labelNp: "क्षेत्री" },
-//   { value: "3", labelEn: "Thakuri", labelNp: "ठकुरी" },
-//   { value: "37", labelEn: "Kami", labelNp: "कामी" },
-//   { value: "38", labelEn: "Damai", labelNp: "दमाई" },
-//   { value: "39", labelEn: "Sarki", labelNp: "सार्की" },
-//   { value: "53", labelEn: "Newar/Thakali", labelNp: "नेवार/थकाली" },
-//   { value: "54", labelEn: "Magar", labelNp: "मगर" },
-//   { value: "55", labelEn: "Tamang", labelNp: "तामाङ" },
-//   { value: "85", labelEn: "Tharu", labelNp: "थारु" },
-//   { value: "98", labelEn: "Muslim", labelNp: "मुस्लिम" },
-//   // ⚠️ Add remaining gradually (do not paste 100 inline at once)
-// ];
 
 /**
  * Religion Options

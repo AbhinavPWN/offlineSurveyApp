@@ -8,9 +8,33 @@ interface Props {
   value: string | null;
   options: DropdownOption[];
   onChange: (value: string) => void;
+  showNepali?: boolean;
 }
 
-export function FormDropdown({ label, value, options, onChange }: Props) {
+export const FormDropdown = React.memo(function FormDropdown({
+  label,
+  value,
+  options,
+  onChange,
+  showNepali,
+}: Props) {
+  // 🔥 Memoize Picker Items (prevents rebuilding hundreds of items every render)
+  const renderedItems = React.useMemo(
+    () =>
+      options.map((opt) => (
+        <Picker.Item
+          key={opt.value}
+          label={
+            showNepali === false
+              ? opt.labelEn
+              : `${opt.labelNp} (${opt.labelEn})`
+          }
+          value={opt.value}
+        />
+      )),
+    [options, showNepali],
+  );
+
   return (
     <View className="mb-4">
       <Text className="mb-1 font-medium">{label}</Text>
@@ -25,16 +49,9 @@ export function FormDropdown({ label, value, options, onChange }: Props) {
           }}
         >
           <Picker.Item label="Select / छान्नुहोस्" value={null} />
-
-          {options.map((opt) => (
-            <Picker.Item
-              key={opt.value}
-              label={`${opt.labelNp} (${opt.labelEn})`}
-              value={opt.value}
-            />
-          ))}
+          {renderedItems}
         </Picker>
       </View>
     </View>
   );
-}
+});

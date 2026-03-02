@@ -11,14 +11,15 @@ interface Props {
   errors?: Record<string, string>;
 }
 
-export function FinancialStep({ form, updateField, errors }: Props) {
-  // Auto-calculate net worth in UI
-  useEffect(() => {
-    const net = (form.totalAsset || 0) - (form.totalLiabilities || 0);
-    if (net !== form.netWorth) {
-      updateField("netWorth", net);
-    }
-  }, [form.netWorth, form.totalAsset, form.totalLiabilities, updateField]);
+export const FinancialStep = React.memo(function FinancialStep({
+  form,
+  updateField,
+  errors,
+}: Props) {
+  if (__DEV__) console.log("FinancialStep render");
+
+  const calculatedNetWorth =
+    Number(form.totalAsset || 0) - Number(form.totalLiabilities || 0);
 
   const incomeOptions = [
     { key: "soiSalary", label: "Salary / तलब" },
@@ -38,7 +39,7 @@ export function FinancialStep({ form, updateField, errors }: Props) {
         <TextInput
           className="border rounded-lg px-3 py-2"
           keyboardType="numeric"
-          value={form.totalAsset?.toString()}
+          value={form.totalAsset ? String(form.totalAsset) : ""}
           onChangeText={(text) =>
             updateField("totalAsset", Number(text.replace(/\D/g, "")))
           }
@@ -57,7 +58,7 @@ export function FinancialStep({ form, updateField, errors }: Props) {
         <TextInput
           className="border rounded-lg px-3 py-2"
           keyboardType="numeric"
-          value={form.totalLiabilities?.toString()}
+          value={form.totalLiabilities ? String(form.totalLiabilities) : ""}
           onChangeText={(text) =>
             updateField("totalLiabilities", Number(text.replace(/\D/g, "")))
           }
@@ -75,7 +76,7 @@ export function FinancialStep({ form, updateField, errors }: Props) {
         </Text>
         <TextInput
           className="border rounded-lg px-3 py-2 bg-gray-100"
-          value={form.netWorth?.toString()}
+          value={calculatedNetWorth.toString()}
           editable={false}
         />
       </View>
@@ -103,4 +104,4 @@ export function FinancialStep({ form, updateField, errors }: Props) {
       )}
     </View>
   );
-}
+});

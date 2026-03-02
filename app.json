@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "survey-app",
-    "slug": "survey-app",
+    "name": "Nirdhan Survey",
+    "slug": "nirdhan-survey",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/ni.png",
     "scheme": "surveyapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -20,7 +20,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.surveyapp"
+      "package": "np.com.nirdhan.survey"
     },
     "web": {
       "output": "static",

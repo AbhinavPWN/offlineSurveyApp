@@ -3,18 +3,14 @@ import { Household } from "../domain/models/Household";
 import { mapListingDtoToHousehold } from "./api/mappers/householdListingMapper";
 import { GetHHDataListResponse } from "./api/dto/GetHHDataListResponse";
 import { AppLogger } from "../utils/AppLogger";
-
-// import { loadAuthSession } from "@/src/auth/storage/authStorage";
-// import { isTokenValid } from "@/src/auth/service/token";
 import { BaseApiClient } from "./api/BaseApiClient";
 
 // --------------------
 // API Base
 // --------------------
 
-// const BASE_URL = "https://wecareapi.nirdhan.com.np:8085/api/SavingDeposit";
-
 const HOUSEHOLD_ENTRY_ENDPOINT = "/Household_Entry";
+const HOUSEHOLD_UPDATE_ENDPOINT = "/Household_Update";
 
 // --------------------
 // Payload Types
@@ -85,89 +81,6 @@ export interface HouseholdApiService {
 
 export class HouseholdApiServiceImpl implements HouseholdApiService {
   private client = BaseApiClient.getInstance();
-  // private client: AxiosInstance;
-
-  // constructor() {
-  //   this.client = axios.create({
-  //     baseURL: BASE_URL,
-  //     timeout: 15000,
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //   });
-
-  //   // -----------------------------
-  //   // REQUEST INTERCEPTOR
-  //   // -----------------------------
-  //   this.client.interceptors.request.use(async (config) => {
-  //     config.metadata = { startTime: new Date().getTime() };
-
-  //     await AppLogger.log("INFO", "API_REQUEST", {
-  //       method: config.method?.toUpperCase(),
-  //       url: `${config.baseURL ?? ""}${config.url ?? ""}`,
-  //       body: config.data ?? null,
-  //     });
-
-  //     try {
-  //       const session = await loadAuthSession();
-
-  //       if (session && session.accessToken && isTokenValid(session)) {
-  //         config.headers.Authorization = `Bearer ${session.accessToken}`;
-  //       } else {
-  //         await AppLogger.log("WARN", "API_REQUEST_NO_VALID_TOKEN", {
-  //           url: config.url,
-  //         });
-  //       }
-  //     } catch (error: any) {
-  //       await AppLogger.log("ERROR", "API_TOKEN_ATTACH_FAILED", {
-  //         message: error?.message,
-  //       });
-  //     }
-
-  //     return config;
-  //   });
-
-  //   // -----------------------------
-  //   // RESPONSE INTERCEPTOR
-  //   // -----------------------------
-  //   this.client.interceptors.response.use(
-  //     async (response) => {
-  //       const duration =
-  //         new Date().getTime() - (response.config.metadata?.startTime ?? 0);
-
-  //       await AppLogger.log("INFO", "API_RESPONSE", {
-  //         method: response.config.method?.toUpperCase(),
-  //         url: `${response.config.baseURL ?? ""}${response.config.url ?? ""}`,
-
-  //         status: response.status,
-  //         durationMs: duration,
-  //       });
-
-  //       return response;
-  //     },
-  //     async (error) => {
-  //       const config = error.config || {};
-  //       const duration =
-  //         new Date().getTime() - (config.metadata?.startTime ?? 0);
-
-  //       await AppLogger.log("ERROR", "API_ERROR", {
-  //         method: config.method?.toUpperCase(),
-  //         url: config.baseURL + config.url,
-  //         status: error.response?.status ?? "NO_RESPONSE",
-  //         message: error.message,
-  //         durationMs: duration,
-  //       });
-
-  //       if (error.response?.status === 401) {
-  //         await AppLogger.log("AUTH", "API_401_UNAUTHORIZED", {
-  //           url: config.url,
-  //         });
-  //       }
-
-  //       return Promise.reject(error);
-  //     },
-  //   );
-  // }
 
   // -----------------------------
   // INSERT
@@ -175,16 +88,17 @@ export class HouseholdApiServiceImpl implements HouseholdApiService {
   async insertHousehold(
     payload: InsertHouseholdPayload,
   ): Promise<InsertHouseholdResponse> {
-    // await AppLogger.log("INFO", "API - Insert household request", {
-    //   payload,
-    // });
     const response = await this.client.post(HOUSEHOLD_ENTRY_ENDPOINT, payload);
 
-    // console.log("INSERT RAW RESPONSE:", response.data);
-    // await AppLogger.log("INFO", "Insert household response", {
-    //   response: response.data,
-    // });
+    // 🔎 Log full response once for debugging
+    if (__DEV__) {
+      console.log(
+        "🟢 INSERT RAW RESPONSE:",
+        JSON.stringify(response.data, null, 2),
+      );
+    }
 
+    // ✅ According to API doc, server returns outHouseholdId
     const serverId = response.data?.household_id;
 
     if (!serverId) {
@@ -192,7 +106,7 @@ export class HouseholdApiServiceImpl implements HouseholdApiService {
         fullResponse: response.data,
       });
 
-      throw new Error("Invalid insert response: household_id missing");
+      throw new Error("Invalid insert response: outHouseholdId missing");
     }
 
     return {
@@ -203,12 +117,29 @@ export class HouseholdApiServiceImpl implements HouseholdApiService {
   // -----------------------------
   // UPDATE
   // -----------------------------
-  async updateHousehold(payload: UpdateHouseholdPayload): Promise<void> {
+  async updateHousehold(payload: UpdateHouseholdPayload): Promise<any> {
     if (!payload.householdId) {
       throw new Error("Update failed: householdId is required");
     }
 
-    await this.client.post(HOUSEHOLD_ENTRY_ENDPOINT, payload);
+    const response = await this.client.post(HOUSEHOLD_UPDATE_ENDPOINT, payload);
+
+    const data = response.data;
+
+    await AppLogger.log("SYNC", "Household Update API response", {
+      householdId: payload.householdId,
+      response: data,
+    });
+    if (__DEV__) {
+      console.log("🔵Household UPDATE RESPONSE:", JSON.stringify(data));
+    }
+
+    // If API returns response_code, validate it
+    if (data?.response_code && data.response_code !== "SUCCESS") {
+      throw new Error(data.response_message || "Household update failed");
+    }
+
+    return data;
   }
 
   // -----------------------------

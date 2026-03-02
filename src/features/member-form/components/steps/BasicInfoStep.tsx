@@ -19,7 +19,13 @@ interface Props {
   errors?: Record<string, string>;
 }
 
-export function BasicInfoStep({ form, updateField, errors }: Props) {
+export const BasicInfoStep = React.memo(function BasicInfoStep({
+  form,
+  updateField,
+  errors,
+}: Props) {
+  if (__DEV__) console.log("BasicInfoStep render");
+
   return (
     <View className="space-y-4">
       {/* Enroll Date */}
@@ -93,15 +99,8 @@ export function BasicInfoStep({ form, updateField, errors }: Props) {
         value={form.relationtoHH}
         options={relationToHHOptions}
         onChange={(val) => {
-          // Update relation
           updateField("relationtoHH", val);
-
-          // Automatically derive headHousehold
-          if (val === "HHH") {
-            updateField("headHousehold", true);
-          } else {
-            updateField("headHousehold", false);
-          }
+          updateField("headHousehold", val === "HHH");
         }}
       />
       {errors?.relationtoHH && (
@@ -113,16 +112,10 @@ export function BasicInfoStep({ form, updateField, errors }: Props) {
         label="Date of Birth (B.S.) / जन्म मिति (वि.सं.) *"
         adValue={form.dob}
         onChangeAD={(adIso) => {
-          updateField("dob", adIso);
+          const age = adIso ? calculateAgeFromISO(adIso) : null;
 
-          if (adIso) {
-            const age = calculateAgeFromISO(adIso);
-            if (age !== null) {
-              updateField("minorYn", age < 18);
-            }
-          } else {
-            updateField("minorYn", false);
-          }
+          updateField("dob", adIso);
+          updateField("minorYn", age !== null ? age < 18 : false);
         }}
       />
       {errors?.dob && (
@@ -130,4 +123,4 @@ export function BasicInfoStep({ form, updateField, errors }: Props) {
       )}
     </View>
   );
-}
+});

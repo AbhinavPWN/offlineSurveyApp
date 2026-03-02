@@ -25,10 +25,10 @@ export function createEmptyMemberFormState(): MemberFormState {
 
     address1Type: null,
     address: "",
-    address1Line2: null,
+    address1Line2: "",
     address1Line3: "",
-    address1DistrictCode: null,
-    address1Province: null,
+    address1DistrictCode: "",
+    address1Province: "",
 
     // Occupation & Social
 
@@ -70,6 +70,8 @@ export function createEmptyMemberFormState(): MemberFormState {
 
     pregnancyStatus: null,
     pregnancyDate: null,
+    motherofChild: false,
+    childDob: null,
 
     vaccinationStatus: null,
     healthInsCoverage: null,

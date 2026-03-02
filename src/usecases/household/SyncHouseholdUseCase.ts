@@ -66,7 +66,7 @@ export class SyncHouseholdUseCase {
       chwUsername,
       "PENDING",
     );
-
+    console.log("Pending households:", pendingHouseholds);
     await AppLogger.log("SYNC", "Pending households found", {
       count: pendingHouseholds.length,
       chwUsername,
@@ -160,7 +160,11 @@ export class SyncHouseholdUseCase {
 
   // update flow  - household must exist
   private async syncUpdate(household: HouseholdLocal): Promise<void> {
+    if (__DEV__) console.log("🟢 ENTERING syncUpdate");
+
     if (!household.idofCHW) {
+      if (__DEV__) console.log("❌ idofCHW missing");
+
       await AppLogger.log("ERROR", "SYNC_ABORT_NULL_IDOFCHW_UPDATE", {
         localId: household.localId,
       });
@@ -168,8 +172,10 @@ export class SyncHouseholdUseCase {
     }
 
     if (!household.householdId) {
+      if (__DEV__) console.log("❌ householdId missing");
       throw new Error("Cannot UPDATE household without householdId");
     }
+
     const session = await loadAuthSession();
 
     const payload: UpdateHouseholdPayload = {
@@ -192,13 +198,17 @@ export class SyncHouseholdUseCase {
       insertUpdate: "U",
     };
 
-    await this.householdApi.updateHousehold(payload);
+    if (__DEV__) console.log("UPDATE PAYLOAD:", payload);
+
+    const response = await this.householdApi.updateHousehold(payload);
+    if (__DEV__) console.log("UPDATE RESPONSE:", response);
 
     await this.householdRepo.markSynced(
       household.localId,
       household.householdId,
     );
 
+    if (__DEV__) console.log("✅ AFTER markSynced");
     await AppLogger.log("SYNC_UPDATE_SUCCESS", "Update success", {
       localId: household.localId,
       serverHouseholdId: household.householdId,

@@ -23,14 +23,14 @@ export enum HealthConditionCode {
 
 // Disability identification types (from old system UI)
 export enum DisabilityType {
-  VISION = "VISION",
-  HEARING = "HEARING",
-  MOBILITY = "MOBILITY",
-  COGNITION = "COGNITION",
-  SELF_CARE = "SELF_CARE",
-  COMMUNICATION = "COMMUNICATION",
-  AFFECT = "AFFECT",
-  UPPER_BODY = "UPPER_BODY",
-  PAIN = "PAIN",
-  FATIGUE = "FATIGUE",
+  VISION = "V",
+  HEARING = "H",
+  MOBILITY = "M",
+  COGNITION = "C",
+  SELF_CARE = "S",
+  COMMUNICATION = "N",
+  AFFECT = "A",
+  UPPER_BODY = "U",
+  PAIN = "P",
+  FATIGUE = "F",
 }
