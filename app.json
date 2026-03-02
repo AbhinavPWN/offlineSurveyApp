@@ -4,7 +4,7 @@
     "slug": "nirdhan-survey",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/nirdhan_Logo.jpg",
+    "icon": "./assets/images/nirdhan_Logo.png",
     "scheme": "surveyapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
