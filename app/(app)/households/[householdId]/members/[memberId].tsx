@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -30,6 +30,7 @@ import { OccupationStep } from "@/src/features/member-form/components/steps/Occu
 import { FinancialStep } from "@/src/features/member-form/components/steps/FinancialStep";
 import { HealthStep } from "@/src/features/member-form/components/steps/HealthStep";
 import { ReviewStep } from "@/src/features/member-form/components/steps/ReviewStep";
+import { ErrorBoundary } from "@/src/features/member-form/components/ErrorBoundary";
 import { AppLogger } from "@/src/utils/AppLogger";
 
 const steps = [
@@ -56,20 +57,20 @@ export default function MemberFormScreen() {
   // For DEbugging
   const renderCount = React.useRef(0);
   renderCount.current++;
-  console.log(
-    "MemberFormScreen render:",
-    renderCount.current,
-    "Step:",
-    currentStep,
-  );
+  if (__DEV__) {
+    console.log(
+      "MemberFormScreen render:",
+      renderCount.current,
+      "Step:",
+      currentStep,
+    );
+  }
 
-  // Type-safe updates (optimized)
   const updateField = useCallback(
     <K extends keyof MemberFormState>(key: K, value: MemberFormState[K]) => {
       setForm((prev) => {
         if (!prev) return prev;
 
-        // 🔥 Prevent unnecessary re-render
         if (prev[key] === value) {
           return prev;
         }
@@ -78,7 +79,6 @@ export default function MemberFormScreen() {
       });
 
       setErrors((prev) => {
-        // 🔥 Only update errors if needed
         if (!prev[key as string]) return prev;
 
         const newErrors = { ...prev };
@@ -114,8 +114,7 @@ export default function MemberFormScreen() {
         }
 
         setLoading(false);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
+      } catch {
         if (mounted) {
           setLoading(false);
         }
@@ -129,19 +128,7 @@ export default function MemberFormScreen() {
     };
   }, [localId]);
 
-  if (loading || !form) {
-    return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator />
-      </View>
-    );
-  }
-
-  const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === steps.length - 1;
-
-  // Save Function
-  const saveDraftToLocal = async () => {
+  const saveDraftToLocal = useCallback(async () => {
     try {
       if (!localId || !form) return;
       const patch = mapFormToLocalPatch(form);
@@ -152,11 +139,11 @@ export default function MemberFormScreen() {
         message: { error },
       });
     }
-  };
-  console.log("MemberFormScreen render", currentStep);
-  // Handle Next button Function
+  }, [form, localId]);
 
-  const handleNext = async () => {
+  const handleNext = useCallback(async () => {
+    if (!form) return;
+
     if (currentStep === 0) {
       const result = validateBasicInfo(form);
       if (!result.isValid) {
@@ -205,19 +192,15 @@ export default function MemberFormScreen() {
       }
     }
 
-    setErrors({});
-    // Save before moving
+    setErrors((prev) => (Object.keys(prev).length === 0 ? prev : {}));
     await saveDraftToLocal();
     setCurrentStep((prev) => prev + 1);
-  };
+  }, [currentStep, form, saveDraftToLocal]);
 
-  // Handle Finish
-
-  const handleFinish = async () => {
+  const handleFinish = useCallback(async () => {
     try {
       if (!form || !localId) return;
 
-      // Run ALL validations
       const basic = validateBasicInfo(form);
       const identity = validateIdentityInfo(form);
       const address = validateAddressInfo(form);
@@ -236,18 +219,15 @@ export default function MemberFormScreen() {
 
       if (Object.keys(allErrors).length > 0) {
         setErrors(allErrors);
-        // Optionally go to first step if serious
         setCurrentStep(0);
         return;
       }
 
-      // Save latest draft
       const patch = mapFormToLocalPatch(form);
 
       if (__DEV__) console.log("FINISH START");
       await householdMemberLocalRepository.updateDraft(localId, patch);
 
-      // Determine sync action
       const existing =
         await householdMemberLocalRepository.getByLocalId(localId);
 
@@ -255,117 +235,110 @@ export default function MemberFormScreen() {
       if (__DEV__) console.log("DRAFT UPDATED");
       await householdMemberLocalRepository.markPending(localId, syncAction);
       if (__DEV__) console.log("MARKED PENDING");
-      // Navigate back
       router.back();
     } catch (error) {
-      // console.log("Finish failed:", error);
       AppLogger.log("ERROR", "Finish button working Failed", {
         message: { error },
       });
     }
-  };
+  }, [form, localId, router]);
+
+  const handleBack = useCallback(async () => {
+    await saveDraftToLocal();
+    setCurrentStep((prev) => prev - 1);
+  }, [saveDraftToLocal]);
+
+  const stepContent = useMemo(() => {
+    if (!form) return null;
+
+    if (currentStep === 0) {
+      return <BasicInfoStep form={form} updateField={updateField} errors={errors} />;
+    }
+
+    if (currentStep === 1) {
+      return <IdentityStep form={form} updateField={updateField} errors={errors} />;
+    }
+
+    if (currentStep === 2) {
+      return <AddressStep form={form} updateField={updateField} errors={errors} />;
+    }
+
+    if (currentStep === 3) {
+      return <OccupationStep form={form} updateField={updateField} errors={errors} />;
+    }
+
+    if (currentStep === 4) {
+      return <FinancialStep form={form} updateField={updateField} errors={errors} />;
+    }
+
+    if (currentStep === 5) {
+      return <HealthStep form={form} updateField={updateField} errors={errors} />;
+    }
+
+    return <ReviewStep form={form} />;
+  }, [currentStep, errors, form, updateField]);
+
+  if (loading || !form) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  const isFirstStep = currentStep === 0;
+  const isLastStep = currentStep === steps.length - 1;
 
   return (
-    <SafeAreaView edges={["bottom"]} className="flex-1 bg-white">
-      {/* Scrollable Content */}
-      <ScrollView
-        className="flex-1 px-4 pt-4"
-        contentContainerStyle={{ paddingBottom: 40 }}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Progress Indicator */}
-        <Text className="text-sm text-gray-500 mb-2">
-          Step {currentStep + 1} of {steps.length}
-        </Text>
+    <ErrorBoundary>
+      <SafeAreaView edges={["bottom"]} className="flex-1 bg-white">
+        <ScrollView
+          className="flex-1 px-4 pt-4"
+          contentContainerStyle={{ paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text className="text-sm text-gray-500 mb-2">
+            Step {currentStep + 1} of {steps.length}
+          </Text>
 
-        <Text className="text-xl font-bold mb-4">{steps[currentStep]}</Text>
+          <Text className="text-xl font-bold mb-4">{steps[currentStep]}</Text>
 
-        {/* Step Content */}
+          {stepContent}
+        </ScrollView>
 
-        {/* Basic INFO */}
-        {currentStep === 0 && (
-          <BasicInfoStep
-            form={form}
-            updateField={updateField}
-            errors={errors}
-          />
-        )}
+        <View className="px-4 py-2 pt-3 pb-4 border-t border-gray-200 bg-white">
+          <View className="flex-row justify-between">
+            {!isFirstStep ? (
+              <Pressable
+                onPress={handleBack}
+                className="flex-1 mr-2 py-3 bg-gray-300 rounded-lg"
+              >
+                <Text className="text-center">Back</Text>
+              </Pressable>
+            ) : (
+              <View className="flex-1 mr-2" />
+            )}
 
-        {/* Identity STEP */}
-        {currentStep === 1 && (
-          <IdentityStep form={form} updateField={updateField} errors={errors} />
-        )}
-
-        {/* Address Step */}
-        {currentStep === 2 && (
-          <AddressStep form={form} updateField={updateField} errors={errors} />
-        )}
-
-        {/* Occupation Step */}
-        {currentStep === 3 && (
-          <OccupationStep
-            form={form}
-            updateField={updateField}
-            errors={errors}
-          />
-        )}
-
-        {/* Financial Step  */}
-        {currentStep === 4 && (
-          <FinancialStep
-            form={form}
-            updateField={updateField}
-            errors={errors}
-          />
-        )}
-
-        {/* Health Step */}
-        {currentStep === 5 && (
-          <HealthStep form={form} updateField={updateField} errors={errors} />
-        )}
-
-        {/* Review Step */}
-        {currentStep === 6 && <ReviewStep form={form} />}
-
-        {/* Add other steps here when ready */}
-      </ScrollView>
-
-      {/* Fixed Bottom Action Bar */}
-      <View className="px-4 py-2 pt-3 pb-4 border-t border-gray-200 bg-white">
-        <View className="flex-row justify-between">
-          {!isFirstStep ? (
-            <Pressable
-              onPress={async () => {
-                await saveDraftToLocal();
-                setCurrentStep((prev) => prev - 1);
-              }}
-              className="flex-1 mr-2 py-3 bg-gray-300 rounded-lg"
-            >
-              <Text className="text-center">Back</Text>
-            </Pressable>
-          ) : (
-            <View className="flex-1 mr-2" />
-          )}
-
-          {!isLastStep ? (
-            <Pressable
-              onPress={handleNext}
-              className="flex-1 ml-2 py-3 bg-blue-600 rounded-lg"
-            >
-              <Text className="text-white text-center font-semibold">Next</Text>
-            </Pressable>
-          ) : (
-            <Pressable
-              onPress={handleFinish}
-              className="flex-1 ml-2 py-3 bg-green-600 rounded-lg"
-            >
-              <Text className="text-white text-center font-semibold">
-                Finish
-              </Text>
-            </Pressable>
-          )}
+            {!isLastStep ? (
+              <Pressable
+                onPress={handleNext}
+                className="flex-1 ml-2 py-3 bg-blue-600 rounded-lg"
+              >
+                <Text className="text-white text-center font-semibold">Next</Text>
+              </Pressable>
+            ) : (
+              <Pressable
+                onPress={handleFinish}
+                className="flex-1 ml-2 py-3 bg-green-600 rounded-lg"
+              >
+                <Text className="text-white text-center font-semibold">
+                  Finish
+                </Text>
+              </Pressable>
+            )}
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ErrorBoundary>
   );
 }

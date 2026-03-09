@@ -9,9 +9,11 @@ import {
   Pressable,
   Alert,
   Animated,
+  Modal,
+  FlatList,
+  TouchableOpacity,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Location from "expo-location";
 import { HOUSING_TYPES } from "@/src/constants/housingTypes";
@@ -34,6 +36,79 @@ import {
 
 function formatDate(date: Date) {
   return date.toISOString().split("T")[0];
+}
+
+type SelectOption = {
+  label: string;
+  value: string;
+};
+
+function SimpleSelect({
+  value,
+  options,
+  onChange,
+  placeholder = "Select option",
+  disabled = false,
+}: {
+  value: string;
+  options: SelectOption[];
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const selectedLabel =
+    options.find((option) => option.value === value)?.label ?? placeholder;
+
+  return (
+    <>
+      <Pressable
+        onPress={() => !disabled && setOpen(true)}
+        disabled={disabled}
+        className={`border rounded p-3 mb-3 ${disabled ? "bg-gray-100" : "bg-white"}`}
+      >
+        <Text className={value ? "text-black" : "text-gray-500"}>
+          {selectedLabel}
+        </Text>
+      </Pressable>
+
+      <Modal visible={open} transparent animationType="fade">
+        <View className="flex-1 bg-black/40 justify-center px-4">
+          <View className="bg-white rounded-xl max-h-[70%] overflow-hidden">
+            <View className="px-4 py-3 border-b border-gray-200 flex-row justify-between items-center">
+              <Text className="font-semibold">Select Option</Text>
+              <TouchableOpacity onPress={() => setOpen(false)}>
+                <Text className="text-blue-600">Close</Text>
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={options}
+              keyExtractor={(item) => `${item.value}-${item.label}`}
+              renderItem={({ item }) => {
+                const isSelected = item.value === value;
+
+                return (
+                  <Pressable
+                    onPress={() => {
+                      onChange(item.value);
+                      setOpen(false);
+                    }}
+                    className={`px-4 py-3 border-b border-gray-100 ${isSelected ? "bg-blue-50" : "bg-white"}`}
+                  >
+                    <Text className={isSelected ? "text-blue-700" : "text-black"}>
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
 }
 
 export default function HouseholdDetailScreen() {
@@ -608,16 +683,12 @@ export default function HouseholdDetailScreen() {
 
           {/* Province */}
           <Text className="text-gray-700 mb-1">{LABELS.province}</Text>
-          <View className="border rounded mb-3 bg-white">
-            <Picker
-              selectedValue={provinceCode}
-              enabled={true}
-              onValueChange={setProvinceCode}
-              style={{ height: 50, color: "#000" }}
-            >
-              <Picker.Item label="Lumbini Pradesh" value="5" />
-            </Picker>
-          </View>
+          <SimpleSelect
+            value={provinceCode}
+            onChange={setProvinceCode}
+            options={[{ label: "Lumbini Pradesh", value: "5" }]}
+            placeholder="Select Province"
+          />
 
           {errors.province && (
             <Text className="text-red-500 text-sm mt-1 mb-2">
@@ -627,22 +698,21 @@ export default function HouseholdDetailScreen() {
 
           {/* District */}
           <Text className="text-gray-700 mb-1">{LABELS.district}</Text>
-          <View className="border rounded mb-3 bg-white">
-            <Picker
-              selectedValue={districtCode}
-              enabled={true}
-              onValueChange={(value) => {
-                setDistrictCode(value);
-                setVdcnpCode("");
-              }}
-              style={{ height: 50, color: "#000" }}
-            >
-              <Picker.Item label="Select District" value="" />
-              {districtOptions.map((d) => (
-                <Picker.Item key={d.id} label={d.name_en} value={d.id} />
-              ))}
-            </Picker>
-          </View>
+          <SimpleSelect
+            value={districtCode}
+            onChange={(value) => {
+              setDistrictCode(value);
+              setVdcnpCode("");
+            }}
+            options={[
+              { label: "Select District", value: "" },
+              ...districtOptions.map((d) => ({
+                label: d.name_en,
+                value: String(d.id),
+              })),
+            ]}
+            placeholder="Select District"
+          />
           {errors.district && (
             <Text className="text-red-500 text-sm mt-1 mb-2">
               {errors.district}
@@ -651,19 +721,19 @@ export default function HouseholdDetailScreen() {
 
           {/* Municipality */}
           <Text className="text-gray-700 mb-1">{LABELS.municipality}</Text>
-          <View className="border rounded mb-3 bg-white">
-            <Picker
-              selectedValue={vdcnpCode}
-              enabled={true && districtCode !== ""}
-              onValueChange={(value) => setVdcnpCode(String(value))}
-              style={{ height: 50, color: "#000" }}
-            >
-              <Picker.Item label="Select Municipality" value="" />
-              {municipalityOptions.map((m) => (
-                <Picker.Item key={m.id} label={m.name_en} value={m.id} />
-              ))}
-            </Picker>
-          </View>
+          <SimpleSelect
+            value={vdcnpCode}
+            onChange={(value) => setVdcnpCode(String(value))}
+            options={[
+              { label: "Select Municipality", value: "" },
+              ...municipalityOptions.map((m) => ({
+                label: m.name_en,
+                value: String(m.id),
+              })),
+            ]}
+            placeholder="Select Municipality"
+            disabled={districtCode === ""}
+          />
           {errors.vdc && (
             <Text className="text-red-500 text-sm mt-1 mb-2">{errors.vdc}</Text>
           )}
@@ -719,19 +789,18 @@ export default function HouseholdDetailScreen() {
           )}
 
           <Text className="text-gray-700 mb-1">{LABELS.housingType}</Text>
-          <View className="border rounded mb-3 bg-white">
-            <Picker
-              selectedValue={typeOfHousing}
-              enabled={true}
-              onValueChange={setTypeOfHousing}
-              style={{ height: 50, color: "#000" }}
-            >
-              <Picker.Item label="Select type" value="" />
-              {HOUSING_TYPES.map((h) => (
-                <Picker.Item key={h.value} label={h.label} value={h.value} />
-              ))}
-            </Picker>
-          </View>
+          <SimpleSelect
+            value={typeOfHousing}
+            onChange={setTypeOfHousing}
+            options={[
+              { label: "Select type", value: "" },
+              ...HOUSING_TYPES.map((h) => ({
+                label: h.label,
+                value: h.value,
+              })),
+            ]}
+            placeholder="Select type"
+          />
           {errors.housing && (
             <Text className="text-red-500 text-sm mt-1 mb-2">
               {errors.housing}
@@ -739,18 +808,16 @@ export default function HouseholdDetailScreen() {
           )}
 
           <Text className="text-gray-700 mb-1">{LABELS.cleanWater}</Text>
-          <View className="border rounded mb-3 bg-white">
-            <Picker
-              selectedValue={cleanWater}
-              enabled={true}
-              onValueChange={setCleanWater}
-              style={{ height: 50, color: "#000" }}
-            >
-              <Picker.Item label="Select option" value="" />
-              <Picker.Item label="Yes" value="Y" />
-              <Picker.Item label="No" value="N" />
-            </Picker>
-          </View>
+          <SimpleSelect
+            value={cleanWater}
+            onChange={(value) => setCleanWater(value as "Y" | "N" | "")}
+            options={[
+              { label: "Select option", value: "" },
+              { label: "Yes", value: "Y" },
+              { label: "No", value: "N" },
+            ]}
+            placeholder="Select option"
+          />
           {errors.water && (
             <Text className="text-red-500 text-sm mt-1 mb-2">
               {errors.water}
@@ -758,18 +825,16 @@ export default function HouseholdDetailScreen() {
           )}
 
           <Text className="text-gray-700 mb-1">{LABELS.sanitation}</Text>
-          <View className="border rounded bg-white">
-            <Picker
-              selectedValue={sanitation}
-              enabled={true}
-              onValueChange={setSanitation}
-              style={{ height: 50, color: "#000" }}
-            >
-              <Picker.Item label="Select option" value="" />
-              <Picker.Item label="Yes" value="Y" />
-              <Picker.Item label="No" value="N" />
-            </Picker>
-          </View>
+          <SimpleSelect
+            value={sanitation}
+            onChange={(value) => setSanitation(value as "Y" | "N" | "")}
+            options={[
+              { label: "Select option", value: "" },
+              { label: "Yes", value: "Y" },
+              { label: "No", value: "N" },
+            ]}
+            placeholder="Select option"
+          />
           {errors.sanitation && (
             <Text className="text-red-500 text-sm mt-1 mb-2">
               {errors.sanitation}

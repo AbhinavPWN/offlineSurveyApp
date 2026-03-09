@@ -1,6 +1,12 @@
 import React from "react";
-import { View, Text } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import {
+  View,
+  Text,
+  Pressable,
+  Modal,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
 import { DropdownOption } from "../models/DropdownOptions";
 
 interface Props {
@@ -11,47 +17,104 @@ interface Props {
   showNepali?: boolean;
 }
 
-export const FormDropdown = React.memo(function FormDropdown({
-  label,
-  value,
-  options,
-  onChange,
-  showNepali,
-}: Props) {
-  // 🔥 Memoize Picker Items (prevents rebuilding hundreds of items every render)
-  const renderedItems = React.useMemo(
-    () =>
-      options.map((opt) => (
-        <Picker.Item
-          key={opt.value}
-          label={
-            showNepali === false
-              ? opt.labelEn
-              : `${opt.labelNp} (${opt.labelEn})`
-          }
-          value={opt.value}
-        />
-      )),
-    [options, showNepali],
-  );
+function getOptionLabel(opt: DropdownOption, showNepali?: boolean) {
+  return showNepali === false
+    ? opt.labelEn
+    : `${opt.labelNp} (${opt.labelEn})`;
+}
 
-  return (
-    <View className="mb-4">
-      <Text className="mb-1 font-medium">{label}</Text>
+export const FormDropdown = React.memo(
+  function FormDropdown({ label, value, options, onChange, showNepali }: Props) {
+    const [open, setOpen] = React.useState(false);
 
-      <View className="border rounded-lg">
-        <Picker
-          selectedValue={value}
-          onValueChange={(itemValue) => {
-            if (itemValue !== null) {
-              onChange(itemValue);
-            }
-          }}
+    const safeOptions = Array.isArray(options) ? options : [];
+
+    const normalizedValue =
+      typeof value === "string" && value.trim().length > 0 ? value : null;
+
+    const selected = safeOptions.find((opt) => opt.value === normalizedValue);
+    const display = selected
+      ? getOptionLabel(selected, showNepali)
+      : "Select / छान्नुहोस्";
+
+    return (
+      <View className="mb-4">
+        <Text className="mb-1 font-medium">{label}</Text>
+
+        <Pressable
+          onPress={() => setOpen(true)}
+          className="border rounded-lg px-3 py-3 bg-white"
         >
-          <Picker.Item label="Select / छान्नुहोस्" value={null} />
-          {renderedItems}
-        </Picker>
+          <Text>{display}</Text>
+        </Pressable>
+
+        <Modal visible={open} transparent animationType="fade">
+          <View className="flex-1 bg-black/40 justify-center px-4">
+            <View className="bg-white rounded-xl max-h-[70%] overflow-hidden">
+              <View className="px-4 py-3 border-b border-gray-200 flex-row justify-between items-center">
+                <Text className="font-semibold">Select Option</Text>
+                <TouchableOpacity onPress={() => setOpen(false)}>
+                  <Text className="text-blue-600">Close</Text>
+                </TouchableOpacity>
+              </View>
+
+              <FlatList
+                data={safeOptions}
+                keyExtractor={(item) => String(item.value)}
+                ListHeaderComponent={
+                  <Pressable
+                    onPress={() => setOpen(false)}
+                    className="px-4 py-3 border-b border-gray-100"
+                  >
+                    <Text className="text-gray-600">Select / छान्नुहोस्</Text>
+                  </Pressable>
+                }
+                renderItem={({ item }) => {
+                  const isSelected = item.value === normalizedValue;
+
+                  return (
+                    <Pressable
+                      onPress={() => {
+                        onChange(item.value);
+                        setOpen(false);
+                      }}
+                      className={`px-4 py-3 border-b border-gray-100 ${
+                        isSelected ? "bg-blue-50" : "bg-white"
+                      }`}
+                    >
+                      <Text className={isSelected ? "text-blue-700" : "text-black"}>
+                        {getOptionLabel(item, showNepali)}
+                      </Text>
+                    </Pressable>
+                  );
+                }}
+              />
+            </View>
+          </View>
+        </Modal>
       </View>
-    </View>
-  );
-});
+    );
+  },
+  (prevProps, nextProps) => {
+    if (prevProps.label !== nextProps.label) return false;
+    if (prevProps.value !== nextProps.value) return false;
+    if (prevProps.showNepali !== nextProps.showNepali) return false;
+
+    if (prevProps.options === nextProps.options) return true;
+    if (prevProps.options.length !== nextProps.options.length) return false;
+
+    for (let i = 0; i < prevProps.options.length; i++) {
+      const prev = prevProps.options[i];
+      const next = nextProps.options[i];
+      if (
+        prev.value !== next.value ||
+        prev.labelEn !== next.labelEn ||
+        prev.labelNp !== next.labelNp
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+);

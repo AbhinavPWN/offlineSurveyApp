@@ -38,62 +38,65 @@ function isValidBasicBSDate(bs: string): boolean {
   return true;
 }
 
-export function BSDateInput({ label, adValue, onChangeAD }: Props) {
-  const [bsValue, setBsValue] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+export const BSDateInput = React.memo(
+  function BSDateInput({ label, adValue, onChangeAD }: Props) {
+    const [bsValue, setBsValue] = useState<string>("");
+    const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (adValue) {
-      const bs = convertADToBSISO(adValue);
-      if (bs) {
-        setBsValue(bs);
+    useEffect(() => {
+      if (!adValue) {
+        setBsValue("");
+        return;
       }
-    } else {
-      setBsValue("");
-    }
-  }, [adValue]);
 
-  return (
-    <View className="mb-4">
-      <Text className="mb-1 font-medium">{label}</Text>
+      const bs = convertADToBSISO(adValue);
+      setBsValue(bs ?? "");
+    }, [adValue]);
 
-      <TextInput
-        className="border rounded-lg px-3 py-2"
-        keyboardType="number-pad"
-        maxLength={10}
-        value={bsValue}
-        placeholder="YYYY-MM-DD (BS)"
-        onChangeText={(text) => {
-          const formatted = formatISODate(text);
-          setBsValue(formatted);
-          setError(null);
+    return (
+      <View className="mb-4">
+        <Text className="mb-1 font-medium">{label}</Text>
 
-          if (formatted.length === 0) {
-            onChangeAD(null);
-            return;
-          }
+        <TextInput
+          className="border rounded-lg px-3 py-2"
+          keyboardType="number-pad"
+          maxLength={10}
+          value={bsValue}
+          placeholder="YYYY-MM-DD (BS)"
+          onChangeText={(text) => {
+            const formatted = formatISODate(text);
+            setBsValue(formatted);
+            setError(null);
 
-          if (formatted.length === 10) {
-            if (!isValidBasicBSDate(formatted)) {
-              setError("Invalid BS date format.");
+            if (formatted.length === 0) {
               onChangeAD(null);
               return;
             }
 
-            const ad = convertBSToADISO(formatted);
+            if (formatted.length === 10) {
+              if (!isValidBasicBSDate(formatted)) {
+                setError("Invalid BS date format.");
+                onChangeAD(null);
+                return;
+              }
 
-            if (!ad) {
-              setError("Invalid BS date.");
-              onChangeAD(null);
-              return;
+              const ad = convertBSToADISO(formatted);
+
+              if (!ad) {
+                setError("Invalid BS date.");
+                onChangeAD(null);
+                return;
+              }
+
+              onChangeAD(ad);
             }
+          }}
+        />
 
-            onChangeAD(ad);
-          }
-        }}
-      />
-
-      {error && <Text className="text-red-500 text-xs mt-1">{error}</Text>}
-    </View>
-  );
-}
+        {error && <Text className="text-red-500 text-xs mt-1">{error}</Text>}
+      </View>
+    );
+  },
+  (prevProps, nextProps) =>
+    prevProps.label === nextProps.label && prevProps.adValue === nextProps.adValue,
+);

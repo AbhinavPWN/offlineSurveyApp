@@ -17,27 +17,33 @@ function formatISODate(input: string): string {
   return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
 }
 
-export function ISODateInput({
-  label,
-  value,
-  onChange,
-  placeholder = "YYYY-MM-DD",
-}: Props) {
-  return (
-    <View className="mb-4">
-      <Text className="mb-1 font-medium">{label}</Text>
+export const ISODateInput = React.memo(
+  function ISODateInput({
+    label,
+    value,
+    onChange,
+    placeholder = "YYYY-MM-DD",
+  }: Props) {
+    return (
+      <View className="mb-4">
+        <Text className="mb-1 font-medium">{label}</Text>
 
-      <TextInput
-        className="border rounded-lg px-3 py-2"
-        keyboardType="number-pad"
-        maxLength={10}
-        value={value ?? ""}
-        placeholder={placeholder}
-        onChangeText={(text) => {
-          const formatted = formatISODate(text);
-          onChange(formatted || null);
-        }}
-      />
-    </View>
-  );
-}
+        <TextInput
+          className="border rounded-lg px-3 py-2"
+          keyboardType="number-pad"
+          maxLength={10}
+          value={value ?? ""}
+          placeholder={placeholder}
+          onChangeText={(text) => {
+            const formatted = formatISODate(text);
+            onChange(formatted || null);
+          }}
+        />
+      </View>
+    );
+  },
+  (prevProps, nextProps) =>
+    prevProps.label === nextProps.label &&
+    prevProps.value === nextProps.value &&
+    prevProps.placeholder === nextProps.placeholder,
+);
