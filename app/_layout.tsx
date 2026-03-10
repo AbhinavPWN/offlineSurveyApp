@@ -46,6 +46,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <AuthProvider>
           <AppBootstrap />
+
           <AuthGate />
         </AuthProvider>
       </SafeAreaProvider>

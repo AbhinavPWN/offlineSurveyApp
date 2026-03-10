@@ -25,10 +25,11 @@ export function mapDbToDomainMember(db: HouseholdMemberLocal): MemberLocal {
     educationCode: db.educationCode ?? "",
     religionCode: db.religionCode ?? "",
 
-    idDocumentType: db.idDocumentType ?? "",
-    idDocumentNo: db.idDocumentNo ?? "",
-    idIssueDistrictCode: db.idIssueDistrictCode ?? "",
-    idIssueDateAD: db.idIssueDateAD ?? "",
+    // Identity
+    idDocumentType: db.idDocumentType || "CITIZENSHIP",
+    idDocumentNo: db.idDocumentNo || "NA",
+    idIssueDistrictCode: db.idIssueDistrictCode || "000",
+    idIssueDateAD: db.idIssueDateAD || db.enrollDateAD || "",
 
     address: db.address ?? "",
     address1Type: db.address1Type ?? "",

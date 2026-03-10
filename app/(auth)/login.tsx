@@ -6,6 +6,7 @@ import {
   View,
   Alert,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import { useAuth } from "@/src/auth/context/useAuth";
 import { AuthSession } from "@/src/auth/model/AuthSession";
@@ -84,86 +85,115 @@ export default function LoginScreen() {
     <>
       <Stack.Screen options={{ title: "Health Survey Login" }} />
 
-      <View style={{ padding: 24 }}>
-        <Text
-          style={{
-            color: "black",
-            fontSize: 20,
-            fontWeight: "600",
-            marginBottom: 16,
-          }}
-        >
-          Health Survey Login
-        </Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          paddingHorizontal: 24,
+          paddingVertical: 24,
+          backgroundColor: "#fff",
+        }}
+      >
+        <View style={{ width: "100%", maxWidth: 380, alignSelf: "center" }}>
+          <View style={{ alignItems: "center", marginBottom: 14 }}>
+            <Image
+              source={require("../../assets/images/logo.jpeg")}
+              style={{
+                width: 208,
+                height: 208,
+                borderRadius: 54,
+                marginBottom: 12,
+              }}
+              resizeMode="contain"
+            />
+          </View>
 
-        <TextInput
-          placeholder="Username"
-          placeholderTextColor="#888"
-          value={username}
-          onChangeText={setUsername}
-          style={{
-            borderWidth: 1,
-            padding: 8,
-            marginTop: 12,
-            borderColor: "#ccc",
-            color: "#000",
-          }}
-        />
-
-        {/* Password Input */}
-        <View
-          style={{
-            borderWidth: 1,
-            borderColor: "#ccc",
-            marginTop: 12,
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 8,
-          }}
-        >
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor="#888"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword}
+          <Text
             style={{
-              flex: 1,
-              paddingVertical: 8,
+              color: "black",
+              fontSize: 24,
+              fontWeight: "700",
+              marginBottom: 6,
+              textAlign: "center",
+            }}
+          >
+            Health Survey Login
+          </Text>
+
+          <Text
+            style={{
+              color: "#6b7280",
+              fontSize: 14,
+              textAlign: "center",
+              marginBottom: 22,
+            }}
+          >
+            Please login to continue.
+          </Text>
+
+          <Text style={{ fontSize: 14, color: "#111827", marginBottom: 8 }}>
+            Username
+          </Text>
+          <TextInput
+            placeholder="Enter your username"
+            placeholderTextColor="#9ca3af"
+            value={username}
+            onChangeText={setUsername}
+            style={{
+              borderWidth: 1,
+              borderRadius: 8,
+              paddingHorizontal: 12,
+              paddingVertical: 12,
+              borderColor: "#d1d5db",
               color: "#000",
+              marginBottom: 14,
             }}
           />
 
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons
-              name={showPassword ? "eye-off-outline" : "eye-outline"}
-              size={22}
-              color="#6b7280"
+          <Text style={{ fontSize: 14, color: "#111827", marginBottom: 8 }}>
+            Password
+          </Text>
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#d1d5db",
+              borderRadius: 8,
+              flexDirection: "row",
+              alignItems: "center",
+              paddingHorizontal: 10,
+              marginBottom: 20,
+            }}
+          >
+            <TextInput
+              placeholder="Enter your password"
+              placeholderTextColor="#9ca3af"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              style={{
+                flex: 1,
+                paddingVertical: 12,
+                color: "#000",
+              }}
             />
-          </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Ionicons
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                size={22}
+                color="#6b7280"
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ marginTop: 4 }}>
+            <Button
+              title={loading ? "Logging in..." : "Login"}
+              onPress={handleLogin}
+              disabled={loading}
+            />
+          </View>
         </View>
-
-        {/* <TextInput
-          placeholder="Office Code"
-          placeholderTextColor="#888"
-          value={officeCode}
-          onChangeText={setOfficeCode}
-          keyboardType="number-pad"
-          style={{
-            borderWidth: 1,
-            padding: 8,
-            marginTop: 12,
-            marginBottom: 12,
-            borderColor: "#ccc",
-            color: "#000",
-          }}
-        /> */}
-
-        <Button
-          title={loading ? "Logging in..." : "Login"}
-          onPress={handleLogin}
-          disabled={loading}
-        />
       </View>
     </>
   );

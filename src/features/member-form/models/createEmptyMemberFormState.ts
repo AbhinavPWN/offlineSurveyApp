@@ -14,9 +14,9 @@ export function createEmptyMemberFormState(): MemberFormState {
 
     // Identity
 
-    idDocumentType: null,
-    idDocumentNo: "",
-    idIssueDistrictCode: null,
+    idDocumentType: "CITIZENSHIP",
+    idDocumentNo: "NA",
+    idIssueDistrictCode: "000",
     memIdIssueDate: null,
     dob: null,
     minorYn: false,

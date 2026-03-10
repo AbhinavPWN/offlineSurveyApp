@@ -31,6 +31,7 @@ export default function MembersListScreen() {
   const [members, setMembers] = useState<HouseholdMemberLocal[]>([]);
   const [household, setHousehold] = useState<HouseholdLocal | null>(null);
   const [loading, setLoading] = useState(true);
+  const [creatingMember, setCreatingMember] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!householdLocalId) return;
@@ -52,20 +53,29 @@ export default function MembersListScreen() {
   );
 
   const handleAddMember = async () => {
-    if (!householdLocalId) return;
+    if (!householdLocalId || creatingMember) return;
 
-    if (household?.syncStatus === "PENDING") {
+    // Lock only if household is pending AND members already exist
+    if (household?.syncStatus === "PENDING" && members.length > 0) {
       Alert.alert(
-        "Locked",
-        "Cannot modify members while household is pending sync.",
+        "Household Locked",
+        "Members cannot be modified while this household is waiting for sync.",
       );
       return;
     }
 
-    const draft =
-      await householdMemberLocalRepository.createDraftMember(householdLocalId);
+    try {
+      setCreatingMember(true);
 
-    router.push(`/households/${householdLocalId}/members/${draft.localId}`);
+      const draft =
+        await householdMemberLocalRepository.createDraftMember(
+          householdLocalId,
+        );
+
+      router.push(`/households/${householdLocalId}/members/${draft.localId}`);
+    } finally {
+      setCreatingMember(false);
+    }
   };
 
   const handleDelete = (member: HouseholdMemberLocal) => {
@@ -130,7 +140,9 @@ export default function MembersListScreen() {
             <Text className="text-gray-400 text-sm">No Members Added</Text>
           ) : (
             <>
-              <Text className="text-gray-600 text-sm">{totalMembers} Members</Text>
+              <Text className="text-gray-600 text-sm">
+                {totalMembers} Members
+              </Text>
 
               <Text
                 className={`text-xs mt-0.5 ${
@@ -202,7 +214,7 @@ export default function MembersListScreen() {
                   </Pressable>
                 </View>
 
-                {household?.syncStatus !== "PENDING" && (
+                {household?.syncStatus !== "SYNCED" && (
                   <Pressable
                     onPress={() =>
                       Alert.alert("Member Options", "", [
@@ -227,7 +239,7 @@ export default function MembersListScreen() {
           )}
         />
 
-        {household?.syncStatus !== "PENDING" && (
+        {household?.syncStatus !== "SYNCED" && (
           <Pressable
             onPress={handleAddMember}
             className="bg-blue-600 p-4 rounded-xl mt-4"

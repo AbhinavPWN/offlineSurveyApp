@@ -53,6 +53,7 @@ export default function AuthGate() {
     <>
       <Stack
         screenOptions={{
+          headerShown: false,
           contentStyle: { flex: 1 },
         }}
       />

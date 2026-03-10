@@ -61,3 +61,10 @@ export async function getAllDistricts(): Promise<AddressOption[]> {
      ORDER BY name_en`,
   );
 }
+
+export async function getAllMunicipalities(): Promise<AddressOption[]> {
+  return db.getAllAsync<AddressOption>(
+    `SELECT id, name_en, name_np
+     FROM municipality`,
+  );
+}

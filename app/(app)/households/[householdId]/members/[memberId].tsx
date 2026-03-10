@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,88 +6,94 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
-import { useRouter, useLocalSearchParams, Stack } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { householdMemberLocalRepository } from "@/src/di/container";
+
 import { MemberFormState } from "@/src/features/member-form/models/MemberFormState";
 import { createEmptyMemberFormState } from "@/src/features/member-form/models/createEmptyMemberFormState";
+
 import {
   mapLocalToForm,
   mapFormToLocalPatch,
 } from "@/src/features/member-form/mappers/MemberFormLocalMapper";
+
 import { BasicInfoStep } from "@/src/features/member-form/components/steps/BasicInfoStep";
-import {
-  validateBasicInfo,
-  validateIdentityInfo,
-  validateAddressInfo,
-  validateOccupationInfo,
-  validateFinancialInfo,
-} from "@/src/features/member-form/validation/MemberFormValidation";
-import { validateHealthStep } from "@/src/features/member-form/validation/health.validation";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { IdentityStep } from "@/src/features/member-form/components/steps/IdentityStep";
 import { AddressStep } from "@/src/features/member-form/components/steps/AddressStep";
 import { OccupationStep } from "@/src/features/member-form/components/steps/OccupationStep";
 import { FinancialStep } from "@/src/features/member-form/components/steps/FinancialStep";
 import { HealthStep } from "@/src/features/member-form/components/steps/HealthStep";
 import { ReviewStep } from "@/src/features/member-form/components/steps/ReviewStep";
+
+import {
+  validateBasicInfo,
+  validateAddressInfo,
+  validateOccupationInfo,
+  validateFinancialInfo,
+} from "@/src/features/member-form/validation/MemberFormValidation";
+
+import { validateHealthStep } from "@/src/features/member-form/validation/health.validation";
+
 import { ErrorBoundary } from "@/src/features/member-form/components/ErrorBoundary";
 import { AppLogger } from "@/src/utils/AppLogger";
 
-const steps = [
-  "Basic Info",
-  "Identity",
-  "Address",
-  "Occupation",
-  "Financial",
-  "Health",
-  "Review",
+/* 
+   STEP CONFIG
+*/
+
+interface StepConfig {
+  title: string;
+  component: React.ComponentType<any>;
+  validate?: (form: MemberFormState) => any;
+}
+
+const STEP_CONFIG: StepConfig[] = [
+  {
+    title: "Basic Info",
+    component: BasicInfoStep,
+    validate: validateBasicInfo,
+  },
+  {
+    title: "Address",
+    component: AddressStep,
+    validate: validateAddressInfo,
+  },
+  {
+    title: "Occupation",
+    component: OccupationStep,
+    validate: validateOccupationInfo,
+  },
+  {
+    title: "Financial",
+    component: FinancialStep,
+    validate: validateFinancialInfo,
+  },
+  {
+    title: "Health",
+    component: HealthStep,
+    validate: validateHealthStep,
+  },
+  {
+    title: "Review",
+    component: ReviewStep,
+  },
 ];
 
 export default function MemberFormScreen() {
   const { memberId } = useLocalSearchParams();
   const localId = typeof memberId === "string" ? memberId : null;
 
+  const router = useRouter();
+
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<MemberFormState | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const router = useRouter();
-
-  // For DEbugging
-  const renderCount = React.useRef(0);
-  renderCount.current++;
-  if (__DEV__) {
-    console.log(
-      "MemberFormScreen render:",
-      renderCount.current,
-      "Step:",
-      currentStep,
-    );
-  }
-
-  const updateField = useCallback(
-    <K extends keyof MemberFormState>(key: K, value: MemberFormState[K]) => {
-      setForm((prev) => {
-        if (!prev) return prev;
-
-        if (prev[key] === value) {
-          return prev;
-        }
-
-        return { ...prev, [key]: value };
-      });
-
-      setErrors((prev) => {
-        if (!prev[key as string]) return prev;
-
-        const newErrors = { ...prev };
-        delete newErrors[key as string];
-        return newErrors;
-      });
-    },
-    [],
-  );
+  /*
+     LOAD MEMBER
+ */
 
   useEffect(() => {
     let mounted = true;
@@ -115,9 +121,7 @@ export default function MemberFormScreen() {
 
         setLoading(false);
       } catch {
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     }
 
@@ -128,94 +132,110 @@ export default function MemberFormScreen() {
     };
   }, [localId]);
 
+  /* 
+     UPDATE FIELD
+  */
+
+  const updateField = useCallback(
+    <K extends keyof MemberFormState>(key: K, value: MemberFormState[K]) => {
+      setForm((prev) => {
+        if (!prev) return prev;
+        if (prev[key] === value) return prev;
+        return { ...prev, [key]: value };
+      });
+
+      setErrors((prev) => {
+        if (!prev[key as string]) return prev;
+        const newErrors = { ...prev };
+        delete newErrors[key as string];
+        return newErrors;
+      });
+    },
+    [],
+  );
+
+  /* 
+     SAVE DRAFT
+ */
+
   const saveDraftToLocal = useCallback(async () => {
     try {
       if (!localId || !form) return;
+
       const patch = mapFormToLocalPatch(form);
+
       await householdMemberLocalRepository.updateDraft(localId, patch);
     } catch (error) {
       console.log("Draft save failed:", error);
-      AppLogger.log("ERROR", "Member DRAFT Save Failed", {
-        message: { error },
+
+      AppLogger.log("ERROR", "Member draft save failed", {
+        error,
       });
     }
   }, [form, localId]);
 
+  /* 
+     STEP VALIDATION
+  */
+
+  const validateStep = useCallback(
+    (stepIndex: number) => {
+      if (!form) return true;
+
+      const step = STEP_CONFIG[stepIndex];
+
+      if (!step.validate) return true;
+
+      const result = step.validate(form);
+
+      if (!result || Object.keys(result.errors ?? result).length === 0) {
+        return true;
+      }
+
+      setErrors(result.errors ?? result);
+
+      return false;
+    },
+    [form],
+  );
+
+  /*
+     NAVIGATION
+ */
+
   const handleNext = useCallback(async () => {
-    if (!form) return;
+    if (!validateStep(currentStep)) return;
 
-    if (currentStep === 0) {
-      const result = validateBasicInfo(form);
-      if (!result.isValid) {
-        setErrors(result.errors as Record<string, string>);
-        return;
-      }
-    }
-
-    if (currentStep === 1) {
-      const result = validateIdentityInfo(form);
-      if (!result.isValid) {
-        setErrors(result.errors as Record<string, string>);
-        return;
-      }
-    }
-
-    if (currentStep === 2) {
-      const result = validateAddressInfo(form);
-      if (!result.isValid) {
-        setErrors(result.errors as Record<string, string>);
-        return;
-      }
-    }
-
-    if (currentStep === 3) {
-      const result = validateOccupationInfo(form);
-      if (!result.isValid) {
-        setErrors(result.errors as Record<string, string>);
-        return;
-      }
-    }
-
-    if (currentStep === 4) {
-      const result = validateFinancialInfo(form);
-      if (!result.isValid) {
-        setErrors(result.errors as Record<string, string>);
-        return;
-      }
-    }
-
-    if (currentStep === 5) {
-      const result = validateHealthStep(form);
-      if (Object.keys(result).length > 0) {
-        setErrors(result as Record<string, string>);
-        return;
-      }
-    }
-
-    setErrors((prev) => (Object.keys(prev).length === 0 ? prev : {}));
     await saveDraftToLocal();
+
+    setErrors({});
     setCurrentStep((prev) => prev + 1);
-  }, [currentStep, form, saveDraftToLocal]);
+  }, [currentStep, saveDraftToLocal, validateStep]);
+
+  const handleBack = useCallback(async () => {
+    await saveDraftToLocal();
+    setCurrentStep((prev) => prev - 1);
+  }, [saveDraftToLocal]);
 
   const handleFinish = useCallback(async () => {
     try {
       if (!form || !localId) return;
 
-      const basic = validateBasicInfo(form);
-      const identity = validateIdentityInfo(form);
-      const address = validateAddressInfo(form);
-      const occupation = validateOccupationInfo(form);
-      const financial = validateFinancialInfo(form);
-      const health = validateHealthStep(form);
+      /* Validate all steps */
 
-      const allErrors = {
-        ...(basic.errors ?? {}),
-        ...(identity.errors ?? {}),
-        ...(address.errors ?? {}),
-        ...(occupation.errors ?? {}),
-        ...(financial.errors ?? {}),
-        ...(health ?? {}),
-      };
+      let allErrors: Record<string, string> = {};
+
+      STEP_CONFIG.forEach((step) => {
+        if (!step.validate) return;
+
+        const result = step.validate(form);
+
+        const errs = result.errors ?? result;
+
+        if (errs && Object.keys(errs).length > 0) {
+          allErrors = { ...allErrors, ...errs };
+        }
+      });
 
       if (Object.keys(allErrors).length > 0) {
         setErrors(allErrors);
@@ -225,58 +245,35 @@ export default function MemberFormScreen() {
 
       const patch = mapFormToLocalPatch(form);
 
-      if (__DEV__) console.log("FINISH START");
       await householdMemberLocalRepository.updateDraft(localId, patch);
 
       const existing =
         await householdMemberLocalRepository.getByLocalId(localId);
 
       const syncAction = existing?.clientNo ? "UPDATE" : "INSERT";
-      if (__DEV__) console.log("DRAFT UPDATED");
+
       await householdMemberLocalRepository.markPending(localId, syncAction);
-      if (__DEV__) console.log("MARKED PENDING");
+
       router.back();
     } catch (error) {
-      AppLogger.log("ERROR", "Finish button working Failed", {
-        message: { error },
-      });
+      AppLogger.log("ERROR", "Member finish failed", { error });
     }
   }, [form, localId, router]);
 
-  const handleBack = useCallback(async () => {
-    await saveDraftToLocal();
-    setCurrentStep((prev) => prev - 1);
-  }, [saveDraftToLocal]);
+  /*
+     STEP RENDER
+*/
 
-  const stepContent = useMemo(() => {
-    if (!form) return null;
+  const StepComponent = STEP_CONFIG[currentStep].component;
 
-    if (currentStep === 0) {
-      return <BasicInfoStep form={form} updateField={updateField} errors={errors} />;
-    }
+  const stepTitle = STEP_CONFIG[currentStep].title;
 
-    if (currentStep === 1) {
-      return <IdentityStep form={form} updateField={updateField} errors={errors} />;
-    }
+  const isFirstStep = currentStep === 0;
+  const isLastStep = currentStep === STEP_CONFIG.length - 1;
 
-    if (currentStep === 2) {
-      return <AddressStep form={form} updateField={updateField} errors={errors} />;
-    }
-
-    if (currentStep === 3) {
-      return <OccupationStep form={form} updateField={updateField} errors={errors} />;
-    }
-
-    if (currentStep === 4) {
-      return <FinancialStep form={form} updateField={updateField} errors={errors} />;
-    }
-
-    if (currentStep === 5) {
-      return <HealthStep form={form} updateField={updateField} errors={errors} />;
-    }
-
-    return <ReviewStep form={form} />;
-  }, [currentStep, errors, form, updateField]);
+  /*
+     LOADING
+ */
 
   if (loading || !form) {
     return (
@@ -286,12 +283,14 @@ export default function MemberFormScreen() {
     );
   }
 
-  const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === steps.length - 1;
+  /* 
+     UI
+*/
 
   return (
     <ErrorBoundary>
       <Stack.Screen options={{ title: "Member Details" }} />
+
       <SafeAreaView edges={["bottom"]} className="flex-1 bg-white">
         <ScrollView
           className="flex-1 px-4 pt-4"
@@ -299,13 +298,19 @@ export default function MemberFormScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <Text className="text-sm text-gray-500 mb-2">
-            Step {currentStep + 1} of {steps.length}
+            Step {currentStep + 1} of {STEP_CONFIG.length}
           </Text>
 
-          <Text className="text-xl font-bold mb-4">{steps[currentStep]}</Text>
+          <Text className="text-xl font-bold mb-4">{stepTitle}</Text>
 
-          {stepContent}
+          <StepComponent
+            form={form}
+            updateField={updateField}
+            errors={errors}
+          />
         </ScrollView>
+
+        {/* Footer Navigation */}
 
         <View className="px-4 py-2 pt-3 pb-4 border-t border-gray-200 bg-white">
           <View className="flex-row justify-between">
@@ -325,7 +330,9 @@ export default function MemberFormScreen() {
                 onPress={handleNext}
                 className="flex-1 ml-2 py-3 bg-blue-600 rounded-lg"
               >
-                <Text className="text-white text-center font-semibold">Next</Text>
+                <Text className="text-white text-center font-semibold">
+                  Next
+                </Text>
               </Pressable>
             ) : (
               <Pressable
@@ -343,5 +350,3 @@ export default function MemberFormScreen() {
     </ErrorBoundary>
   );
 }
-
-

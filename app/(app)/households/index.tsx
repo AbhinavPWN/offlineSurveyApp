@@ -10,7 +10,7 @@ const createHouseholdUseCase = new CreateHouseholdUseCase(
 export default function HouseholdsRoute() {
   return (
     <>
-      <Stack.Screen options={{ title: "Households" }} />
+      <Stack.Screen options={{ title: "Household Dashboard" }} />
 
       <HouseholdDashboardScreen
         householdRepo={householdLocalRepository}

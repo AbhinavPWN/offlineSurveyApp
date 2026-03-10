@@ -2,11 +2,12 @@
   "expo": {
     "name": "Nirdhan Survey",
     "slug": "nirdhan-survey",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/nirdhan_Logo.png",
+    "icon": "./assets/images/logo_resize.png",
     "scheme": "surveyapp",
-    "userInterfaceStyle": "automatic",    "ios": {
+    "userInterfaceStyle": "automatic",
+    "ios": {
       "supportsTablet": true
     },
     "android": {
@@ -53,4 +54,3 @@
     }
   }
 }
-

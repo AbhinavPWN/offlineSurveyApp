@@ -20,6 +20,7 @@ import { AppLogger } from "../utils/AppLogger";
 import { Household } from "../domain/models/Household";
 import { resolveHouseholdAggregateStatus } from "../utils/resolveHouseholdAggregateStatus";
 import { AggregateSyncStatus } from "../models/AggregateSyncStatus";
+import { getAllMunicipalities } from "../repositories/addressRepository";
 
 interface Props {
   householdRepo: HouseholdLocalRepository;
@@ -31,6 +32,9 @@ type HouseholdWithAggregate = {
   aggregateStatus: AggregateSyncStatus;
   totalMembers: number;
   syncedMembers: number;
+
+  headName?: string;
+  headMobile?: string;
 };
 
 function sortHouseholds(data: HouseholdLocal[]) {
@@ -70,6 +74,9 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const [downloadedServerIds, setDownloadedServerIds] = useState<Set<string>>(
     new Set(),
   );
+  const [municipalityMap, setMunicipalityMap] = useState<
+    Record<string, string>
+  >({});
 
   // Check CONNECTIVITY
   useEffect(() => {
@@ -111,6 +118,17 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
             h.localId,
           );
 
+          // Find household head
+          const head = members.find((m) => m.headHousehold === "Y");
+
+          const headName = head
+            ? [head.firstName, head.middleName, head.lastName]
+                .filter(Boolean)
+                .join(" ")
+            : "Household head not added";
+
+          const headMobile = head?.mobileNo ?? "No mobile";
+
           const aggregateStatus = resolveHouseholdAggregateStatus(h, members);
 
           const totalMembers = members.length;
@@ -124,6 +142,8 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
             aggregateStatus,
             totalMembers,
             syncedMembers,
+            headName,
+            headMobile,
           };
         }),
       );
@@ -190,7 +210,18 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       setLoading(true);
 
       try {
-        // 🔥 STEP 1: Repair old broken rows FIRST
+        // Load municipality lookup
+        const municipalities = await getAllMunicipalities();
+
+        const map: Record<string, string> = {};
+
+        for (const m of municipalities) {
+          map[m.id] = m.name_en;
+        }
+
+        setMunicipalityMap(map);
+
+        //  STEP 1: Repair old broken rows FIRST
         await householdRepo.repairMissingIdOfChw(
           chwProfile.userName,
           chwProfile.idofCHW,
@@ -343,6 +374,8 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
           aggregateStatus,
           totalMembers,
           syncedMembers,
+          headName,
+          headMobile,
         } = item as HouseholdWithAggregate;
         if (!local.localId) return null;
 
@@ -364,7 +397,16 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
             <View className="flex-row justify-between items-start">
               <View>
                 <Text className="text-base font-semibold">
-                  Ward {local.wardNo || "Not set"}
+                  {headName || "Household Head"}
+                </Text>
+
+                <Text className="text-sm text-gray-600">
+                  Mobile: {headMobile || "No mobile"}
+                </Text>
+
+                <Text className="text-sm text-gray-700 mt-1">
+                  {municipalityMap[local.vdcnpCode] || "Municipality"} - Ward{" "}
+                  {local.wardNo}
                 </Text>
 
                 {/* STATUS LABEL */}
@@ -420,7 +462,11 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
             </View>
 
             <Text className="text-gray-600 mt-2">
-              {local.address || "Address not specified"}
+              Address: {local.address || "Address not specified"}
+            </Text>
+
+            <Text className="text-xs text-gray-500 mt-1">
+              Household ID: {local.householdId || "Not synced yet"}
             </Text>
 
             <View className="mt-1">
@@ -455,9 +501,17 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
       return (
         <View className="bg-white mx-4 mt-3 p-4 rounded-xl shadow-sm">
-          <Text className="text-base font-semibold">Ward {online.wardNo}</Text>
+          <Text className="text-base font-semibold">
+            Household ID: {online.householdId}
+          </Text>
 
-          <Text className="text-gray-600 mt-2">{online.address}</Text>
+          <Text className="text-sm text-gray-700 mt-1">
+            Ward: {online.wardNo}
+          </Text>
+
+          <Text className="text-gray-600 mt-2">
+            Address: {online.address || "Address not specified"}
+          </Text>
 
           <Text className="text-gray-500 text-sm mt-1">
             {online.memberCount} Members
@@ -480,7 +534,14 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         </View>
       );
     },
-    [activeTab, downloadedServerIds, handleDownload, handleEdit, showOptions],
+    [
+      activeTab,
+      downloadedServerIds,
+      handleDownload,
+      handleEdit,
+      municipalityMap,
+      showOptions,
+    ],
   );
 
   // -----------------------------

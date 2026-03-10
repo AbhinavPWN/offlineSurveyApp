@@ -10,7 +10,7 @@ import {
   yesNo,
   genderLabel,
   maritalStatusLabel,
-  documentTypeLabel,
+  // documentTypeLabel,
   addressTypeLabel,
 } from "@/src/utils/memberLabelMapper";
 import { getOptionLabel } from "@/src/utils/optionLabelResolver";
@@ -44,7 +44,7 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
   if (__DEV__) console.log("ReviewStep render");
 
   const [districtLabel, setDistrictLabel] = useState("-");
-  const [issueDistrictLabel, setIssueDistrictLabel] = useState("-");
+  // const [issueDistrictLabel, setIssueDistrictLabel] = useState("-");
   const [municipalityLabel, setMunicipalityLabel] = useState("-");
 
   useEffect(() => {
@@ -62,11 +62,11 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
             setDistrictLabel(districtMap.get(form.address1DistrictCode) ?? "-");
           }
 
-          if (form.idIssueDistrictCode) {
-            setIssueDistrictLabel(
-              districtMap.get(form.idIssueDistrictCode) ?? "-",
-            );
-          }
+          // if (form.idIssueDistrictCode) {
+          //   setIssueDistrictLabel(
+          //     districtMap.get(form.idIssueDistrictCode) ?? "-",
+          //   );
+          // }
         }
 
         if (form.address1DistrictCode && form.address1Line2) {
@@ -101,6 +101,12 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
         <Row label="Full Name" value={form.fName} />
         <Row label="Gender" value={genderLabel(form.gender)} />
         <Row label="Mobile" value={form.mobileNo} />
+
+        <Row
+          label="DOB (BS)"
+          value={form.dob ? convertADToBSISO(form.dob) : "-"}
+        />
+
         <Row
           label="Marital Status"
           value={maritalStatusLabel(form.maritalStatus)}
@@ -112,7 +118,7 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
       </Section>
 
       {/* IDENTITY */}
-      <Section title="Identity">
+      {/* <Section title="Identity">
         <Row
           label="Document Type"
           value={documentTypeLabel(form.idDocumentType)}
@@ -129,7 +135,7 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
           label="DOB (BS)"
           value={form.dob ? convertADToBSISO(form.dob) : "-"}
         />
-      </Section>
+      </Section> */}
 
       {/* ADDRESS */}
       <Section title="Address">
