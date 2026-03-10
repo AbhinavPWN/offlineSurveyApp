@@ -7,7 +7,12 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import {
+  useLocalSearchParams,
+  useRouter,
+  useFocusEffect,
+  Stack,
+} from "expo-router";
 
 import {
   householdMemberLocalRepository,
@@ -90,144 +95,149 @@ export default function MembersListScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator />
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Household Members" }} />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator />
+        </View>
+      </>
     );
   }
 
   if (!householdLocalId) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <Text>Invalid household</Text>
-      </View>
+      <>
+        <Stack.Screen options={{ title: "Household Members" }} />
+        <View className="flex-1 justify-center items-center">
+          <Text>Invalid household</Text>
+        </View>
+      </>
     );
   }
-  const totalMembers = members.length;
 
+  const totalMembers = members.length;
   const syncedMembers = members.filter((m) => m.syncStatus === "SYNCED").length;
 
   return (
-    <View className="flex-1 bg-gray-50 p-4">
-      <Text className="text-xl font-bold">Household Members</Text>
+    <>
+      <Stack.Screen options={{ title: "Household Members" }} />
 
-      <View className="mt-2 mb-4">
-        {totalMembers === 0 ? (
-          <Text className="text-gray-400 text-sm">No Members Added</Text>
-        ) : (
-          <>
-            <Text className="text-gray-600 text-sm">
-              {totalMembers} Members
-            </Text>
+      <View className="flex-1 bg-gray-50 p-4">
+        <Text className="text-xl font-bold">Household Members</Text>
 
-            <Text
-              className={`text-xs mt-0.5 ${
-                syncedMembers === totalMembers
-                  ? "text-green-600"
-                  : syncedMembers === 0
-                    ? "text-red-600"
-                    : "text-yellow-600"
-              }`}
-            >
-              {syncedMembers} / {totalMembers} Members Synced
-            </Text>
-          </>
-        )}
-      </View>
+        <View className="mt-2 mb-4">
+          {totalMembers === 0 ? (
+            <Text className="text-gray-400 text-sm">No Members Added</Text>
+          ) : (
+            <>
+              <Text className="text-gray-600 text-sm">{totalMembers} Members</Text>
 
-      <FlatList
-        data={members}
-        keyExtractor={(item) => item.localId}
-        ListEmptyComponent={
-          <Text className="text-gray-500">No members added yet.</Text>
-        }
-        renderItem={({ item }) => (
-          <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
-            <View className="flex-row justify-between items-start">
-              {/* LEFT SIDE CONTENT */}
-              <View className="flex-1">
-                <Pressable
-                  onPress={() =>
-                    router.push(
-                      `/households/${householdLocalId}/members/${item.localId}`,
-                    )
-                  }
-                >
-                  <Text className="font-semibold text-lg">
-                    {item.firstName ?? "Unnamed Member"}
-                  </Text>
+              <Text
+                className={`text-xs mt-0.5 ${
+                  syncedMembers === totalMembers
+                    ? "text-green-600"
+                    : syncedMembers === 0
+                      ? "text-red-600"
+                      : "text-yellow-600"
+                }`}
+              >
+                {syncedMembers} / {totalMembers} Members Synced
+              </Text>
+            </>
+          )}
+        </View>
 
-                  {item.headHousehold === "Y" && (
-                    <Text className="text-green-600 text-sm">
-                      Head of Household
-                    </Text>
-                  )}
-
-                  {/* STATUS BADGE */}
-                  <View
-                    className={`px-2 py-1 rounded-full self-start mt-1 ${
-                      item.syncStatus === "SYNCED"
-                        ? "bg-green-100"
-                        : item.syncStatus === "PENDING"
-                          ? "bg-yellow-100"
-                          : item.syncStatus === "FAILED"
-                            ? "bg-red-100"
-                            : "bg-gray-100"
-                    }`}
+        <FlatList
+          data={members}
+          keyExtractor={(item) => item.localId}
+          ListEmptyComponent={
+            <Text className="text-gray-500">No members added yet.</Text>
+          }
+          renderItem={({ item }) => (
+            <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
+              <View className="flex-row justify-between items-start">
+                <View className="flex-1">
+                  <Pressable
+                    onPress={() =>
+                      router.push(
+                        `/households/${householdLocalId}/members/${item.localId}`,
+                      )
+                    }
                   >
-                    <Text
-                      className={`text-xs font-medium ${
+                    <Text className="font-semibold text-lg">
+                      {item.firstName ?? "Unnamed Member"}
+                    </Text>
+
+                    {item.headHousehold === "Y" && (
+                      <Text className="text-green-600 text-sm">
+                        Head of Household
+                      </Text>
+                    )}
+
+                    <View
+                      className={`px-2 py-1 rounded-full self-start mt-1 ${
                         item.syncStatus === "SYNCED"
-                          ? "text-green-700"
+                          ? "bg-green-100"
                           : item.syncStatus === "PENDING"
-                            ? "text-yellow-700"
+                            ? "bg-yellow-100"
                             : item.syncStatus === "FAILED"
-                              ? "text-red-700"
-                              : "text-gray-600"
+                              ? "bg-red-100"
+                              : "bg-gray-100"
                       }`}
                     >
-                      {item.syncStatus}
-                    </Text>
-                  </View>
-                </Pressable>
+                      <Text
+                        className={`text-xs font-medium ${
+                          item.syncStatus === "SYNCED"
+                            ? "text-green-700"
+                            : item.syncStatus === "PENDING"
+                              ? "text-yellow-700"
+                              : item.syncStatus === "FAILED"
+                                ? "text-red-700"
+                                : "text-gray-600"
+                        }`}
+                      >
+                        {item.syncStatus}
+                      </Text>
+                    </View>
+                  </Pressable>
+                </View>
+
+                {household?.syncStatus !== "PENDING" && (
+                  <Pressable
+                    onPress={() =>
+                      Alert.alert("Member Options", "", [
+                        {
+                          text: "Delete",
+                          style: "destructive",
+                          onPress: () => handleDelete(item),
+                        },
+                        {
+                          text: "Cancel",
+                          style: "cancel",
+                        },
+                      ])
+                    }
+                    className="px-2 py-1"
+                  >
+                    <Text style={{ fontSize: 18 }}>⋮</Text>
+                  </Pressable>
+                )}
               </View>
-
-              {/* RIGHT SIDE MENU */}
-              {household?.syncStatus !== "PENDING" && (
-                <Pressable
-                  onPress={() =>
-                    Alert.alert("Member Options", "", [
-                      {
-                        text: "Delete",
-                        style: "destructive",
-                        onPress: () => handleDelete(item),
-                      },
-                      {
-                        text: "Cancel",
-                        style: "cancel",
-                      },
-                    ])
-                  }
-                  className="px-2 py-1"
-                >
-                  <Text style={{ fontSize: 18 }}>⋮</Text>
-                </Pressable>
-              )}
             </View>
-          </View>
-        )}
-      />
+          )}
+        />
 
-      {household?.syncStatus !== "PENDING" && (
-        <Pressable
-          onPress={handleAddMember}
-          className="bg-blue-600 p-4 rounded-xl mt-4"
-        >
-          <Text className="text-white text-center font-semibold">
-            + Add Member
-          </Text>
-        </Pressable>
-      )}
-    </View>
+        {household?.syncStatus !== "PENDING" && (
+          <Pressable
+            onPress={handleAddMember}
+            className="bg-blue-600 p-4 rounded-xl mt-4"
+          >
+            <Text className="text-white text-center font-semibold">
+              + Add Member
+            </Text>
+          </Pressable>
+        )}
+      </View>
+    </>
   );
 }

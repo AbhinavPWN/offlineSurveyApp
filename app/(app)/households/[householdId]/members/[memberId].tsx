@@ -6,7 +6,7 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import { householdMemberLocalRepository } from "@/src/di/container";
 import { MemberFormState } from "@/src/features/member-form/models/MemberFormState";
 import { createEmptyMemberFormState } from "@/src/features/member-form/models/createEmptyMemberFormState";
@@ -291,6 +291,7 @@ export default function MemberFormScreen() {
 
   return (
     <ErrorBoundary>
+      <Stack.Screen options={{ title: "Member Details" }} />
       <SafeAreaView edges={["bottom"]} className="flex-1 bg-white">
         <ScrollView
           className="flex-1 px-4 pt-4"
@@ -342,3 +343,5 @@ export default function MemberFormScreen() {
     </ErrorBoundary>
   );
 }
+
+

@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useRouter, Stack } from "expo-router";
 import { useEffect } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 
@@ -15,18 +15,22 @@ export default function AppIndex() {
   }, [router]);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#fff",
-      }}
-    >
-      <ActivityIndicator size="large" />
-      <Text style={{ marginTop: 12, fontSize: 16, color: "#555" }}>
-        Loading ...
-      </Text>
-    </View>
+    <>
+      <Stack.Screen options={{ title: "Dashboard" }} />
+
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#fff",
+        }}
+      >
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 12, fontSize: 16, color: "#555" }}>
+          Loading ...
+        </Text>
+      </View>
+    </>
   );
 }

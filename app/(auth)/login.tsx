@@ -11,7 +11,7 @@ import { useAuth } from "@/src/auth/context/useAuth";
 import { AuthSession } from "@/src/auth/model/AuthSession";
 import { hashPin } from "@/src/auth/service/pin";
 import { loginApi } from "@/src/auth/api/authApi";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function LoginScreen() {
@@ -19,14 +19,14 @@ export default function LoginScreen() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [officeCode, setOfficeCode] = useState("");
+  const officeCode = "00";
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   async function handleLogin() {
     console.log("LOGIN ATTEMPT", { username, password, officeCode });
     // Client-side validation
-    if (!username || !password || !officeCode) {
+    if (!username || !password) {
       Alert.alert("All fields are required.");
       return;
     }
@@ -81,86 +81,90 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={{ padding: 24 }}>
-      <Text
-        style={{
-          color: "black",
-          fontSize: 20,
-          fontWeight: "600",
-          marginBottom: 16,
-        }}
-      >
-        Login
-      </Text>
+    <>
+      <Stack.Screen options={{ title: "Health Survey Login" }} />
 
-      <TextInput
-        placeholder="Username"
-        placeholderTextColor="#888"
-        value={username}
-        onChangeText={setUsername}
-        style={{
-          borderWidth: 1,
-          padding: 8,
-          marginTop: 12,
-          borderColor: "#ccc",
-          color: "#000",
-        }}
-      />
-
-      {/* Password Input */}
-      <View
-        style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          marginTop: 12,
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 8,
-        }}
-      >
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#888"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
+      <View style={{ padding: 24 }}>
+        <Text
           style={{
-            flex: 1,
-            paddingVertical: 8,
+            color: "black",
+            fontSize: 20,
+            fontWeight: "600",
+            marginBottom: 16,
+          }}
+        >
+          Health Survey Login
+        </Text>
+
+        <TextInput
+          placeholder="Username"
+          placeholderTextColor="#888"
+          value={username}
+          onChangeText={setUsername}
+          style={{
+            borderWidth: 1,
+            padding: 8,
+            marginTop: 12,
+            borderColor: "#ccc",
             color: "#000",
           }}
         />
 
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <Ionicons
-            name={showPassword ? "eye-off-outline" : "eye-outline"}
-            size={22}
-            color="#6b7280"
+        {/* Password Input */}
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#ccc",
+            marginTop: 12,
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 8,
+          }}
+        >
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#888"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            style={{
+              flex: 1,
+              paddingVertical: 8,
+              color: "#000",
+            }}
           />
-        </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={22}
+              color="#6b7280"
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* <TextInput
+          placeholder="Office Code"
+          placeholderTextColor="#888"
+          value={officeCode}
+          onChangeText={setOfficeCode}
+          keyboardType="number-pad"
+          style={{
+            borderWidth: 1,
+            padding: 8,
+            marginTop: 12,
+            marginBottom: 12,
+            borderColor: "#ccc",
+            color: "#000",
+          }}
+        /> */}
+
+        <Button
+          title={loading ? "Logging in..." : "Login"}
+          onPress={handleLogin}
+          disabled={loading}
+        />
       </View>
-
-      <TextInput
-        placeholder="Office Code"
-        placeholderTextColor="#888"
-        value={officeCode}
-        onChangeText={setOfficeCode}
-        keyboardType="number-pad"
-        style={{
-          borderWidth: 1,
-          padding: 8,
-          marginTop: 12,
-          marginBottom: 12,
-          borderColor: "#ccc",
-          color: "#000",
-        }}
-      />
-
-      <Button
-        title={loading ? "Logging in..." : "Login"}
-        onPress={handleLogin}
-        disabled={loading}
-      />
-    </View>
+    </>
   );
 }

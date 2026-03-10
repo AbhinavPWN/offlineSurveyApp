@@ -1,5 +1,5 @@
 import { View, Text, Button } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, Stack } from "expo-router";
 
 export default function PinSetupScreen() {
   const router = useRouter();
@@ -12,7 +12,9 @@ export default function PinSetupScreen() {
   }
 
   return (
-    <View style={{ padding: 24 }}>
+    <>
+      <Stack.Screen options={{ title: "Enter PIN" }} />
+      <View style={{ padding: 24 }}>
       <Text style={{ fontSize: 18, marginBottom: 12 }}>Offline Access PIN</Text>
 
       <Text style={{ marginBottom: 12 }}>
@@ -26,5 +28,8 @@ export default function PinSetupScreen() {
 
       <Button title="I Understand" onPress={handleConfirm} />
     </View>
+    </>
   );
 }
+
+

@@ -13,7 +13,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Location from "expo-location";
 import { HOUSING_TYPES } from "@/src/constants/housingTypes";
@@ -573,6 +573,7 @@ export default function HouseholdDetailScreen() {
       className="flex-1 bg-gray-50"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <Stack.Screen options={{ title: "Household Details" }} />
       {/* ---------------- STICKY HEADER ---------------- */}
       <View className="bg-white px-4 pt-4 pb-3 shadow-sm">
         {/* Sync Status Banner */}
@@ -918,3 +919,5 @@ export default function HouseholdDetailScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+
