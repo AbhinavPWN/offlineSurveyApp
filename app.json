@@ -2,7 +2,7 @@
   "expo": {
     "name": "Nirdhan Survey",
     "slug": "nirdhan-survey",
-    "version": "1.0.1",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/logo_resize.png",
     "scheme": "surveyapp",
@@ -12,10 +12,11 @@
     },
     "android": {
       "package": "np.com.nirdhan.survey",
+      "versionCode": 3,
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "foregroundImage": "./assets/images/ni_logo.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       }

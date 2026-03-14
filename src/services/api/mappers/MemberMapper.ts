@@ -135,7 +135,7 @@ export function mapMemberToInsertPayload(
     idDocumentNo: member.idDocumentNo ?? "",
     idIssueDistrictCode: member.idIssueDistrictCode,
     memIdIssueDate: formatForApi(member.idIssueDateAD),
-    employeeId: employeeId,
+    employeeId: employeeId || user,
     casteCode: member.casteCode,
     fName: member.firstName ?? "",
     gender: member.gender,
