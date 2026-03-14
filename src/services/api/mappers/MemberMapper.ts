@@ -42,25 +42,15 @@ function formatForApi(dateString?: string): string {
  * 2️ session employeeId
  * 3️ username fallback
  */
-function resolveEmployeeId(
-  member: any,
-  sessionEmployeeId: string,
-  user: string,
-): string {
-  // 1️⃣ member employeeId (downloaded households)
+function resolveEmployeeId(member: any, sessionEmployeeId: string): string {
+  // 1️⃣ From downloaded members
   if (member?.employeeId && String(member.employeeId).trim() !== "") {
     return String(member.employeeId);
   }
 
-  // 2️⃣ session employeeId (future login support)
+  // 2️⃣ From session (future login improvement)
   if (sessionEmployeeId && sessionEmployeeId.trim() !== "") {
     return sessionEmployeeId;
-  }
-
-  // 3️⃣ fallback → username
-  if (user && user.trim() !== "") {
-    console.warn("⚠️ employeeId fallback → username", user);
-    return user;
   }
 
   throw new Error("EMPLOYEE_ID_NOT_AVAILABLE");
@@ -160,7 +150,7 @@ export function mapMemberToInsertPayload(
   user: string,
   sessionEmployeeId: string,
 ): InsertMemberPayload {
-  const resolvedEmployeeId = resolveEmployeeId(member, sessionEmployeeId, user);
+  const resolvedEmployeeId = resolveEmployeeId(member, sessionEmployeeId);
 
   return {
     enrollDate: formatForApi(member.enrollDateAD),
