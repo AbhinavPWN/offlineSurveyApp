@@ -193,21 +193,42 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
 
       {/* HEALTH */}
       <Section title="Health">
-        <Row
-          label="Health Condition?"
-          value={form.healthConditionsYn ? "Yes" : "No"}
-        />
+        {(() => {
+          const conditions = [
+            { label: "Diabetes", value: form.healthConditionsDia },
+            { label: "Hypertension", value: form.healthConditionsHyp },
+            {
+              label: "Cardiovascular Disease",
+              value: form.healthConditionsCar,
+            },
+            { label: "Chronic Lung Disease", value: form.healthConditionsChr },
+            { label: "Other", value: form.healthConditionsOth },
+          ]
+            .filter((item) => item.value === true)
+            .map((item) => item.label);
 
-        {form.healthConditionsYn && (
-          <Row label="Condition" value={form.healthConditions || "-"} />
+          return (
+            <Row
+              label="Health Conditions"
+              value={conditions.length ? conditions.join(", ") : "-"}
+            />
+          );
+        })()}
+
+        {form.healthConditionsOth && (
+          <Row
+            label="Other Condition"
+            value={form.healthConditionsOthers || "-"}
+          />
         )}
 
         <Row
           label="Disability Identified?"
           value={form.disabilityIdentYn ? "Yes" : "No"}
         />
+
         {form.disabilityIdentYn && (
-          <Row label="Disability Type" value={form.disabilityIdent} />
+          <Row label="Disability Type" value={form.disabilityIdent || "-"} />
         )}
 
         <Row label="Disability Status" value={yesNo(form.disabilityStatus)} />
@@ -251,7 +272,7 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
 
             {form.motherofChild && (
               <Row
-                label="Child Date of Birth (BS)"
+                label="Child DOB"
                 value={form.childDob ? convertADToBSISO(form.childDob) : "-"}
               />
             )}
@@ -259,7 +280,10 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
         )}
 
         {form.minorYn && (
-          <Row label="Vaccination Status" value={form.vaccinationStatus} />
+          <Row
+            label="Vaccination Status"
+            value={yesNo(form.vaccinationStatus)}
+          />
         )}
 
         <Row label="Health Insurance" value={yesNo(form.healthInsCoverage)} />

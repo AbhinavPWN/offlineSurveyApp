@@ -14,17 +14,25 @@ export function validateHealthStep(
 ): HealthValidationErrors {
   const errors: HealthValidationErrors = {};
 
-  // Health condition required
-  if (state.healthConditionsYn && !state.healthConditions) {
-    errors.healthConditions = "Please select health condition";
+  /**
+   * Health conditions
+   * Not mandatory.
+   * Only validate if "Other" is selected.
+   */
+  if (state.healthConditionsOth && !state.healthConditionsOthers?.trim()) {
+    errors.healthConditions = "Please specify other health condition";
   }
 
-  // Disability identification required
+  /**
+   * Disability identification
+   */
   if (state.disabilityIdentYn && !state.disabilityIdent) {
     errors.disabilityIdent = "Please select disability type";
   }
 
-  // Disability difficulty validation
+  /**
+   * Disability functional difficulty
+   */
   if (state.disabilityStatus === "Y") {
     const difficulties = [
       state.seeing,
@@ -44,7 +52,9 @@ export function validateHealthStep(
     }
   }
 
-  // Pregnancy rules
+  /**
+   * Pregnancy rules
+   */
   if (state.gender === "F") {
     if (state.pregnancyStatus === "Y" && !state.pregnancyDate) {
       errors.pregnancyDate = "Pregnancy date is required";
@@ -55,7 +65,9 @@ export function validateHealthStep(
     }
   }
 
-  // Vaccination rule (<18)
+  /**
+   * Vaccination rule for children (<18)
+   */
   if (state.dob) {
     const age = calculateAge(state.dob);
 
@@ -67,7 +79,9 @@ export function validateHealthStep(
   return errors;
 }
 
-// Utility (lightweight, no heavy libs)
+/**
+ * Lightweight age calculation
+ */
 function calculateAge(isoDate: string): number {
   const today = new Date();
   const dob = new Date(isoDate);

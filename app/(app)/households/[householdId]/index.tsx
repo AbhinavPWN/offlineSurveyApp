@@ -97,7 +97,9 @@ function SimpleSelect({
                     }}
                     className={`px-4 py-3 border-b border-gray-100 ${isSelected ? "bg-blue-50" : "bg-white"}`}
                   >
-                    <Text className={isSelected ? "text-blue-700" : "text-black"}>
+                    <Text
+                      className={isSelected ? "text-blue-700" : "text-black"}
+                    >
                       {item.label}
                     </Text>
                   </Pressable>
@@ -109,6 +111,43 @@ function SimpleSelect({
       </Modal>
     </>
   );
+}
+
+function normalizeServerDate(date?: string | null): string {
+  if (!date) return "";
+
+  // Already ISO
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date;
+  }
+
+  // Convert DD-MMM-YYYY → YYYY-MM-DD
+  const match = date.match(/^(\d{1,2})-([A-Z]{3})-(\d{4})$/i);
+  if (!match) return "";
+
+  const day = match[1].padStart(2, "0");
+  const monthStr = match[2].toUpperCase();
+  const year = match[3];
+
+  const monthMap: Record<string, string> = {
+    JAN: "01",
+    FEB: "02",
+    MAR: "03",
+    APR: "04",
+    MAY: "05",
+    JUN: "06",
+    JUL: "07",
+    AUG: "08",
+    SEP: "09",
+    OCT: "10",
+    NOV: "11",
+    DEC: "12",
+  };
+
+  const month = monthMap[monthStr];
+  if (!month) return "";
+
+  return `${year}-${month}-${day}`;
 }
 
 export default function HouseholdDetailScreen() {
@@ -216,7 +255,7 @@ export default function HouseholdDetailScreen() {
       });
 
       // now set form state
-      setDateOfListing(result.dateoflistingAD ?? "");
+      setDateOfListing(normalizeServerDate(result.dateoflistingAD));
       setProvinceCode("5");
       setDistrictCode(result.districtCode ?? "");
       setVdcnpCode(result.vdcnpCode ?? "");
@@ -919,5 +958,3 @@ export default function HouseholdDetailScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-

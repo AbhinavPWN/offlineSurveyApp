@@ -36,6 +36,7 @@ export interface HouseholdMemberLocal {
   // DOB
   dobAD?: string | null;
   dobBS?: string;
+  clientAge?: string;
 
   // Contact
   mobileNo?: string;
@@ -86,6 +87,13 @@ export interface HouseholdMemberLocal {
   childDobAD?: string | null;
   vaccinationStatus?: string | null;
   healthInsCoverage?: string | null;
+
+  healthConditionsDia?: string;
+  healthConditionsHyp?: string;
+  healthConditionsCar?: string;
+  healthConditionsChr?: string;
+  healthConditionsOth?: string;
+  healthConditionsOthers?: string;
 
   // Misc
   clientBehaviour?: string | null;

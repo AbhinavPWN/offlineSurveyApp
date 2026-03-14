@@ -4,13 +4,14 @@ export function createEmptyMemberFormState(): MemberFormState {
   return {
     // Basic Info
 
-    enrollDate: null,
+    enrollDate: new Date().toISOString().split("T")[0],
     fName: "",
     gender: null,
     maritalStatus: null,
     relationtoHH: null,
     headHousehold: false,
     mobileNo: "",
+    clientAge: "",
 
     // Identity
 
@@ -75,6 +76,13 @@ export function createEmptyMemberFormState(): MemberFormState {
 
     vaccinationStatus: null,
     healthInsCoverage: null,
+
+    healthConditionsDia: false,
+    healthConditionsHyp: false,
+    healthConditionsCar: false,
+    healthConditionsChr: false,
+    healthConditionsOth: false,
+    healthConditionsOthers: "",
 
     // Misc
 

@@ -8,7 +8,7 @@ import {
   relationToHHOptions,
 } from "../../master/memberMasterData";
 import { BSDateInput } from "../BSDateInput";
-import { calculateAgeFromISO } from "@/src/utils/dateUtils";
+// import { calculateAgeFromISO } from "@/src/utils/dateUtils";
 
 interface Props {
   form: MemberFormState;
@@ -109,17 +109,31 @@ export const BasicInfoStep = React.memo(function BasicInfoStep({
 
       {/* Date of Birth  */}
       <BSDateInput
-        label="Date of Birth (B.S.) / जन्म मिति (वि.सं.) *"
+        label="Date of Birth (B.S.) / जन्म मिति (वि.सं.) "
         adValue={form.dob}
         onChangeAD={(adIso) => {
-          const age = adIso ? calculateAgeFromISO(adIso) : null;
-
           updateField("dob", adIso);
-          updateField("minorYn", age !== null ? age < 18 : false);
         }}
       />
       {errors?.dob && (
         <Text className="text-red-500 text-xs mt-1">{errors.dob}</Text>
+      )}
+
+      {/* Client AGE */}
+      <View>
+        <Text className="mb-1 font-medium">Client Age / उमेर *</Text>
+        <TextInput
+          className="border rounded-lg px-3 py-2"
+          keyboardType="number-pad"
+          value={form.clientAge ?? ""}
+          onChangeText={(text) =>
+            updateField("clientAge", text.replace(/\D/g, "").slice(0, 3))
+          }
+          placeholder="Enter age"
+        />
+      </View>
+      {errors?.clientAge && (
+        <Text className="text-red-500 text-xs mt-1">{errors.clientAge}</Text>
       )}
     </View>
   );

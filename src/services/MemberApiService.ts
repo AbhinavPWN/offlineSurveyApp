@@ -31,6 +31,7 @@ export interface InsertMemberPayload {
   imagePath: string;
   tranOfficeCode: string;
   dob: string;
+  clientAge: string;
   mobileNo: string;
   minorYn: string;
   address1Type: string;
@@ -71,6 +72,12 @@ export interface InsertMemberPayload {
   childDob: string;
   vaccinationStatus: string;
   healthInsCoverage: string;
+  healthConditionsDia: string;
+  healthConditionsHyp: string;
+  healthConditionsCar: string;
+  healthConditionsChr: string;
+  healthConditionsOth: string;
+  healthConditionsOthers: string;
   user: string;
   insertUpdate: "I";
 }

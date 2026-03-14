@@ -15,5 +15,6 @@
   },
   "files.associations": {
     "*.css": "tailwindcss"
-  }
+  },
+  "java.compile.nullAnalysis.mode": "disabled"
 }

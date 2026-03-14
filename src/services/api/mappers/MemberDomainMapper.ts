@@ -13,6 +13,7 @@ export function mapDbToDomainMember(db: HouseholdMemberLocal): MemberLocal {
     lastName: db.lastName,
 
     dobAD: db.dobAD ?? "",
+    clientAge: db.clientAge ?? "",
     enrollDateAD: db.enrollDateAD ?? "",
 
     mobileNo: db.mobileNo ?? "",
@@ -78,6 +79,13 @@ export function mapDbToDomainMember(db: HouseholdMemberLocal): MemberLocal {
 
     vaccinationStatus: db.vaccinationStatus ?? "N",
     healthInsCoverage: db.healthInsCoverage ?? "N",
+
+    healthConditionsDia: toBool(db.healthConditionsDia),
+    healthConditionsHyp: toBool(db.healthConditionsHyp),
+    healthConditionsCar: toBool(db.healthConditionsCar),
+    healthConditionsChr: toBool(db.healthConditionsChr),
+    healthConditionsOth: toBool(db.healthConditionsOth),
+    healthConditionsOthers: db.healthConditionsOthers ?? "",
 
     imagePath: db.imagePath ?? undefined,
   };

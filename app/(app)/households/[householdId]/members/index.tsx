@@ -55,11 +55,26 @@ export default function MembersListScreen() {
   const handleAddMember = async () => {
     if (!householdLocalId || creatingMember) return;
 
-    // Lock only if household is pending AND members already exist
-    if (household?.syncStatus === "PENDING" && members.length > 0) {
+    // Household must exist
+    if (!household) return;
+
+    // Rule 1: Lock if household pending
+    if (household.syncStatus === "PENDING" && members.length > 0) {
       Alert.alert(
         "Household Locked",
         "Members cannot be modified while this household is waiting for sync.",
+      );
+      return;
+    }
+
+    // Rule 2: Prevent exceeding household size
+    const allowedMembers = household.noofHHMembers ?? 0;
+    const currentMembers = members.length;
+
+    if (currentMembers >= allowedMembers) {
+      Alert.alert(
+        "Member Limit Reached",
+        `This household is limited to ${allowedMembers} members.`,
       );
       return;
     }
@@ -141,7 +156,7 @@ export default function MembersListScreen() {
           ) : (
             <>
               <Text className="text-gray-600 text-sm">
-                {totalMembers} Members
+                {totalMembers} / {household?.noofHHMembers ?? 0} Members
               </Text>
 
               <Text

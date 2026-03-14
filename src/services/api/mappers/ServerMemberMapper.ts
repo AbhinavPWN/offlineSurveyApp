@@ -64,6 +64,7 @@ export function mapServerMemberToDb(
 
     dobAD: convertApiDateToISO(m.dob),
     dobBS: normalizeString(m.doB_BS),
+    clientAge: normalizeString(m.client_age),
 
     mobileNo: normalizeString(m.mobilE_NO),
     minorYn: normalizeYN(m.minoR_Y_N),
@@ -115,6 +116,13 @@ export function mapServerMemberToDb(
 
     vaccinationStatus: normalizeYN(m.vaccinatioN_STATUS),
     healthInsCoverage: normalizeYN(m.healtH_INSURANCE_COVERAGE),
+
+    healthConditionsDia: normalizeYN(m.healtH_CONDITIONS_dia),
+    healthConditionsHyp: normalizeYN(m.healtH_CONDITIONS_hyp),
+    healthConditionsCar: normalizeYN(m.healtH_CONDITIONS_car),
+    healthConditionsChr: normalizeYN(m.healtH_CONDITIONS_chr),
+    healthConditionsOth: normalizeYN(m.healtH_CONDITIONS_oth),
+    healthConditionsOthers: normalizeString(m.healtH_CONDITIONS_others),
 
     clientBehaviour: normalizeString(m.clienT_BEHAVIOUR),
     imagePath: normalizeString(m.imagE_PATH),

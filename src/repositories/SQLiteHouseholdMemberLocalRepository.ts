@@ -6,7 +6,7 @@ import {
   MemberSyncStatus,
 } from "../models/householdMember.model";
 import { HouseholdMemberLocalRepository } from "./HouseholdMemberLocalRepository";
-import { convertApiDateToISO } from "../utils/dateUtils";
+// import { convertApiDateToISO } from "../utils/dateUtils";
 import { mapServerMemberToDb } from "../services/api/mappers/ServerMemberMapper";
 
 function mapRowToMember(row: any): HouseholdMemberLocal {
@@ -39,6 +39,8 @@ function mapRowToMember(row: any): HouseholdMemberLocal {
 
     dobAD: row.dob_ad ?? undefined,
     dobBS: row.dob_bs ?? undefined,
+
+    clientAge: row.client_age ?? undefined,
 
     mobileNo: row.mobile_no ?? undefined,
     minorYn: row.minor_yn ?? undefined,
@@ -86,6 +88,13 @@ function mapRowToMember(row: any): HouseholdMemberLocal {
 
     vaccinationStatus: row.vaccination_status ?? undefined,
     healthInsCoverage: row.health_ins_coverage ?? undefined,
+
+    healthConditionsDia: row.health_conditions_dia ?? undefined,
+    healthConditionsHyp: row.health_conditions_hyp ?? undefined,
+    healthConditionsCar: row.health_conditions_car ?? undefined,
+    healthConditionsChr: row.health_conditions_chr ?? undefined,
+    healthConditionsOth: row.health_conditions_oth ?? undefined,
+    healthConditionsOthers: row.health_conditions_others ?? undefined,
 
     clientBehaviour: row.client_behaviour ?? undefined,
     imagePath: row.image_path ?? undefined,
@@ -173,6 +182,7 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
       idIssueDistrictCode: "id_issue_district_code",
       idIssueDateAD: "id_issue_date_ad",
       dobAD: "dob_ad",
+      clientAge: "client_age",
       mobileNo: "mobile_no",
       minorYn: "minor_yn",
       address1Type: "address1_type",
@@ -210,6 +220,12 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
       childDobAD: "child_dob",
       vaccinationStatus: "vaccination_status",
       healthInsCoverage: "health_ins_coverage",
+      healthConditionsDia: "health_conditions_dia",
+      healthConditionsHyp: "health_conditions_hyp",
+      healthConditionsCar: "health_conditions_car",
+      healthConditionsChr: "health_conditions_chr",
+      healthConditionsOth: "health_conditions_oth",
+      healthConditionsOthers: "health_conditions_others",
       clientBehaviour: "client_behaviour",
       imagePath: "image_path",
     };
@@ -420,6 +436,7 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
 
         mapped.dobAD ?? null,
         mapped.dobBS ?? null,
+        mapped.clientAge ?? null,
 
         mapped.mobileNo ?? null,
         mapped.minorYn ?? "N",
@@ -471,6 +488,12 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
 
         mapped.vaccinationStatus ?? "N",
         mapped.healthInsCoverage ?? "N",
+        mapped.healthConditionsDia ?? "N",
+        mapped.healthConditionsHyp ?? "N",
+        mapped.healthConditionsCar ?? "N",
+        mapped.healthConditionsChr ?? "N",
+        mapped.healthConditionsOth ?? "N",
+        mapped.healthConditionsOthers ?? null,
 
         mapped.clientBehaviour ?? null,
         mapped.imagePath ?? null,
@@ -510,6 +533,7 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
         id_issue_date_bs,
         dob_ad,
         dob_bs,
+        client_age,
         mobile_no,
         minor_yn,
         address1_type,
@@ -549,6 +573,12 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
         child_dob,
         vaccination_status,
         health_ins_coverage,
+        health_conditions_dia,
+        health_conditions_hyp,
+        health_conditions_car,
+        health_conditions_chr,
+        health_conditions_oth,
+        health_conditions_others,
         client_behaviour,
         image_path,
         created_at,

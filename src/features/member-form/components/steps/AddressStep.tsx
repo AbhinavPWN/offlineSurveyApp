@@ -38,13 +38,25 @@ export const AddressStep = React.memo(function AddressStep({
         const provinces = await getProvinces();
         if (!mounted) return;
 
-        setProvinceOptions(
-          provinces.map((p) => ({
-            value: p.id,
-            labelEn: p.name_en,
-            labelNp: p.name_np,
-          })),
+        // Only allow Lumbini province
+        const lumbini = provinces.filter(
+          (p) =>
+            p.name_en?.toLowerCase().includes("lumbini") ||
+            p.name_np?.includes("लुम्बिनी"),
         );
+
+        const mapped = lumbini.map((p) => ({
+          value: p.id,
+          labelEn: p.name_en,
+          labelNp: p.name_np,
+        }));
+
+        setProvinceOptions(mapped);
+
+        // auto select Lumbini if empty
+        if (!form.address1Province && mapped.length > 0) {
+          updateField("address1Province", mapped[0].value);
+        }
       } catch (error) {
         console.log("Province load error:", error);
       }
@@ -74,7 +86,15 @@ export const AddressStep = React.memo(function AddressStep({
 
         if (!mounted) return;
 
-        const mappedDistricts = districts.map((d) => ({
+        const allowedDistricts = ["banke", "bardiya", "dang"];
+
+        const filtered = districts.filter((d) =>
+          allowedDistricts.some((name) =>
+            d.name_en.toLowerCase().includes(name),
+          ),
+        );
+
+        const mappedDistricts = filtered.map((d) => ({
           value: d.id,
           labelEn: d.name_en,
           labelNp: d.name_np,

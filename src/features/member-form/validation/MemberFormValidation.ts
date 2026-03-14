@@ -43,14 +43,25 @@ export function validateBasicInfo(form: MemberFormState): ValidationResult {
   }
 
   // DOB
-  if (!form.dob) {
-    errors.dob = "Date of birth is required.";
-  }
+  // if (!form.dob) {
+  //   errors.dob = "Date of birth is required.";
+  // }
 
   // Logical Rule: Enroll Date >= DOB
   if (form.enrollDate && form.dob) {
     if (form.enrollDate < form.dob) {
       errors.enrollDate = "Enroll date cannot be before date of birth.";
+    }
+  }
+
+  // Client Age (required)
+  if (!form.clientAge) {
+    errors.clientAge = "Age is required.";
+  } else {
+    const age = Number(form.clientAge);
+
+    if (isNaN(age) || age < 0 || age > 120) {
+      errors.clientAge = "Enter valid age.";
     }
   }
 

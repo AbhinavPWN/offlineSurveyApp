@@ -44,6 +44,7 @@ export interface MemberLocal {
   lastName?: string;
 
   dobAD: string;
+  clientAge: string;
   enrollDateAD: string;
 
   mobileNo: string;
@@ -109,6 +110,13 @@ export interface MemberLocal {
   vaccinationStatus: string;
   healthInsCoverage: string;
 
+  healthConditionsDia: boolean;
+  healthConditionsHyp: boolean;
+  healthConditionsCar: boolean;
+  healthConditionsChr: boolean;
+  healthConditionsOth: boolean;
+  healthConditionsOthers: string;
+
   imagePath?: string;
 }
 
@@ -136,6 +144,7 @@ export function mapMemberToInsertPayload(
     imagePath: member.imagePath ?? "",
     tranOfficeCode: "00",
     dob: formatForApi(member.dobAD),
+    clientAge: member.clientAge ?? "",
     mobileNo: member.mobileNo ?? "",
     minorYn: member.minorYn ? "Y" : "N",
     address1Type: member.address1Type,
@@ -189,6 +198,13 @@ export function mapMemberToInsertPayload(
     vaccinationStatus: member.minorYn ? (member.vaccinationStatus ?? "N") : "N",
 
     healthInsCoverage: member.healthInsCoverage ?? "N",
+
+    healthConditionsDia: member.healthConditionsDia ? "Y" : "N",
+    healthConditionsHyp: member.healthConditionsHyp ? "Y" : "N",
+    healthConditionsCar: member.healthConditionsCar ? "Y" : "N",
+    healthConditionsChr: member.healthConditionsChr ? "Y" : "N",
+    healthConditionsOth: member.healthConditionsOth ? "Y" : "N",
+    healthConditionsOthers: member.healthConditionsOthers ?? "",
     user,
     insertUpdate: "I",
   };

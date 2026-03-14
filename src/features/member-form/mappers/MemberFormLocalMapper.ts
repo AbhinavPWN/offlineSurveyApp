@@ -12,6 +12,7 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     relationtoHH: isHead ? "HHH" : (local.relationToHH ?? null),
     headHousehold: isHead,
     mobileNo: local.mobileNo ?? "",
+    clientAge: local.clientAge ?? "",
 
     // Identity
     // Identity
@@ -74,6 +75,13 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     vaccinationStatus: local.vaccinationStatus ?? "",
     healthInsCoverage: local.healthInsCoverage ?? "N",
 
+    healthConditionsDia: local.healthConditionsDia === "Y",
+    healthConditionsHyp: local.healthConditionsHyp === "Y",
+    healthConditionsCar: local.healthConditionsCar === "Y",
+    healthConditionsChr: local.healthConditionsChr === "Y",
+    healthConditionsOth: local.healthConditionsOth === "Y",
+    healthConditionsOthers: local.healthConditionsOthers ?? "",
+
     // Misc
     clientBehaviour: local.clientBehaviour ?? "",
     imagePath: local.imagePath ?? null,
@@ -91,6 +99,7 @@ export function mapFormToLocalPatch(
     relationToHH: form.headHousehold ? "HHH" : (form.relationtoHH ?? null),
     headHousehold: form.headHousehold ? "Y" : "N",
     mobileNo: form.mobileNo,
+    clientAge: form.clientAge,
 
     idDocumentType: form.idDocumentType || "CITIZENSHIP",
     idDocumentNo: form.idDocumentNo || "NA",
@@ -158,6 +167,13 @@ export function mapFormToLocalPatch(
     vaccinationStatus: form.minorYn ? (form.vaccinationStatus ?? "N") : null,
 
     healthInsCoverage: form.healthInsCoverage ?? "N",
+
+    healthConditionsDia: form.healthConditionsDia ? "Y" : "N",
+    healthConditionsHyp: form.healthConditionsHyp ? "Y" : "N",
+    healthConditionsCar: form.healthConditionsCar ? "Y" : "N",
+    healthConditionsChr: form.healthConditionsChr ? "Y" : "N",
+    healthConditionsOth: form.healthConditionsOth ? "Y" : "N",
+    healthConditionsOthers: form.healthConditionsOthers ?? "",
 
     clientBehaviour: form.clientBehaviour,
     imagePath: form.imagePath ?? null,

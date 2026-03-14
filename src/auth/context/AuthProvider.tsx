@@ -6,7 +6,6 @@ import { verifyPin } from "../service/pinVerifier";
 import { AuthSession } from "../model/AuthSession";
 import { AuthState } from "../model/AuthState";
 import { CHWProfile } from "../model/CHWProfile";
-import { householdApiService } from "@/src/di/container";
 import { AppLogger } from "@/src/utils/AppLogger";
 
 export const AuthContext = createContext<AuthContextValue | undefined>(
@@ -21,7 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>("LOGGED_OUT");
   const [loading, setLoading] = useState(true);
 
-  //   Restoring session on App Start
+  // Restore session on app start
   useEffect(() => {
     async function restore() {
       await AppLogger.log("AUTH", "SESSION_RESTORE_ATTEMPT");
@@ -29,10 +28,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const result = await authService.restoreSession();
 
-        if (result.session) {
-          const normalizedUserName = result.session.userName.toLowerCase();
+        if (result.session?.userName) {
+          const normalizedUserName = result.session.userName
+            .trim()
+            .toLowerCase();
 
-          const normalizedSession = {
+          const normalizedSession: AuthSession = {
             ...result.session,
             userName: normalizedUserName,
           };
@@ -92,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     restore();
   }, []);
 
-  //   implementing Login. called after a successful API login
+  // Login implementation
   async function login(newSession: AuthSession) {
     await AppLogger.log("AUTH", "LOGIN_ATTEMPT", {
       userName: newSession.userName,
@@ -102,39 +103,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await authService.login(newSession);
 
-      const normalizedUserName = result.session.userName.toLowerCase();
-
-      let chwId: string;
-
-      try {
-        const listing =
-          await householdApiService.getHouseholdListing(normalizedUserName);
-
-        if (!listing || listing.length === 0) {
-          throw new Error("No households found to resolve CHW ID.");
-        }
-
-        chwId = listing[0].chwId;
-
-        await AppLogger.log("AUTH", "CHW_ID_RESOLVED", {
-          userName: normalizedUserName,
-          idofCHW: chwId,
-        });
-      } catch (error: any) {
-        await AppLogger.log("ERROR", "CHW_ID_RESOLUTION_FAILED", {
-          userName: normalizedUserName,
-          message: error?.message,
-        });
-        throw new Error("LOGIN_FAILED_NO_CHW_ID");
+      if (!result.session?.userName) {
+        throw new Error("LOGIN_INVALID_SESSION");
       }
+
+      if (!result.session?.accessToken) {
+        throw new Error("LOGIN_TOKEN_MISSING");
+      }
+
+      const normalizedUserName = result.session.userName.trim().toLowerCase();
+
+      // CHW identity = login username
+      const chwId = normalizedUserName;
+
+      await AppLogger.log("AUTH", "CHW_ID_RESOLVED", {
+        userName: normalizedUserName,
+        idofCHW: chwId,
+      });
 
       const normalizedSession: AuthSession = {
         ...result.session,
         userName: normalizedUserName,
         idofCHW: chwId,
       };
-
-      await authService.login(normalizedSession);
 
       setSession(normalizedSession);
       setState(result.state);
@@ -149,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         wardNo: "",
       });
 
-      // Setting GLOBAL meta variable for APPLogger
+      // Set global logger metadata
       AppLogger.setGlobalMeta({
         userName: normalizedUserName,
         idofCHW: chwId,
@@ -164,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userName: newSession.userName,
         message: error?.message,
       });
+
       throw error;
     }
   }
@@ -201,6 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await authService.logout();
 
     setSession(null);
+    setChwProfile(null);
     setState("LOGGED_OUT");
 
     AppLogger.setGlobalMeta({});

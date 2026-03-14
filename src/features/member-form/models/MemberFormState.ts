@@ -8,6 +8,8 @@ export interface MemberFormState {
   headHousehold: boolean;
   mobileNo: string;
 
+  clientAge: string;
+
   // Identity
 
   idDocumentType: string | null;
@@ -72,6 +74,13 @@ export interface MemberFormState {
 
   vaccinationStatus: string | null;
   healthInsCoverage: string | null;
+
+  healthConditionsDia: boolean;
+  healthConditionsHyp: boolean;
+  healthConditionsCar: boolean;
+  healthConditionsChr: boolean;
+  healthConditionsOth: boolean;
+  healthConditionsOthers: string;
 
   // Misc
 
