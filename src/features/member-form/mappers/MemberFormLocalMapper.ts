@@ -5,7 +5,7 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
   const isHead = local.headHousehold === "Y";
   return {
     // Basic
-    enrollDate: local.enrollDateAD ?? null,
+    enrollDate: local.enrollDateAD ?? new Date().toISOString().split("T")[0],
     fName: local.firstName ?? "",
     gender: local.gender ?? null,
     maritalStatus: local.maritalStatus ?? null,
