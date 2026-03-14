@@ -202,7 +202,13 @@ export default function HouseholdDetailScreen() {
     async function loadDistricts() {
       const districts = await getDistrictsByProvince("5"); // Lumbini only
 
-      setDistrictOptions(districts);
+      const allowedDistricts = ["banke", "bardiya", "dang"];
+
+      const filtered = districts.filter((d) =>
+        allowedDistricts.some((name) => d.name_en.toLowerCase().includes(name)),
+      );
+
+      setDistrictOptions(filtered);
     }
 
     loadDistricts();
@@ -317,7 +323,7 @@ export default function HouseholdDetailScreen() {
         noofHHMembers:
           membersCount.trim() !== "" && !isNaN(Number(membersCount))
             ? Number(membersCount)
-            : 0,
+            : 1,
         typeofHousing: typeOfHousing as any,
         accesstoCleanWater: cleanWater as any,
         accesstoSanitation: sanitation as any,

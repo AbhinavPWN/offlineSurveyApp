@@ -7,6 +7,7 @@ export function mapDbToDomainMember(db: HouseholdMemberLocal): MemberLocal {
   return {
     localId: db.localId,
     clientNo: db.clientNo,
+    employeeId: db.employeeId,
 
     firstName: db.firstName ?? "",
     middleName: db.middleName,

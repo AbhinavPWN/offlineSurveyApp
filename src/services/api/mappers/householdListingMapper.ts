@@ -42,5 +42,6 @@ export function mapListingDtoToHousehold(dto: HouseholdListingDTO): Household {
     closedDateBS: dto.hH_CLOSED_DATE_BS,
 
     createdOn: dto.createD_ON,
+    employeeId: dto.namE_OF_CHW_ID, // required for member insert/update API
   };
 }

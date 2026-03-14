@@ -30,8 +30,17 @@ export class AuthService {
     session: AuthSession;
     state: AuthState;
   }> {
-    await saveAuthSession(session);
-    return { session, state: "UNLOCKED" };
+    const normalizedUserName = session.userName.trim().toLowerCase();
+
+    const normalizedSession: AuthSession = {
+      ...session,
+      userName: normalizedUserName,
+      idofCHW: session.idofCHW ?? normalizedUserName, // ensure CHW id exists
+    };
+
+    await saveAuthSession(normalizedSession);
+
+    return { session: normalizedSession, state: "UNLOCKED" };
   }
 
   async logout() {

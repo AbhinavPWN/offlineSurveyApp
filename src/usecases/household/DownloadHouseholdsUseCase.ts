@@ -2,6 +2,10 @@ import { HouseholdApiService } from "@/src/services/HouseholdApiService";
 import { HouseholdLocalRepository } from "@/src/repositories/HouseholdLocalRepository";
 import { AppLogger } from "@/src/utils/AppLogger";
 import { NetworkServiceImpl } from "@/src/utils/NetworkService";
+import {
+  loadAuthSession,
+  saveAuthSession,
+} from "@/src/auth/storage/authStorage";
 
 export interface DownloadSummary {
   inserted: number;
@@ -42,7 +46,31 @@ export class DownloadHouseholdsUseCase {
       const remoteHouseholds =
         await this.apiService.getHouseholdListing(chwUsername);
 
+      if (__DEV__) {
+        console.log("REMOTE HOUSEHOLDS SAMPLE:", remoteHouseholds[0]);
+        console.log("SERVER CHW ID:", remoteHouseholds[0]?.employeeId);
+      }
+
       console.log("Remote households count:", remoteHouseholds.length);
+
+      // Load session once
+      const session = await loadAuthSession();
+
+      // Discover employeeId from first household
+      if (
+        session &&
+        !session.employeeId &&
+        remoteHouseholds.length > 0 &&
+        remoteHouseholds[0].employeeId
+      ) {
+        session.employeeId = remoteHouseholds[0].employeeId;
+
+        await saveAuthSession(session);
+
+        await AppLogger.log("SYNC", "EmployeeId discovered from server", {
+          employeeId: session.employeeId,
+        });
+      }
 
       for (const remote of remoteHouseholds) {
         const existing = await this.localRepo.getByHouseholdId(
@@ -55,7 +83,6 @@ export class DownloadHouseholdsUseCase {
           continue;
         }
 
-        // Only update if clean SYNCED state
         if (existing.syncStatus === "SYNCED") {
           await this.localRepo.updateFromListing(remote);
           updated++;

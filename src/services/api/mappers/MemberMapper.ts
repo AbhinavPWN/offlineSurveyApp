@@ -35,9 +35,41 @@ function formatForApi(dateString?: string): string {
   return `${day}-${month}-${year}`;
 }
 
+/**
+ * Determine correct employeeId safely
+ * Priority:
+ * 1️ member.employeeId (downloaded from server)
+ * 2️ session employeeId
+ * 3️ username fallback
+ */
+function resolveEmployeeId(
+  member: any,
+  sessionEmployeeId: string,
+  user: string,
+): string {
+  // 1️⃣ member employeeId (downloaded households)
+  if (member?.employeeId && String(member.employeeId).trim() !== "") {
+    return String(member.employeeId);
+  }
+
+  // 2️⃣ session employeeId (future login support)
+  if (sessionEmployeeId && sessionEmployeeId.trim() !== "") {
+    return sessionEmployeeId;
+  }
+
+  // 3️⃣ fallback → username
+  if (user && user.trim() !== "") {
+    console.warn("⚠️ employeeId fallback → username", user);
+    return user;
+  }
+
+  throw new Error("EMPLOYEE_ID_NOT_AVAILABLE");
+}
+
 export interface MemberLocal {
   localId: string;
   clientNo?: string;
+  employeeId?: string;
 
   firstName: string;
   middleName?: string;
@@ -126,8 +158,10 @@ export function mapMemberToInsertPayload(
   member: MemberLocal,
   householdId: string,
   user: string,
-  employeeId: string,
+  sessionEmployeeId: string,
 ): InsertMemberPayload {
+  const resolvedEmployeeId = resolveEmployeeId(member, sessionEmployeeId, user);
+
   return {
     enrollDate: formatForApi(member.enrollDateAD),
     maritalStatus: member.maritalStatus,
@@ -135,7 +169,7 @@ export function mapMemberToInsertPayload(
     idDocumentNo: member.idDocumentNo ?? "",
     idIssueDistrictCode: member.idIssueDistrictCode,
     memIdIssueDate: formatForApi(member.idIssueDateAD),
-    employeeId: employeeId || user,
+    employeeId: resolvedEmployeeId,
     casteCode: member.casteCode,
     fName: member.firstName ?? "",
     gender: member.gender,

@@ -21,4 +21,5 @@ export interface HouseholdLocal {
   syncStatus: SyncStatus;
   syncAction: SyncAction;
   lastModifiedAt: number;
+  employeeId?: string;
 }

@@ -66,7 +66,7 @@ export class SyncMembersUseCase {
       console.log("🟡 Pending Members Count:", pendingMembers.length);
       console.log("🟡 Pending Members Data:", pendingMembers);
     }
-
+    console.log("Pending members:", pendingMembers);
     for (const dbMember of pendingMembers ?? []) {
       const member = mapDbToDomainMember(dbMember);
       try {
@@ -106,9 +106,13 @@ export class SyncMembersUseCase {
           await this.syncUpdate(dbMember, member, parent.householdId!);
         }
       } catch (error: any) {
+        console.log("❌ MEMBER UPDATE ERROR:", error);
+        console.log("❌ SERVER RESPONSE:", error?.response?.data);
+
         await AppLogger.log("ERROR", "Member sync failed", {
           localId: member.localId,
           message: error?.message,
+          response: error?.response?.data,
         });
 
         await this.memberRepo.markFailed(member.localId);
@@ -124,11 +128,27 @@ export class SyncMembersUseCase {
   ): Promise<void> {
     const session = await loadAuthSession();
 
+    /**
+     * Resolve employeeId safely
+     * Priority:
+     * 1. Session employeeId
+     * 2. Member stored employeeId
+     */
+    // let employeeId = session?.employeeId;
+
+    // if (!employeeId && dbMember.employeeId) {
+    //   employeeId = dbMember.employeeId;
+    // }
+
+    // if (!employeeId) {
+    //   throw new Error("EMPLOYEE_ID_NOT_AVAILABLE");
+    // }
+    const sessionEmployeeId = session?.employeeId ?? "";
     const payload = mapMemberToInsertPayload(
       member,
       serverHouseholdId,
       session?.userName ?? "",
-      session?.idofCHW ?? "",
+      sessionEmployeeId,
     );
 
     if (__DEV__) {
@@ -174,12 +194,25 @@ export class SyncMembersUseCase {
 
     const session = await loadAuthSession();
 
+    // let employeeId = session?.employeeId;
+
+    // if (!employeeId && dbMember.employeeId) {
+    //   employeeId = dbMember.employeeId;
+    // }
+
+    // if (!employeeId) {
+    //   throw new Error("EMPLOYEE_ID_NOT_AVAILABLE");
+    // }
+
+    const sessionEmployeeId = session?.employeeId ?? "";
+
     const payload = mapMemberToUpdatePayload(
       member,
       serverHouseholdId,
       session?.userName ?? "",
-      session?.idofCHW ?? "",
+      sessionEmployeeId,
     );
+
     if (__DEV__) {
       console.log("📦 MEMBER UPDATE PAYLOAD:", payload);
       console.log("📦 UPDATE PAYLOAD SENT TO SERVER:", payload);

@@ -46,4 +46,5 @@ export interface Household {
 
   // Audit
   createdOn: string;
+  employeeId?: string;
 }

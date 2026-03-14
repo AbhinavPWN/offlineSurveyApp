@@ -39,16 +39,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           };
 
           if (!normalizedSession.idofCHW) {
-            await AppLogger.log("ERROR", "SESSION_RESTORE_MISSING_CHW_ID", {
-              userName: normalizedUserName,
-            });
+            normalizedSession.idofCHW = normalizedUserName;
 
-            await authService.logout();
-            setSession(null);
-            setChwProfile(null);
-            setState("LOGGED_OUT");
-            setLoading(false);
-            return;
+            await AppLogger.log("AUTH", "SESSION_RESTORE_FIXED_CHW_ID", {
+              userName: normalizedUserName,
+              idofCHW: normalizedSession.idofCHW,
+            });
           }
 
           setSession(normalizedSession);
@@ -119,13 +115,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await AppLogger.log("AUTH", "CHW_ID_RESOLVED", {
         userName: normalizedUserName,
         idofCHW: chwId,
+        employeeId: undefined,
       });
 
+      // const normalizedSession: AuthSession = {
+      //   ...result.session,
+      //   userName: normalizedUserName,
+      //   idofCHW: chwId,
+      // };
       const normalizedSession: AuthSession = {
         ...result.session,
         userName: normalizedUserName,
-        idofCHW: chwId,
+        idofCHW: normalizedUserName, // CHW identity
+        employeeId: result.session.employeeId ?? undefined, // optional
       };
+
+      await authService.login(normalizedSession);
 
       setSession(normalizedSession);
       setState(result.state);
