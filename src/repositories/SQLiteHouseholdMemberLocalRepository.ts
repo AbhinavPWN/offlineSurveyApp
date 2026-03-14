@@ -129,20 +129,42 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
     const id = uuidv4();
     const nowIso = new Date().toISOString();
 
+    const household = await db.getFirstAsync<any>(
+      `
+    SELECT idof_chw
+    FROM households
+    WHERE id = ?
+    `,
+      [householdLocalId],
+    );
+
+    const employeeId = household?.idof_chw ?? null;
+
     await db.runAsync(
       `
     INSERT INTO household_members (
       id,
       client_no,
       household_local_id,
+      employee_id,
       sync_status,
       sync_action,
       head_household,
       created_at,
       updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)
     `,
-      [id, null, householdLocalId, "DRAFT", null, "N", nowIso, nowIso],
+      [
+        id,
+        null,
+        householdLocalId,
+        employeeId,
+        "DRAFT",
+        null,
+        "N",
+        nowIso,
+        nowIso,
+      ],
     );
 
     // Maintain aggregate consistency
