@@ -1,4 +1,4 @@
-export type SurveyAnswers = Record<string, string>;
+export type SurveyAnswers = Record<string, string | null>;
 
 export interface SurveyState {
   answers: SurveyAnswers;

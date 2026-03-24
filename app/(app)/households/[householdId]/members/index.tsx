@@ -182,6 +182,7 @@ export default function MembersListScreen() {
           }
           renderItem={({ item }) => (
             <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
+              {/* TOP ROW */}
               <View className="flex-row justify-between items-start">
                 <View className="flex-1">
                   <Pressable
@@ -249,6 +250,38 @@ export default function MembersListScreen() {
                     <Text style={{ fontSize: 18 }}>⋮</Text>
                   </Pressable>
                 )}
+              </View>
+
+              {/* 🔥 NEW ACTION BUTTONS */}
+              <View className="flex-row mt-3 gap-2">
+                {/* Edit Button */}
+                <Pressable
+                  onPress={() =>
+                    router.push(
+                      `/households/${householdLocalId}/members/${item.localId}`,
+                    )
+                  }
+                  className="flex-1 py-2 bg-gray-200 rounded-lg"
+                >
+                  <Text className="text-center text-sm">Edit</Text>
+                </Pressable>
+
+                {/* Survey Button */}
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(app)/survey",
+                      params: {
+                        memberId: item.localId,
+                        householdId: householdLocalId,
+                        surveyType: "client",
+                      },
+                    })
+                  }
+                  className="flex-1 py-2 bg-purple-600 rounded-lg"
+                >
+                  <Text className="text-white text-center text-sm">Survey</Text>
+                </Pressable>
               </View>
             </View>
           )}
