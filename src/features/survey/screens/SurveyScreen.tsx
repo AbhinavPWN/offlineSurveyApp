@@ -23,38 +23,21 @@ import {
 import { surveySQLite } from "@/src/services/surveySQLite";
 import { getMemberForSurvey } from "../services/getMemberForSurvey";
 import { mapMemberToSurveyProfile } from "../mappers/memberToProfile";
+import { useLocalSearchParams } from "expo-router";
 
-interface SurveyScreenProps {
-  memberId?: string;
-  householdId?: string;
-  surveyType?: string;
+// Creating a param normalizer function '
+function getSafeParam(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
-const MOCK_MEMBER_ID = "mock-member-001";
-const MOCK_HOUSEHOLD_ID = "mock-household-001";
-const DEFAULT_SURVEY_TYPE = "client";
+export default function SurveyScreen() {
+  const params = useLocalSearchParams();
 
-// async function getMemberProfile(
-//   memberId: string,
-// ): Promise<MemberSurveyProfile> {
-//   return {
-//     ageYears: 24,
-//     ageMonths: null,
-//     ageDays: null,
-//     gender: "F",
-//     maritalStatus: "M",
-//     isPregnant: false,
-//     isPostpartum: false,
-//     hasNeonateInCare: false,
-//     hasInfantInCare: false,
-//   };
-// }
+  const memberId = getSafeParam(params.memberId);
+  const householdId = getSafeParam(params.householdId);
+  const surveyType = getSafeParam(params.surveyType) ?? "client";
 
-export default function SurveyScreen({
-  memberId = MOCK_MEMBER_ID,
-  householdId = MOCK_HOUSEHOLD_ID,
-  surveyType = DEFAULT_SURVEY_TYPE,
-}: SurveyScreenProps) {
+  // State management for survey wizard
   const [surveyId, setSurveyId] = useState<string | null>(null);
   const [wizardState, setWizardState] = useState<SurveyWizardState | null>(
     null,
@@ -63,13 +46,15 @@ export default function SurveyScreen({
   const [error, setError] = useState<string | null>(null);
   const [hasEligibleSections, setHasEligibleSections] = useState(true);
 
-  const [, dispatch] = useReducer(surveyReducer, initialSurveyState);
+  const [surveyState, dispatch] = useReducer(surveyReducer, initialSurveyState);
 
+  // Persist section
   const persistCurrentSection = useCallback(
     async (nextWizardState: SurveyWizardState | null) => {
       if (!surveyId || !nextWizardState) return;
 
       const currentSection = getCurrentSection(nextWizardState);
+      if (!currentSection) return;
 
       try {
         await surveySQLite.updateSurveyCurrentSection(surveyId, currentSection);
@@ -84,19 +69,29 @@ export default function SurveyScreen({
     [surveyId],
   );
 
+  // Initialization logic
   useEffect(() => {
+    if (!memberId || !householdId) return;
+
+    const safeMemberId = memberId;
+    const safeHouseholdId = householdId;
+
     let isActive = true;
 
     async function initializeSurvey() {
       setLoading(true);
       setError(null);
       setHasEligibleSections(true);
-      setSurveyId(null);
-      setWizardState(null);
+      // setSurveyId(null);
+      // setWizardState(null);
 
       try {
         // Load member data and map to survey profile from local db
-        const member = await getMemberForSurvey(memberId);
+        const member = await getMemberForSurvey(safeMemberId);
+
+        if (!member) {
+          throw new Error("Member not found");
+        }
 
         if (!isActive) return;
 
@@ -106,22 +101,23 @@ export default function SurveyScreen({
         // step 3: Determine eligible sections based on profile
         const eligibleSections = determineEligibleSurveySections(profile);
 
-        if (eligibleSections.length === 0) {
-          setHasEligibleSections(false);
-          dispatch(loadSurveyDraft({}));
-          return;
-        }
-
         // 4. Create or load survey draft in SQLite
         const survey = await surveySQLite.createSurveyDraft(
-          memberId,
-          householdId,
+          safeMemberId,
+          safeHouseholdId,
           surveyType,
         );
 
         if (!isActive) return;
 
         setSurveyId(survey.surveyId);
+
+        // handle empty survey case
+        if (eligibleSections.length === 0) {
+          setHasEligibleSections(false);
+          dispatch(loadSurveyDraft({}));
+          return;
+        }
 
         // 5. Load existing answers if any and initialize wizard state
         const answers = await surveySQLite.loadSurveyAnswers(survey.surveyId);
@@ -148,22 +144,23 @@ export default function SurveyScreen({
 
         // 8 . persist current section to ensure survey record is up to date
         const currentSection = getCurrentSection(nextWizardState);
-        await surveySQLite.updateSurveyCurrentSection(
-          survey.surveyId,
-          currentSection,
-        );
-      } catch (initError) {
+
+        if (isActive && currentSection) {
+          await surveySQLite.updateSurveyCurrentSection(
+            survey.surveyId,
+            currentSection,
+          );
+        }
+      } catch (err) {
         if (!isActive) return;
 
+        console.error("Survey init error:", err);
+
         setError(
-          initError instanceof Error
-            ? initError.message
-            : "Failed to initialize survey.",
+          err instanceof Error ? err.message : "Failed to initialize survey",
         );
       } finally {
-        if (isActive) {
-          setLoading(false);
-        }
+        if (isActive) setLoading(false);
       }
     }
 
@@ -174,6 +171,7 @@ export default function SurveyScreen({
     };
   }, [householdId, memberId, surveyType]);
 
+  // handlers for navigation
   const handleNext = useCallback(() => {
     setWizardState((previousState) => {
       if (!previousState) return previousState;
@@ -194,13 +192,26 @@ export default function SurveyScreen({
     });
   }, [persistCurrentSection]);
 
+  // for preventing app crashing --- PARAM VALIDATION UI
+  if (!memberId || !householdId) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className="text-red-600">Invalid survey parameters</Text>
+      </View>
+    );
+  }
+
+  /* ---------- DERIVED STATE ---------- */
   const currentSection = wizardState ? getCurrentSection(wizardState) : null;
+
   const currentIndex = wizardState?.currentIndex ?? 0;
   const totalSections = wizardState?.sections.length ?? 0;
+
   const isFirstSection = currentIndex === 0;
   const isLastSection =
-    !wizardState || totalSections === 0 || currentIndex === totalSections - 1;
+    totalSections === 0 || currentIndex === totalSections - 1;
 
+  // UI sections
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -237,7 +248,7 @@ export default function SurveyScreen({
       </View>
     );
   }
-
+  // Main survey UI
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white">
       <View className="flex-1 px-4 py-6">
