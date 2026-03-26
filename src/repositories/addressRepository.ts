@@ -68,3 +68,12 @@ export async function getAllMunicipalities(): Promise<AddressOption[]> {
      FROM municipality`,
   );
 }
+
+export async function getAllowedDistricts(): Promise<AddressOption[]> {
+  return db.getAllAsync<AddressOption>(
+    `SELECT id, name_en, name_np
+     FROM district
+     WHERE id IN ('510', '511', '512')
+     ORDER BY name_en`,
+  );
+}

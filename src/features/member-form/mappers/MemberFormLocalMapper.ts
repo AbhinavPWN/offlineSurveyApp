@@ -4,6 +4,7 @@ import { MemberFormState } from "../models/MemberFormState";
 export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
   const isHead = local.headHousehold === "Y";
   return {
+    householdLocalId: local.householdLocalId,
     // Basic
     enrollDate: local.enrollDateAD ?? new Date().toISOString().split("T")[0],
     fName: local.firstName ?? "",

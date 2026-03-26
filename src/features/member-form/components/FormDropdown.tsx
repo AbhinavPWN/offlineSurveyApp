@@ -18,13 +18,17 @@ interface Props {
 }
 
 function getOptionLabel(opt: DropdownOption, showNepali?: boolean) {
-  return showNepali === false
-    ? opt.labelEn
-    : `${opt.labelNp} (${opt.labelEn})`;
+  return showNepali === false ? opt.labelEn : `${opt.labelNp} (${opt.labelEn})`;
 }
 
 export const FormDropdown = React.memo(
-  function FormDropdown({ label, value, options, onChange, showNepali }: Props) {
+  function FormDropdown({
+    label,
+    value,
+    options,
+    onChange,
+    showNepali,
+  }: Props) {
     const [open, setOpen] = React.useState(false);
 
     const safeOptions = Array.isArray(options) ? options : [];
@@ -82,7 +86,9 @@ export const FormDropdown = React.memo(
                         isSelected ? "bg-blue-50" : "bg-white"
                       }`}
                     >
-                      <Text className={isSelected ? "text-blue-700" : "text-black"}>
+                      <Text
+                        className={isSelected ? "text-blue-700" : "text-black"}
+                      >
                         {getOptionLabel(item, showNepali)}
                       </Text>
                     </Pressable>

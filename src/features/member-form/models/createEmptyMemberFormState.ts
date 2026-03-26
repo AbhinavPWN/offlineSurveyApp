@@ -2,6 +2,7 @@ import { MemberFormState } from "./MemberFormState";
 
 export function createEmptyMemberFormState(): MemberFormState {
   return {
+    householdLocalId: "",
     // Basic Info
 
     enrollDate: new Date().toISOString().split("T")[0],
@@ -24,7 +25,7 @@ export function createEmptyMemberFormState(): MemberFormState {
 
     // Address
 
-    address1Type: null,
+    address1Type: "P", // Default to Permanent
     address: "",
     address1Line2: "",
     address1Line3: "",

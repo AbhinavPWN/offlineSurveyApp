@@ -90,6 +90,8 @@ export interface MemberLocal {
   address1Line3: string;
   address1DistrictCode: string;
   address1Province: string;
+  wardNo?: string;
+  vdcnpCode?: string;
 
   totalAsset: number;
   totalLiabilities: number;

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Nirdhan Survey",
+    "name": "Nirdhan Survey (Dev)",
     "slug": "nirdhan-survey",
     "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "surveyapp",
+    "scheme": "surveyapp-dev",
     "userInterfaceStyle": "automatic",
 
     "ios": {
@@ -13,7 +13,7 @@
     },
 
     "android": {
-      "package": "np.com.nirdhan.survey",
+      "package": "np.com.nirdhan.survey.dev",
       "versionCode": 5,
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
@@ -54,7 +54,7 @@
     },
 
     "extra": {
-      "env": "production",
+      "env": "development",
       "router": {},
       "eas": {
         "projectId": "d7c821e3-61b6-4642-8e45-4ab220578974"

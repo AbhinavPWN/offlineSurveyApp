@@ -78,6 +78,7 @@ export interface InsertMemberPayload {
   healthConditionsChr: string;
   healthConditionsOth: string;
   healthConditionsOthers: string;
+
   user: string;
   insertUpdate: "I";
 }

@@ -24,6 +24,7 @@ import { surveySQLite } from "@/src/services/surveySQLite";
 import { getMemberForSurvey } from "../services/getMemberForSurvey";
 import { mapMemberToSurveyProfile } from "../mappers/memberToProfile";
 import { useLocalSearchParams } from "expo-router";
+import { FEATURES } from "@/src/config/features";
 
 // Creating a param normalizer function '
 function getSafeParam(value: unknown): string | null {
@@ -192,6 +193,14 @@ export default function SurveyScreen() {
     });
   }, [persistCurrentSection]);
 
+  if (!FEATURES.SURVEY_ENABLED) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text>Survey feature coming soon</Text>
+      </View>
+    );
+  }
+
   // for preventing app crashing --- PARAM VALIDATION UI
   if (!memberId || !householdId) {
     return (
@@ -248,6 +257,7 @@ export default function SurveyScreen() {
       </View>
     );
   }
+
   // Main survey UI
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white">

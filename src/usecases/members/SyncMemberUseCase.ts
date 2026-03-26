@@ -20,6 +20,24 @@ export class SyncMembersUseCase {
     private readonly syncGuard: SyncContextGuard,
   ) {}
 
+  private enrichMemberWithHousehold(
+    member: MemberLocal,
+    household: any,
+  ): MemberLocal {
+    return {
+      ...member,
+
+      address: household.address ?? "",
+      address1Line2: household.vdcnpCode ?? "", // municipality
+      address1Line3: household.wardNo ?? "", // ward
+
+      address1DistrictCode: household.districtCode ?? "",
+      address1Province: household.provinceCode ?? "",
+
+      address1Type: member.address1Type || "P",
+    };
+  }
+
   private normalizeServerDob(serverDob: string): string {
     if (!serverDob) return "";
 
@@ -128,24 +146,24 @@ export class SyncMembersUseCase {
   ): Promise<void> {
     const session = await loadAuthSession();
 
-    /**
-     * Resolve employeeId safely
-     * Priority:
-     * 1. Session employeeId
-     * 2. Member stored employeeId
-     */
-    // let employeeId = session?.employeeId;
-
-    // if (!employeeId && dbMember.employeeId) {
-    //   employeeId = dbMember.employeeId;
-    // }
-
-    // if (!employeeId) {
-    //   throw new Error("EMPLOYEE_ID_NOT_AVAILABLE");
-    // }
     const sessionEmployeeId = session?.employeeId ?? "";
+    const household = await this.householdRepo.getByLocalId(
+      dbMember.householdLocalId,
+    );
+
+    if (!household) {
+      throw new Error(`Household not found for member ${member.localId}`);
+    }
+
+    const enrichedMember = this.enrichMemberWithHousehold(member, household);
+
+    //  Safety check
+    if (!enrichedMember.address || enrichedMember.address.trim() === "") {
+      throw new Error("❌ Address still empty after enrichment");
+    }
+
     const payload = mapMemberToInsertPayload(
-      member,
+      enrichedMember,
       serverHouseholdId,
       session?.userName ?? "",
       sessionEmployeeId,
@@ -206,8 +224,18 @@ export class SyncMembersUseCase {
 
     const sessionEmployeeId = session?.employeeId ?? "";
 
+    const household = await this.householdRepo.getByLocalId(
+      dbMember.householdLocalId,
+    );
+
+    if (!household) {
+      throw new Error(`Household not found for member ${member.localId}`);
+    }
+
+    const enrichedMember = this.enrichMemberWithHousehold(member, household);
+
     const payload = mapMemberToUpdatePayload(
-      member,
+      enrichedMember,
       serverHouseholdId,
       session?.userName ?? "",
       sessionEmployeeId,

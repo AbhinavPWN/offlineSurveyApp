@@ -128,41 +128,41 @@ export function validateIdentityInfo(form: MemberFormState): ValidationResult {
   };
 }
 
-export function validateAddressInfo(form: MemberFormState): ValidationResult {
-  const errors: Partial<Record<keyof MemberFormState, string>> = {};
+// export function validateAddressInfo(form: MemberFormState): ValidationResult {
+//   const errors: Partial<Record<keyof MemberFormState, string>> = {};
 
-  if (!form.address1Type) {
-    errors.address1Type = "Address type is required.";
-  }
+//   if (!form.address1Type) {
+//     errors.address1Type = "Address type is required.";
+//   }
 
-  if (!form.address1Province) errors.address1Province = "Province is required";
+//   if (!form.address1Province) errors.address1Province = "Province is required";
 
-  if (!form.address1DistrictCode) {
-    errors.address1DistrictCode = "District is required.";
-  }
+//   if (!form.address1DistrictCode) {
+//     errors.address1DistrictCode = "District is required.";
+//   }
 
-  if (!form.address1Line2) {
-    errors.address1Line2 = "Municipality is required.";
-  }
+//   if (!form.address1Line2) {
+//     errors.address1Line2 = "Municipality is required.";
+//   }
 
-  if (!form.address1Line3) {
-    errors.address1Line3 = "Ward number is required.";
-  } else {
-    const ward = Number(form.address1Line3);
-    if (ward < 1 || ward > 32) {
-      errors.address1Line3 = "Ward must be between 1 and 32.";
-    }
-  }
+//   if (!form.address1Line3) {
+//     errors.address1Line3 = "Ward number is required.";
+//   } else {
+//     const ward = Number(form.address1Line3);
+//     if (ward < 1 || ward > 32) {
+//       errors.address1Line3 = "Ward must be between 1 and 32.";
+//     }
+//   }
 
-  if (!form.address?.trim()) {
-    errors.address = "Tole / Street is required.";
-  }
+//   if (!form.address?.trim()) {
+//     errors.address = "Tole / Street is required.";
+//   }
 
-  return {
-    isValid: Object.keys(errors).length === 0,
-    errors,
-  };
-}
+//   return {
+//     isValid: Object.keys(errors).length === 0,
+//     errors,
+//   };
+// }
 
 export function validateOccupationInfo(
   form: MemberFormState,

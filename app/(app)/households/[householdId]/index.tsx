@@ -30,8 +30,8 @@ import { useAuth } from "@/src/auth/context/useAuth";
 import { ValidateHouseholdMembersForSubmitUseCase } from "@/src/usecases/household/ValidateHouseholdMembersForSubmitUseCase";
 import { SubmitHouseholdUseCase } from "@/src/usecases/household/SubmitHouseholdUseCase";
 import {
-  getDistrictsByProvince,
   getMunicipalitiesByDistrict,
+  getAllowedDistricts,
 } from "@/src/repositories/addressRepository";
 
 function formatDate(date: Date) {
@@ -200,15 +200,8 @@ export default function HouseholdDetailScreen() {
   // Load districts
   useEffect(() => {
     async function loadDistricts() {
-      const districts = await getDistrictsByProvince("5"); // Lumbini only
-
-      const allowedDistricts = ["banke", "bardiya", "dang"];
-
-      const filtered = districts.filter((d) =>
-        allowedDistricts.some((name) => d.name_en.toLowerCase().includes(name)),
-      );
-
-      setDistrictOptions(filtered);
+      const districts = await getAllowedDistricts();
+      setDistrictOptions(districts);
     }
 
     loadDistricts();
@@ -729,12 +722,15 @@ export default function HouseholdDetailScreen() {
 
           {/* Province */}
           <Text className="text-gray-700 mb-1">{LABELS.province}</Text>
-          <SimpleSelect
+          {/* <SimpleSelect
             value={provinceCode}
             onChange={setProvinceCode}
             options={[{ label: "Lumbini Pradesh", value: "5" }]}
             placeholder="Select Province"
-          />
+          /> */}
+          <Text className="border p-3 rounded bg-gray-100 mb-2">
+            Lumbini (लुम्बिनी)
+          </Text>
 
           {errors.province && (
             <Text className="text-red-500 text-sm mt-1 mb-2">
@@ -751,9 +747,9 @@ export default function HouseholdDetailScreen() {
               setVdcnpCode("");
             }}
             options={[
-              { label: "Select District", value: "" },
+              { label: "Select District / जिल्ला छान्नुहोस्", value: "" },
               ...districtOptions.map((d) => ({
-                label: d.name_en,
+                label: `${d.name_en} (${d.name_np})`,
                 value: String(d.id),
               })),
             ]}
@@ -771,9 +767,9 @@ export default function HouseholdDetailScreen() {
             value={vdcnpCode}
             onChange={(value) => setVdcnpCode(String(value))}
             options={[
-              { label: "Select Municipality", value: "" },
+              { label: "Select Municipality / पालिका छान्नुहोस्", value: "" },
               ...municipalityOptions.map((m) => ({
-                label: m.name_en,
+                label: `${m.name_en} (${m.name_np})`,
                 value: String(m.id),
               })),
             ]}

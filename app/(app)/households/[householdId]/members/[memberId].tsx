@@ -9,7 +9,10 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { householdMemberLocalRepository } from "@/src/di/container";
+import {
+  householdMemberLocalRepository,
+  householdLocalRepository,
+} from "@/src/di/container";
 
 import { MemberFormState } from "@/src/features/member-form/models/MemberFormState";
 import { createEmptyMemberFormState } from "@/src/features/member-form/models/createEmptyMemberFormState";
@@ -28,15 +31,14 @@ import { ReviewStep } from "@/src/features/member-form/components/steps/ReviewSt
 
 import {
   validateBasicInfo,
-  validateAddressInfo,
+  // validateAddressInfo,
   validateOccupationInfo,
   validateFinancialInfo,
 } from "@/src/features/member-form/validation/MemberFormValidation";
-
 import { validateHealthStep } from "@/src/features/member-form/validation/health.validation";
-
 import { ErrorBoundary } from "@/src/features/member-form/components/ErrorBoundary";
 import { AppLogger } from "@/src/utils/AppLogger";
+import { HouseholdLocal } from "@/src/models/household.model";
 
 /* 
    STEP CONFIG
@@ -57,7 +59,7 @@ const STEP_CONFIG: StepConfig[] = [
   {
     title: "Address",
     component: AddressStep,
-    validate: validateAddressInfo,
+    // validate: validateAddressInfo,
   },
   {
     title: "Occupation",
@@ -90,6 +92,7 @@ export default function MemberFormScreen() {
   const [form, setForm] = useState<MemberFormState | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [household, setHousehold] = useState<HouseholdLocal | null>(null);
 
   /*
      LOAD MEMBER
@@ -153,6 +156,33 @@ export default function MemberFormScreen() {
     },
     [],
   );
+
+  // Load household for review step and validation
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadHousehold() {
+      try {
+        if (!form?.householdLocalId) return;
+
+        const data = await householdLocalRepository.getByLocalId(
+          form.householdLocalId,
+        );
+
+        if (!mounted) return;
+
+        setHousehold(data);
+      } catch (e) {
+        console.log("Failed to load household:", e);
+      }
+    }
+
+    loadHousehold();
+
+    return () => {
+      mounted = false;
+    };
+  }, [form?.householdLocalId]);
 
   /* 
      SAVE DRAFT
@@ -303,11 +333,20 @@ export default function MemberFormScreen() {
 
           <Text className="text-xl font-bold mb-4">{stepTitle}</Text>
 
-          <StepComponent
-            form={form}
-            updateField={updateField}
-            errors={errors}
-          />
+          {STEP_CONFIG[currentStep].title === "Review" ? (
+            household ? (
+              <StepComponent form={form} household={household} />
+            ) : (
+              <ActivityIndicator />
+            )
+          ) : (
+            <StepComponent
+              form={form}
+              updateField={updateField}
+              errors={errors}
+              householdLocalId={form.householdLocalId}
+            />
+          )}
         </ScrollView>
 
         {/* Footer Navigation */}

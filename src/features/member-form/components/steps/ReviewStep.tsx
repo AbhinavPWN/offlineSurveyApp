@@ -21,9 +21,11 @@ import {
   religionOptions,
 } from "../../master/occupationMasterData";
 import { relationToHHOptions } from "../../master/memberMasterData";
+import { HouseholdLocal } from "@/src/models/household.model";
 
 interface Props {
   form: MemberFormState;
+  household: HouseholdLocal;
 }
 
 const Section = ({ title, children }: any) => (
@@ -40,7 +42,10 @@ const Row = ({ label, value }: { label: string; value: any }) => (
   </View>
 );
 
-export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
+export const ReviewStep = React.memo(function ReviewStep({
+  form,
+  household,
+}: Props) {
   if (__DEV__) console.log("ReviewStep render");
 
   const [districtLabel, setDistrictLabel] = useState("-");
@@ -54,29 +59,23 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
       try {
         if (!mounted) return;
 
-        if (form.address1DistrictCode || form.idIssueDistrictCode) {
+        // ✅ DISTRICT FROM HOUSEHOLD
+        if (household.districtCode) {
           const districts = await getAllDistricts();
           const districtMap = new Map(districts.map((d) => [d.id, d.name_en]));
 
-          if (form.address1DistrictCode) {
-            setDistrictLabel(districtMap.get(form.address1DistrictCode) ?? "-");
-          }
-
-          // if (form.idIssueDistrictCode) {
-          //   setIssueDistrictLabel(
-          //     districtMap.get(form.idIssueDistrictCode) ?? "-",
-          //   );
-          // }
+          setDistrictLabel(districtMap.get(household.districtCode) ?? "-");
         }
 
-        if (form.address1DistrictCode && form.address1Line2) {
+        // ✅ MUNICIPALITY FROM HOUSEHOLD
+        if (household.districtCode && household.vdcnpCode) {
           const municipalities = await getMunicipalitiesByDistrict(
-            form.address1DistrictCode,
+            household.districtCode,
           );
 
           const muniMap = new Map(municipalities.map((m) => [m.id, m.name_en]));
 
-          setMunicipalityLabel(muniMap.get(form.address1Line2) ?? "-");
+          setMunicipalityLabel(muniMap.get(household.vdcnpCode) ?? "-");
         }
       } catch (e) {
         console.log("Review label error:", e);
@@ -88,7 +87,7 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
     return () => {
       mounted = false;
     };
-  }, [form.address1DistrictCode, form.idIssueDistrictCode, form.address1Line2]);
+  }, [household]);
 
   return (
     <View className="space-y-4">
@@ -140,11 +139,12 @@ export const ReviewStep = React.memo(function ReviewStep({ form }: Props) {
       {/* ADDRESS */}
       <Section title="Address">
         <Row label="Address Type" value={addressTypeLabel(form.address1Type)} />
-        <Row label="Address" value={form.address} />
+
+        {/* ALWAYS FROM HOUSEHOLD */}
+        <Row label="Address" value={household.address} />
         <Row label="VDC/Municipality" value={municipalityLabel} />
-        <Row label="Ward" value={form.address1Line3} />
+        <Row label="Ward" value={household.wardNo} />
         <Row label="District" value={districtLabel} />
-        {/* <Row label="Province" value={form.address1Province} /> */}
       </Section>
 
       {/* OCCUPATION */}

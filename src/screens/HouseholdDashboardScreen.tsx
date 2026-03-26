@@ -21,6 +21,8 @@ import { Household } from "../domain/models/Household";
 import { resolveHouseholdAggregateStatus } from "../utils/resolveHouseholdAggregateStatus";
 import { AggregateSyncStatus } from "../models/AggregateSyncStatus";
 import { getAllMunicipalities } from "../repositories/addressRepository";
+// import { useAuth } from "@/src/auth/context/useAuth";
+// import { router } from "expo-router";
 
 interface Props {
   householdRepo: HouseholdLocalRepository;
@@ -63,6 +65,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   createHouseholdUseCase,
 }) => {
   const router = useRouter();
+  const { logout } = useAuth();
   const { chwProfile, state, loading: authLoading, expireSession } = useAuth();
 
   const [households, setHouseholds] = useState<HouseholdWithAggregate[]>([]);
@@ -77,6 +80,11 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const [municipalityMap, setMunicipalityMap] = useState<
     Record<string, string>
   >({});
+
+  const handleLogout = async () => {
+    await logout();
+    // router.replace("/login");
+  };
 
   // Check CONNECTIVITY
   useEffect(() => {
@@ -601,10 +609,20 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       {/* HEADER */}
       <View className="px-4 pt-6 pb-4 bg-white shadow-sm">
         {/* Title Row */}
-        <Text className="text-2xl font-bold text-gray-900">Households</Text>
+        {/* Title + Logout Row */}
+        <View className="flex-row justify-between items-center">
+          <Text className="text-2xl font-bold text-gray-900">Households</Text>
+
+          <Pressable
+            onPress={handleLogout}
+            className="bg-red-100 px-3 py-1 rounded-md"
+          >
+            <Text className="text-red-600 text-sm font-medium">Logout</Text>
+          </Pressable>
+        </View>
 
         {/* Subtitle + Action Row */}
-        <View className="flex-row justify-between items-center mt-2">
+        <View className="flex-row justify-between items-center mt-4">
           <Text className="text-sm text-gray-500 flex-1 pr-2">
             Manage and update households in your assigned ward
           </Text>

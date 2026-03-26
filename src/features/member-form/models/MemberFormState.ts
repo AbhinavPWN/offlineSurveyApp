@@ -1,4 +1,5 @@
 export interface MemberFormState {
+  householdLocalId: string;
   // Basic Info
   enrollDate: string | null; // ISO YYYY-MM-DD
   fName: string;

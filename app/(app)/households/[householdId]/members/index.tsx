@@ -21,6 +21,7 @@ import {
 
 import type { HouseholdMemberLocal } from "@/src/models/householdMember.model";
 import type { HouseholdLocal } from "@/src/models/household.model";
+import { FEATURES } from "@/src/config/features";
 
 export default function MembersListScreen() {
   const router = useRouter();
@@ -267,21 +268,34 @@ export default function MembersListScreen() {
                 </Pressable>
 
                 {/* Survey Button */}
-                <Pressable
-                  onPress={() =>
-                    router.push({
-                      pathname: "/(app)/survey",
-                      params: {
-                        memberId: item.localId,
-                        householdId: householdLocalId,
-                        surveyType: "client",
-                      },
-                    })
-                  }
-                  className="flex-1 py-2 bg-purple-600 rounded-lg"
-                >
-                  <Text className="text-white text-center text-sm">Survey</Text>
-                </Pressable>
+                {FEATURES.SURVEY_ENABLED ? (
+                  <Pressable
+                    onPress={() =>
+                      router.push({
+                        pathname: "/(app)/survey",
+                        params: {
+                          memberId: item.localId,
+                          householdId: householdLocalId,
+                          surveyType: "client",
+                        },
+                      })
+                    }
+                    className="flex-1 py-2 bg-purple-600 rounded-lg"
+                  >
+                    <Text className="text-white text-center text-sm">
+                      Survey
+                    </Text>
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    onPress={() => alert("Survey feature coming soon")}
+                    className="flex-1 py-2 bg-gray-400 rounded-lg"
+                  >
+                    <Text className="text-white text-center text-sm">
+                      Survey
+                    </Text>
+                  </Pressable>
+                )}
               </View>
             </View>
           )}

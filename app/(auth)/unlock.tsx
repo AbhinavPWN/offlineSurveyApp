@@ -4,6 +4,11 @@ import {
   TextInput,
   TouchableOpacity,
   Pressable,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { useAuth } from "@/src/auth/context/useAuth";
 import { useState, useRef, useEffect } from "react";
@@ -11,16 +16,31 @@ import { useRouter, Stack } from "expo-router";
 
 export default function UnlockScreen() {
   const router = useRouter();
-  const { unlockWithPin } = useAuth();
+  const { unlockWithPin, logout } = useAuth();
+
   const [pin, setPin] = useState("");
   const [loading, setLoading] = useState(false);
-  const { logout } = useAuth();
-  const inputRef = useRef<TextInput>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await logout();
+          // router.replace("/login");
+        },
+      },
+    ]);
+  };
 
   async function handleUnlock() {
     if (pin.length !== 4) return;
@@ -39,148 +59,146 @@ export default function UnlockScreen() {
         inputRef.current?.focus();
       }, 100);
       return;
-
-      // // Refocusing after alert is shown.
-      // setTimeout(() => {
-      //   inputRef.current?.focus();
-      // }, 100);
     }
 
-    // after correct pin moving to app
     router.replace("/");
   }
 
   return (
-    <>
-      <Stack.Screen options={{ title: "Enter PIN" }} />
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: "#fff" }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View
+          style={{
+            flex: 1,
+            paddingHorizontal: 24,
+            paddingTop: 80, // push content from top
+          }}
+        >
+          <Stack.Screen options={{ title: "Enter PIN" }} />
 
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          paddingHorizontal: 24,
-          paddingVertical: 32,
-          backgroundColor: "#fff",
-        }}
-      >
-        <View style={{ width: "100%", maxWidth: 360, alignItems: "center" }}>
-          <Text style={{ fontSize: 22, fontWeight: "600", marginBottom: 8 }}>
-            Enter Offline PIN
-          </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              color: "#6b7280",
-              textAlign: "center",
-              marginBottom: 22,
-            }}
-          >
-            Use your 4-digit PIN to continue.
-          </Text>
-
-          {/* PIN boxes */}
-          <Pressable
-            onPress={() => {
-              inputRef.current?.blur();
-
-              setTimeout(() => {
-                inputRef.current?.focus();
-              }, 50);
-            }}
-            style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
-          >
-            {[0, 1, 2, 3].map((i) => (
-              <View
-                key={i}
-                style={{
-                  width: 48,
-                  height: 56,
-                  borderWidth: 1,
-                  borderRadius: 8,
-                  borderColor: "#d1d5db",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text style={{ fontSize: 24 }}>{pin[i] ? "●" : ""}</Text>
-              </View>
-            ))}
-          </Pressable>
-
-          {/* Hidden input */}
-          <TextInput
-            ref={inputRef}
-            value={pin}
-            onChangeText={(text) => {
-              if (/^\d*$/.test(text)) {
-                setPin(text.slice(0, 4));
-              }
-            }}
-            keyboardType="number-pad"
-            maxLength={4}
-            autoFocus
-            style={{
-              position: "absolute",
-              left: -1000,
-              width: 1,
-              height: 1,
-            }}
-          />
-
-          <TouchableOpacity
-            onPress={handleUnlock}
-            disabled={pin.length !== 4 || loading}
-            style={{
-              width: "100%",
-              backgroundColor: pin.length === 4 ? "#2563eb" : "#9ca3af",
-              paddingVertical: 14,
-              borderRadius: 8,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: "white", fontSize: 16, fontWeight: "600" }}>
-              {loading ? "Checking..." : "Unlock"}
+          <View style={{ width: "100%", alignItems: "center" }}>
+            <Text style={{ fontSize: 22, fontWeight: "600", marginBottom: 8 }}>
+              Enter Offline PIN
             </Text>
-          </TouchableOpacity>
 
-          {/* Displaying inline error */}
-          {error && (
             <Text
               style={{
-                color: "#dc2626",
-                marginTop: 12,
-                marginBottom: 12,
-                fontSize: 13,
-              }}
-            >
-              {error}
-            </Text>
-          )}
-
-          {/* For login button if only user wants */}
-          <Pressable
-            onPress={async () => {
-              await logout();
-              router.replace("/login");
-            }}
-            hitSlop={10}
-            style={{ marginTop: 16 }}
-          >
-            <Text
-              style={{
-                fontSize: 12,
+                fontSize: 14,
                 color: "#6b7280",
                 textAlign: "center",
-                textDecorationLine: "underline",
+                marginBottom: 22,
               }}
             >
-              Forgot PIN?{"\n"}
-              Please connect to the internet and login again.
+              Use your 4-digit PIN to continue.
             </Text>
-          </Pressable>
+
+            {/* PIN boxes */}
+            <Pressable
+              onPress={() => inputRef.current?.focus()}
+              style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
+            >
+              {[0, 1, 2, 3].map((i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: 48,
+                    height: 56,
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    borderColor: "#d1d5db",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 24 }}>{pin[i] ? "●" : ""}</Text>
+                </View>
+              ))}
+            </Pressable>
+
+            {/* Hidden input */}
+            <TextInput
+              ref={inputRef}
+              value={pin}
+              onChangeText={(text) => {
+                if (/^\d*$/.test(text)) {
+                  setPin(text.slice(0, 4));
+                }
+              }}
+              keyboardType="number-pad"
+              maxLength={4}
+              autoFocus
+              style={{
+                position: "absolute",
+                left: -1000,
+                width: 1,
+                height: 1,
+              }}
+            />
+
+            {/* Unlock Button */}
+            <TouchableOpacity
+              onPress={handleUnlock}
+              disabled={pin.length !== 4 || loading}
+              style={{
+                width: "100%",
+                backgroundColor: pin.length === 4 ? "#2563eb" : "#9ca3af",
+                paddingVertical: 14,
+                borderRadius: 8,
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ color: "white", fontSize: 16 }}>
+                {loading ? "Checking..." : "Unlock"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Error */}
+            {error && (
+              <Text
+                style={{
+                  color: "#dc2626",
+                  marginTop: 12,
+                  fontSize: 13,
+                }}
+              >
+                {error}
+              </Text>
+            )}
+
+            {/* Logout */}
+            <View style={{ marginTop: 30 }}>
+              <Text
+                style={{
+                  textAlign: "center",
+                  color: "#6b7280",
+                  marginBottom: 10,
+                }}
+              >
+                Forgot PIN? Logout and login again.
+              </Text>
+
+              <TouchableOpacity
+                onPress={handleLogout}
+                style={{
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: "#ef4444",
+                  alignSelf: "center",
+                }}
+              >
+                <Text style={{ color: "#ef4444", fontWeight: "600" }}>
+                  Logout
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      </View>
-    </>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
