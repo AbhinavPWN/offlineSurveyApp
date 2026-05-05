@@ -1,15 +1,13 @@
+// src\usecases\household\SyncHouseholdUseCase.ts
 import { HouseholdLocalRepository } from "@/src/repositories/HouseholdLocalRepository";
 import {
   HouseholdApiService,
   InsertHouseholdPayload,
   UpdateHouseholdPayload,
 } from "@/src/services/HouseholdApiService";
-// import { NetworkService } from "@/src/utils/NetworkService";
 import { HouseholdLocal } from "@/src/models/household.model";
 import { AppLogger } from "@/src/utils/AppLogger";
 import { loadAuthSession } from "@/src/auth/storage/authStorage";
-// import { isTokenValid } from "@/src/auth/service/token";
-// import { SyncContextGuard } from "../sync/SyncContextGuard";
 
 // Date Formatter helper function
 function formatForApi(dateString: string): string {
@@ -53,13 +51,6 @@ export class SyncHouseholdUseCase {
    */
 
   async execute(chwUsername: string): Promise<void> {
-    // try {
-    //   await this.syncGuard.ensureValidContext(chwUsername);
-    // } catch (error: any) {
-    //   if (error?.message === "OFFLINE") return;
-    //   throw error;
-    // }
-
     await AppLogger.log("SYNC", "Sync started", { chwUsername });
 
     const pendingHouseholds = await this.householdRepo.listBySyncStatus(
@@ -73,12 +64,6 @@ export class SyncHouseholdUseCase {
     });
 
     for (const household of pendingHouseholds) {
-      // await AppLogger.log("SYNC_RECORD_PROCESSING", "Processing record", {
-      //   localId: household.localId,
-      //   action: household.syncAction,
-      //   idofCHW: household.idofCHW,
-      // });
-
       try {
         if (household.syncAction === "INSERT") {
           await this.syncInsert(household);
@@ -141,9 +126,6 @@ export class SyncHouseholdUseCase {
       userId: session?.userName ?? "",
       insertUpdate: "I",
     };
-    // console.log("INSERT PAYLOAD:", payload);
-    // console.log("SYNC INSERT IDOFCHW:", household.idofCHW);
-    // console.log("In SyncInsert SESSION IDOFCHW:", session?.idofCHW);
 
     const response = await this.householdApi.insertHousehold(payload);
 
@@ -160,10 +142,10 @@ export class SyncHouseholdUseCase {
 
   // update flow  - household must exist
   private async syncUpdate(household: HouseholdLocal): Promise<void> {
-    if (__DEV__) console.log("🟢 ENTERING syncUpdate");
+    if (__DEV__) console.log(" ENTERING syncUpdate");
 
     if (!household.idofCHW) {
-      if (__DEV__) console.log("❌ idofCHW missing");
+      if (__DEV__) console.log(" idofCHW missing");
 
       await AppLogger.log("ERROR", "SYNC_ABORT_NULL_IDOFCHW_UPDATE", {
         localId: household.localId,
@@ -172,7 +154,7 @@ export class SyncHouseholdUseCase {
     }
 
     if (!household.householdId) {
-      if (__DEV__) console.log("❌ householdId missing");
+      if (__DEV__) console.log(" householdId missing");
       throw new Error("Cannot UPDATE household without householdId");
     }
 
@@ -208,7 +190,7 @@ export class SyncHouseholdUseCase {
       household.householdId,
     );
 
-    if (__DEV__) console.log("✅ AFTER markSynced");
+    if (__DEV__) console.log(" AFTER markSynced");
     await AppLogger.log("SYNC_UPDATE_SUCCESS", "Update success", {
       localId: household.localId,
       serverHouseholdId: household.householdId,

@@ -37,6 +37,11 @@ export function mapServerMemberToDb(
   m: any,
   householdLocalId: string,
 ): Partial<HouseholdMemberLocal> {
+  console.log("AGE FIELD CHECK:", {
+    clientAge: m.clientAge,
+    clienT_AGE: m.clienT_AGE,
+    client_age: m.client_age,
+  });
   return {
     clientNo: normalizeString(m.clienT_NO),
     householdLocalId,
@@ -64,7 +69,7 @@ export function mapServerMemberToDb(
 
     dobAD: convertApiDateToISO(m.dob),
     dobBS: normalizeString(m.doB_BS),
-    clientAge: normalizeString(m.client_age),
+    clientAge: normalizeString(m.clientAge ?? m.clienT_AGE ?? m.client_age),
 
     mobileNo: normalizeString(m.mobilE_NO),
     minorYn: normalizeYN(m.minoR_Y_N),

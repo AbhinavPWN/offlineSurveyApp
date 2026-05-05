@@ -1,3 +1,5 @@
+// src\usecases\members\SyncMemberUseCase.ts
+
 import { HouseholdMemberLocalRepository } from "@/src/repositories/HouseholdMemberLocalRepository";
 import { HouseholdLocalRepository } from "@/src/repositories/HouseholdLocalRepository";
 import { MemberApiService } from "@/src/services/MemberApiService";
@@ -26,14 +28,11 @@ export class SyncMembersUseCase {
   ): MemberLocal {
     return {
       ...member,
-
       address: household.address ?? "",
-      address1Line2: household.vdcnpCode ?? "", // municipality
-      address1Line3: household.wardNo ?? "", // ward
-
+      address1Line2: household.vdcnpCode ?? "",
+      address1Line3: household.wardNo ?? "",
       address1DistrictCode: household.districtCode ?? "",
       address1Province: household.provinceCode ?? "",
-
       address1Type: member.address1Type || "P",
     };
   }
@@ -71,40 +70,69 @@ export class SyncMembersUseCase {
       throw error;
     }
 
-    // memberToSync
+    await AppLogger.log("SYNC", "[MEMBER][START]", { chwUsername });
+
     const pendingMembers = [
       ...(await this.memberRepo.listBySyncStatus("PENDING")),
       ...(await this.memberRepo.listBySyncStatus("FAILED")),
     ];
-    await AppLogger.log("SYNC", "Pending members found", {
+
+    await AppLogger.log("SYNC", "[MEMBER][PENDING_COUNT]", {
       count: pendingMembers.length,
     });
+
     if (__DEV__) {
-      console.log("🟡 MEMBER SYNC START");
-      console.log("🟡 Pending Members Count:", pendingMembers.length);
-      console.log("🟡 Pending Members Data:", pendingMembers);
+      console.log("[MEMBER][START]", {
+        pendingCount: pendingMembers.length,
+      });
+      console.log("[MEMBER][DATA]", pendingMembers);
     }
-    console.log("Pending members:", pendingMembers);
+
     for (const dbMember of pendingMembers ?? []) {
       const member = mapDbToDomainMember(dbMember);
+
       try {
+        await AppLogger.log("SYNC", "[MEMBER][PROCESSING]", {
+          localId: dbMember.localId,
+          syncAction: dbMember.syncAction,
+        });
+
+        if (__DEV__) {
+          console.log("[MEMBER][PROCESSING]", {
+            localId: dbMember.localId,
+            action: dbMember.syncAction,
+          });
+        }
+
         const parent = await this.householdRepo.getByLocalId(
           dbMember.householdLocalId,
         );
 
-        if (__DEV__) {
-          console.log("🔍 Checking parent for member:", member.localId);
-          console.log("   Parent:", parent);
-        }
-
         if (!parent) {
-          if (__DEV__) console.log("❌ No parent found — skipping");
+          if (__DEV__) {
+            console.log("[MEMBER][SKIP][NO_PARENT]", dbMember.localId);
+          }
+
+          await AppLogger.log("SYNC_DEBUG", "[MEMBER][SKIPPED_NO_PARENT]", {
+            localId: dbMember.localId,
+          });
+
           continue;
         }
 
         if (parent.syncStatus !== "SYNCED") {
-          // Parent not ready, skip
-          if (__DEV__) console.log("⏳ Parent not SYNCED — skipping member");
+          if (__DEV__) {
+            console.log("[MEMBER][SKIP][PARENT_NOT_SYNCED]", dbMember.localId);
+          }
+
+          await AppLogger.log(
+            "SYNC_DEBUG",
+            "[MEMBER][SKIPPED_PARENT_NOT_SYNCED]",
+            {
+              localId: dbMember.localId,
+            },
+          );
+
           continue;
         }
 
@@ -115,20 +143,34 @@ export class SyncMembersUseCase {
           dbMember.syncAction = inferredAction;
         }
 
-        if (__DEV__) console.log("➡️ Member syncAction:", dbMember.syncAction);
+        if (__DEV__) {
+          console.log("[MEMBER][ACTION]", {
+            localId: dbMember.localId,
+            action: dbMember.syncAction,
+          });
+        }
+
         if (dbMember.syncAction === "INSERT") {
-          if (__DEV__) console.log("🚀 Calling syncInsert");
+          if (__DEV__) console.log("[MEMBER][INSERT][START]", dbMember.localId);
+
           await this.syncInsert(dbMember, member, parent.householdId!);
         } else if (dbMember.syncAction === "UPDATE") {
-          if (__DEV__) console.log("🔄 Calling syncUpdate");
+          if (__DEV__) console.log("[MEMBER][UPDATE][START]", dbMember.localId);
+
           await this.syncUpdate(dbMember, member, parent.householdId!);
         }
       } catch (error: any) {
-        console.log("❌ MEMBER UPDATE ERROR:", error);
-        console.log("❌ SERVER RESPONSE:", error?.response?.data);
+        if (__DEV__) {
+          console.log("[MEMBER][ERROR]", {
+            localId: member.localId,
+            message: error?.message,
+            response: error?.response?.data,
+          });
+        }
 
-        await AppLogger.log("ERROR", "Member sync failed", {
+        await AppLogger.log("ERROR", "[MEMBER][FAIL]", {
           localId: member.localId,
+          syncAction: dbMember.syncAction,
           message: error?.message,
           response: error?.response?.data,
         });
@@ -136,6 +178,8 @@ export class SyncMembersUseCase {
         await this.memberRepo.markFailed(member.localId);
       }
     }
+
+    await AppLogger.log("SYNC", "[MEMBER][END]");
   }
 
   // ---------------- INSERT FLOW ----------------
@@ -145,8 +189,8 @@ export class SyncMembersUseCase {
     serverHouseholdId: string,
   ): Promise<void> {
     const session = await loadAuthSession();
-
     const sessionEmployeeId = session?.employeeId ?? "";
+
     const household = await this.householdRepo.getByLocalId(
       dbMember.householdLocalId,
     );
@@ -157,9 +201,8 @@ export class SyncMembersUseCase {
 
     const enrichedMember = this.enrichMemberWithHousehold(member, household);
 
-    //  Safety check
     if (!enrichedMember.address || enrichedMember.address.trim() === "") {
-      throw new Error("❌ Address still empty after enrichment");
+      throw new Error("Address still empty after enrichment");
     }
 
     const payload = mapMemberToInsertPayload(
@@ -170,19 +213,19 @@ export class SyncMembersUseCase {
     );
 
     if (__DEV__) {
-      console.log("🟢 INSERT MEMBER LOCAL OBJECT:", member);
-      console.log("📦 INSERT PAYLOAD SENT TO SERVER:", payload);
+      console.log("[MEMBER][INSERT][PAYLOAD]", payload);
     }
 
     const result = await this.memberApi.insertMember(payload);
+
     if (__DEV__) {
-      console.log("📩 INSERT RAW SERVER RESPONSE:", result);
+      console.log("[MEMBER][INSERT][RESPONSE]", result);
     }
+
     if (
       !result ||
       (result.response_code !== "0" && result.response_code !== "SUCCESS")
     ) {
-      // console.log(" MEMBER INSERT RAW RESPONSE:", result);
       throw new Error(result?.response_message || "Insert failed");
     }
 
@@ -191,10 +234,9 @@ export class SyncMembersUseCase {
     }
 
     await this.memberRepo.markSynced(dbMember.localId, result.client_id);
-
     await this.memberRepo.recalculateMemberCount(dbMember.householdLocalId);
 
-    await AppLogger.log("SYNC", "Member synced (INSERT)", {
+    await AppLogger.log("SYNC", "[MEMBER][INSERT][SUCCESS]", {
       localId: member.localId,
       clientNo: result.client_id,
     });
@@ -211,17 +253,6 @@ export class SyncMembersUseCase {
     }
 
     const session = await loadAuthSession();
-
-    // let employeeId = session?.employeeId;
-
-    // if (!employeeId && dbMember.employeeId) {
-    //   employeeId = dbMember.employeeId;
-    // }
-
-    // if (!employeeId) {
-    //   throw new Error("EMPLOYEE_ID_NOT_AVAILABLE");
-    // }
-
     const sessionEmployeeId = session?.employeeId ?? "";
 
     const household = await this.householdRepo.getByLocalId(
@@ -242,24 +273,23 @@ export class SyncMembersUseCase {
     );
 
     if (__DEV__) {
-      console.log("📦 MEMBER UPDATE PAYLOAD:", payload);
-      console.log("📦 UPDATE PAYLOAD SENT TO SERVER:", payload);
+      console.log("[MEMBER][UPDATE][PAYLOAD]", payload);
     }
 
     const result = await this.memberApi.updateMember(payload);
 
-    if (__DEV__) console.log("📩 MEMBER UPDATE RAW RESPONSE:", result);
+    if (__DEV__) {
+      console.log("[MEMBER][UPDATE][RESPONSE]", result);
+    }
 
     if (!result || result.response_code !== "SUCCESS") {
       throw new Error(result?.response_message || "Update failed");
     }
 
-    if (__DEV__) console.log("✅ MEMBER UPDATE SUCCESS — marking synced");
     await this.memberRepo.markSynced(member.localId, member.clientNo);
-
     await this.memberRepo.recalculateMemberCount(dbMember.householdLocalId);
 
-    await AppLogger.log("SYNC", "Member synced (UPDATE)", {
+    await AppLogger.log("SYNC", "[MEMBER][UPDATE][SUCCESS]", {
       localId: member.localId,
       clientNo: member.clientNo,
     });

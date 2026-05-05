@@ -1,3 +1,4 @@
+// src\repositories\SQLiteHouseholdMemberLocalRepository.ts
 import { db } from "../db";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -424,6 +425,19 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
     );
   }
 
+  async getByClientNo(clientNo: string): Promise<HouseholdMemberLocal | null> {
+    const row = await db.getFirstAsync<any>(
+      `
+    SELECT *
+    FROM household_members
+    WHERE client_no = ?
+    `,
+      [clientNo],
+    );
+
+    return row ? mapRowToMember(row) : null;
+  }
+
   async insertManyFromListing(
     members: any[],
     householdLocalId: string,
@@ -624,6 +638,8 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
       );
 
       console.log("💾 Inserted member clientNo:", mapped.clientNo);
+      console.log("API MEMBER:", m);
+      console.log("MAPPED MEMBER:", mapped);
     }
 
     await this.recalculateMemberCount(householdLocalId);

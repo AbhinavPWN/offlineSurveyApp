@@ -1,3 +1,5 @@
+// src\repositories\SQLiteHouseholdRepository.ts
+
 import { db } from "../db";
 import { Household, HouseholdRepository } from "./HouseholdRepository";
 import * as Crypto from "expo-crypto";

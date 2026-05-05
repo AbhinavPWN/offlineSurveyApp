@@ -1,53 +1,112 @@
-import React, { useCallback, useEffect, useReducer, useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+// src\features\survey\screens\SurveyScreen.tsx
 
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from "react";
 import {
-  determineEligibleSurveySections,
-  // type MemberSurveyProfile,
-} from "../engine/surveyClassifier";
-import { isSurveySectionKey } from "@/src/features/survey/engine/sectionRegistry";
+  ActivityIndicator,
+  Pressable,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { SurveySectionKey } from "../engine/surveyClassifier";
+// import { isSurveySectionKey } from "@/src/features/survey/engine/sectionRegistry";
 import {
-  createSurveyWizard,
+  // createSurveyWizard,
   getCurrentSection,
   goToNextSection,
   goToPreviousSection,
-  resumeAtSection,
-  type SurveyWizardState,
+  // resumeAtSection,
+  SurveyWizardState,
 } from "@/src/features/survey/engine/surveyWizard";
 import {
   initialSurveyState,
-  loadSurveyDraft,
+  // loadSurveyDraft,
   surveyReducer,
+  // SurveyAnswers,
 } from "@/src/features/survey/state/surveyReducer";
 import { surveySQLite } from "@/src/services/surveySQLite";
-import { getMemberForSurvey } from "../services/getMemberForSurvey";
-import { mapMemberToSurveyProfile } from "../mappers/memberToProfile";
-import { useLocalSearchParams } from "expo-router";
+// import { getMemberForSurvey } from "../services/getMemberForSurvey";
+// import { mapMemberToSurveyProfile } from "../mappers/memberToProfile";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { FEATURES } from "@/src/config/features";
+import { SECTION_CONFIG } from "../config/sectionConfig";
+import { SECTION_QUESTIONS } from "../config/SectionQuestions";
+import { SurveySectionRenderer } from "../sections/SurveySectionRenderer";
+// import { QuestionConfig } from "../components/QuestionRenderer";
+import {
+  // enqueueAnswerWrite,
+  flushQueue,
+  processQueue,
+} from "../services/surveyWriteQueue";
+import { useSurveyInitialization } from "../hooks/useSurveyInitialization";
+import { useAnswerHandler } from "../hooks/useAnswerHandler";
+import { validateSection, isSectionComplete } from "../hooks/surveyValidation";
+import { calculateSurveyProgress } from "../hooks/useSurveyProgress";
+
+import { detectSectionsFromAnswers } from "../utils/surveySyncUtils";
+import { buildSurveyPayload } from "../mappers/buildSurveyPayload";
 
 // Creating a param normalizer function '
 function getSafeParam(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
+// const clearStatusTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
 export default function SurveyScreen() {
   const params = useLocalSearchParams();
+  const router = useRouter();
 
   const memberId = getSafeParam(params.memberId);
   const householdId = getSafeParam(params.householdId);
   const surveyType = getSafeParam(params.surveyType) ?? "client";
+  const [state, dispatch] = useReducer(surveyReducer, initialSurveyState);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [savingStatus, setSavingStatus] = useState<
+    Record<string, "saving" | "saved" | "error">
+  >({});
+  const [hasAttemptedNext, setHasAttemptedNext] = useState(false);
 
-  // State management for survey wizard
-  const [surveyId, setSurveyId] = useState<string | null>(null);
-  const [wizardState, setWizardState] = useState<SurveyWizardState | null>(
-    null,
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [hasEligibleSections, setHasEligibleSections] = useState(true);
+  useEffect(() => {
+    console.log("[SavingStatus UPDATED]", savingStatus);
+  }, [savingStatus]);
 
-  const [surveyState, dispatch] = useReducer(surveyReducer, initialSurveyState);
+  useEffect(() => {
+    console.log("[Queue][RECOVERY_TRIGGER]");
+    processQueue();
+  }, []);
+
+  const {
+    loading,
+    error,
+    wizardState,
+    surveyId,
+    memberState,
+    profileState,
+    hasEligibleSections,
+    setWizardState,
+  } = useSurveyInitialization({
+    memberId,
+    householdId,
+    surveyType,
+    dispatch,
+  });
+
+  const handleAnswer = useAnswerHandler({
+    surveyId,
+    dispatch,
+    setSavingStatus,
+    setErrors,
+  });
 
   // Persist section
   const persistCurrentSection = useCallback(
@@ -60,128 +119,80 @@ export default function SurveyScreen() {
       try {
         await surveySQLite.updateSurveyCurrentSection(surveyId, currentSection);
       } catch (persistError) {
-        setError(
-          persistError instanceof Error
-            ? persistError.message
-            : "Failed to save survey progress.",
+        console.error(
+          "[Persist Section Error]",
+          persistError instanceof Error ? persistError.message : persistError,
         );
       }
     },
     [surveyId],
   );
 
-  // Initialization logic
-  useEffect(() => {
-    if (!memberId || !householdId) return;
+  /* ---------- DERIVED STATE ---------- */
+  const currentSection = wizardState ? getCurrentSection(wizardState) : null;
 
-    const safeMemberId = memberId;
-    const safeHouseholdId = householdId;
+  const currentIndex = wizardState?.currentIndex ?? 0;
+  const totalSections = wizardState?.sections.length ?? 0;
 
-    let isActive = true;
+  const isFirstSection = currentIndex === 0;
+  const isLastSection =
+    totalSections === 0 || currentIndex === totalSections - 1;
 
-    async function initializeSurvey() {
-      setLoading(true);
-      setError(null);
-      setHasEligibleSections(true);
-      // setSurveyId(null);
-      // setWizardState(null);
+  const hasPendingSaves = Object.values(savingStatus).some(
+    (status) => status === "saving",
+  );
 
-      try {
-        // Load member data and map to survey profile from local db
-        const member = await getMemberForSurvey(safeMemberId);
+  const activeSections = useMemo<SurveySectionKey[]>(() => {
+    if (!currentSection) return [];
+    return [currentSection];
+  }, [currentSection]);
 
-        if (!member) {
-          throw new Error("Member not found");
-        }
+  // temporary reset button :
 
-        if (!isActive) return;
-
-        // step 2 : Map -> Survey profile
-        const profile = mapMemberToSurveyProfile(member);
-
-        // step 3: Determine eligible sections based on profile
-        const eligibleSections = determineEligibleSurveySections(profile);
-
-        // 4. Create or load survey draft in SQLite
-        const survey = await surveySQLite.createSurveyDraft(
-          safeMemberId,
-          safeHouseholdId,
-          surveyType,
-        );
-
-        if (!isActive) return;
-
-        setSurveyId(survey.surveyId);
-
-        // handle empty survey case
-        if (eligibleSections.length === 0) {
-          setHasEligibleSections(false);
-          dispatch(loadSurveyDraft({}));
-          return;
-        }
-
-        // 5. Load existing answers if any and initialize wizard state
-        const answers = await surveySQLite.loadSurveyAnswers(survey.surveyId);
-
-        if (!isActive) return;
-
-        dispatch(loadSurveyDraft(answers));
-
-        // 6. initialize wizard with eligible sections and resume at last section if applicable
-        let nextWizardState = createSurveyWizard(eligibleSections);
-
-        // 7. Resume logic
-        if (
-          survey.currentSection &&
-          isSurveySectionKey(survey.currentSection)
-        ) {
-          nextWizardState = resumeAtSection(
-            nextWizardState,
-            survey.currentSection,
-          );
-        }
-
-        setWizardState(nextWizardState);
-
-        // 8 . persist current section to ensure survey record is up to date
-        const currentSection = getCurrentSection(nextWizardState);
-
-        if (isActive && currentSection) {
-          await surveySQLite.updateSurveyCurrentSection(
-            survey.surveyId,
-            currentSection,
-          );
-        }
-      } catch (err) {
-        if (!isActive) return;
-
-        console.error("Survey init error:", err);
-
-        setError(
-          err instanceof Error ? err.message : "Failed to initialize survey",
-        );
-      } finally {
-        if (isActive) setLoading(false);
-      }
-    }
-
-    void initializeSurvey();
-
-    return () => {
-      isActive = false;
-    };
-  }, [householdId, memberId, surveyType]);
+  // const handleReset = async () => {
+  //   await surveySQLite.deleteAllUnsyncedSurveys();
+  // };
 
   // handlers for navigation
-  const handleNext = useCallback(() => {
-    setWizardState((previousState) => {
+  const handleNext = useCallback(async () => {
+    if (!wizardState || !currentSection) return;
+    console.log("Next button is being clicked");
+
+    let validationErrors: Record<string, string> = {};
+    setHasAttemptedNext(true);
+
+    for (const section of activeSections) {
+      const sectionQuestions = SECTION_QUESTIONS[section];
+      const sectionErrors = validateSection(sectionQuestions, state.answers);
+
+      validationErrors = { ...validationErrors, ...sectionErrors };
+    }
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors({ ...validationErrors }); // always new reference
+      return; //  STOP navigation
+    }
+
+    // Waiting for all saves
+    await flushQueue();
+    console.log("[VALIDATION ERRORS]", validationErrors);
+    setErrors({}); // clear errors
+
+    setWizardState((previousState: SurveyWizardState | null) => {
       if (!previousState) return previousState;
 
       const nextState = goToNextSection(previousState);
       void persistCurrentSection(nextState);
       return nextState;
     });
-  }, [persistCurrentSection]);
+  }, [
+    wizardState,
+    currentSection,
+    setWizardState,
+    activeSections,
+    state.answers,
+    persistCurrentSection,
+  ]);
 
   const handlePrevious = useCallback(() => {
     setWizardState((previousState) => {
@@ -191,7 +202,54 @@ export default function SurveyScreen() {
       void persistCurrentSection(nextState);
       return nextState;
     });
-  }, [persistCurrentSection]);
+
+    // background flush (safe)
+    flushQueue().catch((err) => {
+      console.warn("[Queue Flush Error]", err);
+    });
+  }, [persistCurrentSection, setWizardState]);
+
+  // Finish button handler
+  const handleFinish = useCallback(async () => {
+    if (!wizardState || !currentSection || !surveyId) return;
+
+    setErrors({}); // clear previous errors
+
+    const sectionQuestions = SECTION_QUESTIONS[currentSection];
+    const validationErrors = validateSection(sectionQuestions, state.answers);
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors({ ...validationErrors });
+      return;
+    }
+
+    try {
+      await flushQueue();
+      // Temporary testing
+      const pending = await surveySQLite.getPendingSurveysForSync();
+
+      for (const item of pending) {
+        const { answers } = item;
+
+        const sections = detectSectionsFromAnswers(answers);
+
+        console.log("[DETECTED SECTIONS]", sections);
+
+        const payload = buildSurveyPayload(answers, sections);
+
+        console.log("[FINAL PAYLOAD]", payload);
+      }
+      // Temporary testing
+      await surveySQLite.markSurveyCompleted(surveyId);
+      setIsCompleted(true);
+
+      setTimeout(() => {
+        router.back();
+      }, 1500);
+    } catch (err) {
+      console.error("Failed to complete survey", err);
+    }
+  }, [wizardState, currentSection, surveyId, state.answers, router]);
 
   if (!FEATURES.SURVEY_ENABLED) {
     return (
@@ -209,16 +267,6 @@ export default function SurveyScreen() {
       </View>
     );
   }
-
-  /* ---------- DERIVED STATE ---------- */
-  const currentSection = wizardState ? getCurrentSection(wizardState) : null;
-
-  const currentIndex = wizardState?.currentIndex ?? 0;
-  const totalSections = wizardState?.sections.length ?? 0;
-
-  const isFirstSection = currentIndex === 0;
-  const isLastSection =
-    totalSections === 0 || currentIndex === totalSections - 1;
 
   // UI sections
   if (loading) {
@@ -248,6 +296,19 @@ export default function SurveyScreen() {
     );
   }
 
+  // For complete Alert and redirection
+  if (isCompleted) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+        <Text className="text-green-600 text-xl font-semibold">
+          Survey Completed Successfully 🎉
+        </Text>
+
+        <Text className="mt-2 text-gray-500">Redirecting...</Text>
+      </SafeAreaView>
+    );
+  }
+
   if (!wizardState || !currentSection) {
     return (
       <View className="flex-1 items-center justify-center px-6">
@@ -257,44 +318,158 @@ export default function SurveyScreen() {
       </View>
     );
   }
+  const sectionMeta = SECTION_CONFIG[currentSection];
+  // const questions = SECTION_QUESTIONS[currentSection];
+  const isCurrentSectionComplete = activeSections.every((section) =>
+    isSectionComplete(SECTION_QUESTIONS[section], state.answers),
+  );
+  console.log("[ANSWERS DEBUG]", state.answers);
+  console.log("[WIZARD DEBUG]", {
+    currentIndex,
+    sections: wizardState?.sections,
+    currentSection,
+  });
+  const {
+    totalQuestions,
+    answeredQuestions,
+    progress: safeProgress,
+  } = calculateSurveyProgress(activeSections, state.answers, SECTION_QUESTIONS);
 
   // Main survey UI
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white">
-      <View className="flex-1 px-4 py-6">
+      <ScrollView
+        className="flex-1 px-4 py-6"
+        contentContainerStyle={{ paddingBottom: 120 }}
+      >
+        {/* Temporary reset button  */}
+        {/* <TouchableOpacity
+          onPress={handleReset}
+          className="bg-red-600 py-3 px-6 rounded-xl mt-4 mx-4 active:bg-red-700 mb-4"
+        >
+          <Text className="text-white text-center font-semibold text-base">
+            Reset Surveys
+          </Text>
+        </TouchableOpacity> */}
+
+        {/* Member form and member Info */}
+        {memberState && profileState && (
+          <View className="mb-4 p-4 border rounded-lg bg-gray-50">
+            <Text className="font-semibold mb-2">Member Info</Text>
+
+            <Text>
+              Name: {memberState.firstName ?? ""} {memberState.lastName ?? ""}
+            </Text>
+            <Text>Gender: {profileState.gender}</Text>
+            <Text>Age: {profileState.ageYears}</Text>
+            <Text>Marital: {profileState.maritalStatus}</Text>
+            <Text>Pregnant: {profileState.isPregnant ? "Yes" : "No"}</Text>
+            <Text>Child Age Days: {profileState.childAgeDays ?? "-"}</Text>
+          </View>
+        )}
+
         <Text className="text-sm text-gray-500">
           Survey ID: {surveyId ?? "Pending"}
         </Text>
 
-        <Text className="mt-2 text-sm text-gray-500">
-          Progress {currentIndex + 1} of {totalSections}
+        {hasAttemptedNext && !isCurrentSectionComplete && (
+          <Text className="text-red-500 text-sm mt-2">
+            Please complete all required questions
+          </Text>
+        )}
+
+        <Text className="mt-1 text-sm text-gray-500">
+          {Math.round(safeProgress * 100)}% completed
         </Text>
 
-        <View className="mt-6 rounded-lg border border-gray-200 p-4">
-          <Text className="text-sm text-gray-500">Current section</Text>
-          <Text className="mt-2 text-xl font-semibold">{currentSection}</Text>
+        <View className="mt-6 rounded-xl border border-gray-200 p-5">
+          {/* <Text className="text-sm text-gray-500">Current section</Text> */}
+          <Text className="mt-2 text-xl font-semibold">
+            {sectionMeta.title}
+          </Text>
+
+          <Text className="mt-1 text-sm text-gray-500">
+            {answeredQuestions} of {totalQuestions} questions completed
+          </Text>
+          <View className="mt-3">
+            <View className="h-2 w-full rounded-full bg-gray-200">
+              <View
+                className="h-2 rounded-full bg-blue-600"
+                style={{ width: `${safeProgress * 100}%` }}
+              />
+            </View>
+          </View>
         </View>
-      </View>
+
+        {/* activeSections → multiple sections  */}
+        <View className="mt-6">
+          {activeSections.length === 0 ? (
+            <Text className="text-gray-500 mt-4 text-center">
+              No questions available for this section.
+            </Text>
+          ) : (
+            activeSections.map((section) => {
+              const sectionQuestions = SECTION_QUESTIONS[section];
+              const sectionMeta = SECTION_CONFIG[section];
+
+              return (
+                <View key={section} className="mt-6">
+                  {/* Section Title */}
+                  <Text className="text-xl font-semibold">
+                    {sectionMeta.title}
+                  </Text>
+
+                  {/* Section Questions */}
+                  <SurveySectionRenderer
+                    questions={sectionQuestions}
+                    responses={state.answers}
+                    errors={{ ...errors }}
+                    savingStatus={{ ...savingStatus }}
+                    dispatch={handleAnswer}
+                  />
+                </View>
+              );
+            })
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Messages near buttons */}
+      {hasPendingSaves && (
+        <Text className="text-xs text-gray-500 text-center mb-2">
+          Saving your responses...
+        </Text>
+      )}
 
       <View className="flex-row border-t border-gray-200 px-4 py-3">
+        {/* BACK Button */}
         <Pressable
           onPress={handlePrevious}
-          disabled={isFirstSection}
+          disabled={hasPendingSaves || isFirstSection}
           className={`mr-2 flex-1 rounded-lg py-3 ${
             isFirstSection ? "bg-gray-200" : "bg-gray-300"
           }`}
         >
-          <Text className="text-center">Previous</Text>
+          <Text className="text-center">Back</Text>
         </Pressable>
 
+        {/* NEXT / FINISH Button */}
         <Pressable
-          onPress={handleNext}
-          disabled={isLastSection}
+          onPress={isLastSection ? handleFinish : handleNext}
+          disabled={hasPendingSaves}
           className={`ml-2 flex-1 rounded-lg py-3 ${
-            isLastSection ? "bg-blue-300" : "bg-blue-600"
+            hasPendingSaves
+              ? "bg-gray-300"
+              : isLastSection
+                ? isCurrentSectionComplete
+                  ? "bg-green-500"
+                  : "bg-gray-300"
+                : "bg-blue-600"
           }`}
         >
-          <Text className="text-center text-white">Next</Text>
+          <Text className="text-center text-white">
+            {isLastSection ? "Finish" : "Next"}
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>

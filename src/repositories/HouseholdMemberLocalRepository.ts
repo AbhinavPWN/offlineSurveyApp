@@ -8,6 +8,7 @@ export interface HouseholdMemberLocalRepository {
   getByLocalId(localId: string): Promise<HouseholdMemberLocal | null>;
   listByHousehold(householdLocalId: string): Promise<HouseholdMemberLocal[]>;
   listBySyncStatus(status: string): Promise<HouseholdMemberLocal[]>;
+  getByClientNo(clientNo: string): Promise<HouseholdMemberLocal | null>;
 
   //   Draft Editing
   updateDraft(

@@ -1,4 +1,5 @@
-export type SurveyAnswers = Record<string, string | null>;
+// src\features\survey\state\surveyReducer.ts
+export type SurveyAnswers = Record<string, string | string[] | null>;
 
 export interface SurveyState {
   answers: SurveyAnswers;
@@ -15,13 +16,21 @@ export type SurveyAction =
       type: "SET_ANSWER";
       payload: {
         questionKey: string;
-        answer: string;
+        answer: string | string[] | null;
       };
     };
 
 export const initialSurveyState: SurveyState = {
   answers: {},
 };
+
+function isEqual(a: any, b: any): boolean {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    return a.every((val, i) => val === b[i]);
+  }
+  return a === b;
+}
 
 export function surveyReducer(
   state: SurveyState,
@@ -39,7 +48,7 @@ export function surveyReducer(
       const { questionKey, answer } = action.payload;
 
       if (!questionKey) return state;
-      if (state.answers[questionKey] === answer) return state;
+      if (isEqual(state.answers[questionKey], answer)) return state;
 
       return {
         ...state,
@@ -63,7 +72,7 @@ export const loadSurveyDraft = (answers: SurveyAnswers): SurveyAction => ({
 
 export const setSurveyAnswer = (
   questionKey: string,
-  answer: string,
+  answer: string | string[] | null,
 ): SurveyAction => ({
   type: "SET_ANSWER",
   payload: { questionKey, answer },

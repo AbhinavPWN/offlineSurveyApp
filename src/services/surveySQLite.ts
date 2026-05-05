@@ -1,3 +1,5 @@
+// src\services\surveySQLite.ts
+
 import { v4 as uuidv4 } from "uuid";
 import { db } from "@/src/db";
 
@@ -43,6 +45,13 @@ let surveySchemaReady = false;
 
 function nowIso(): string {
   return new Date().toISOString();
+}
+
+function formatDateToAPI(date: Date): string {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = date.toLocaleString("en-US", { month: "short" }).toUpperCase();
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
 }
 
 function mapSurveyRow(row: SurveyRow): SurveyRecord {
@@ -119,6 +128,19 @@ export async function initializeSurveySQLite(): Promise<void> {
     await db.execAsync(`
       CREATE INDEX IF NOT EXISTS idx_surveys_synced
       ON surveys(synced);
+    `);
+
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS survey_write_queue (
+        id TEXT PRIMARY KEY,
+        survey_id TEXT NOT NULL,
+        question_key TEXT NOT NULL,
+        answer TEXT,
+        status TEXT NOT NULL CHECK (status IN ('pending','processing','failed')),
+        retry_count INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
     `);
 
     surveySchemaReady = true;
@@ -289,6 +311,7 @@ export async function markSurveyCompleted(surveyId: string): Promise<void> {
   await initializeSurveySQLite();
 
   const now = nowIso();
+  const surveyDate = formatDateToAPI(new Date()); // for API
 
   try {
     await withWriteTransaction(async () => {
@@ -296,12 +319,12 @@ export async function markSurveyCompleted(surveyId: string): Promise<void> {
         `
         UPDATE surveys
         SET status = 'completed',
-            survey_date = COALESCE(survey_date, ?),
+            survey_date = ?,
             synced = 0,
             updated_at = ?
         WHERE survey_id = ?
         `,
-        [now, now, surveyId],
+        [surveyDate, now, surveyId],
       );
     });
   } catch (error) {
@@ -407,6 +430,104 @@ export async function getSurveyByMemberId(
   }
 }
 
+// async function completeSurvey(surveyId: string) {
+//   const now = new Date().toISOString();
+
+//   await db.runAsync(
+//     `
+//     UPDATE surveys
+//     SET status = 'completed',
+//         survey_date = COALESCE(survey_date, ?),
+//         updated_at = ?,
+//         synced = 0
+//     WHERE survey_id = ?
+//     `,
+//     [now, now, surveyId],
+//   );
+// }
+
+// Insert or Update Queue Task
+async function upsertQueueTask(
+  surveyId: string,
+  questionKey: string,
+  answer: string | null,
+) {
+  const now = new Date().toISOString();
+
+  await db.runAsync(
+    `
+    INSERT INTO survey_write_queue (
+      id, survey_id, question_key, answer, status, retry_count, created_at, updated_at
+    )
+    VALUES (?, ?, ?, ?, 'pending', 0, ?, ?)
+    ON CONFLICT(id)
+    DO UPDATE SET
+      answer = excluded.answer,
+      status = 'pending',
+      updated_at = excluded.updated_at
+    `,
+    [`${surveyId}_${questionKey}`, surveyId, questionKey, answer, now, now],
+  );
+}
+
+// Get Pending Tasks
+async function getPendingQueueTasks() {
+  return db.getAllAsync(
+    `
+    SELECT *
+    FROM survey_write_queue
+    WHERE status IN ('pending','failed')
+    ORDER BY updated_at ASC
+    `,
+  );
+}
+
+// Mark Success
+async function markQueueTaskSuccess(id: string) {
+  await db.runAsync(`DELETE FROM survey_write_queue WHERE id = ?`, [id]);
+}
+
+// Mark Failure
+async function markQueueTaskFailure(id: string, retryCount: number) {
+  await db.runAsync(
+    `
+    UPDATE survey_write_queue
+    SET retry_count = ?, status = 'failed'
+    WHERE id = ?
+    `,
+    [retryCount, id],
+  );
+}
+
+async function debugGetQueue() {
+  const rows = await db.getAllAsync(`
+    SELECT * FROM survey_write_queue
+  `);
+
+  console.log("[DB][QUEUE_ROWS]", rows);
+}
+
+async function markSurveySynced(surveyId: string) {
+  await db.runAsync(
+    `
+    UPDATE surveys
+    SET synced = 1
+    WHERE survey_id = ?
+    `,
+    [surveyId],
+  );
+}
+
+async function deleteAllUnsyncedSurveys() {
+  await db.execAsync("PRAGMA foreign_keys = ON;");
+
+  await db.runAsync(`
+    DELETE FROM surveys WHERE synced = 0
+  `);
+
+  console.log("🧹 Deleted all unsynced surveys + answers");
+}
+
 export const surveySQLite = {
   initializeSurveySQLite,
   createSurveyDraft,
@@ -416,4 +537,12 @@ export const surveySQLite = {
   updateSurveyCurrentSection,
   getPendingSurveysForSync,
   getSurveyByMemberId,
+  // completeSurvey,
+  upsertQueueTask,
+  getPendingQueueTasks,
+  markQueueTaskSuccess,
+  markQueueTaskFailure,
+  debugGetQueue,
+  markSurveySynced,
+  deleteAllUnsyncedSurveys,
 };

@@ -1,3 +1,5 @@
+// src\screens\HouseholdDashboardScreen.tsx
+
 import React, { useEffect, useState } from "react";
 import { View, Text, FlatList, Pressable, Alert } from "react-native";
 import { useRouter } from "expo-router";
@@ -21,8 +23,7 @@ import { Household } from "../domain/models/Household";
 import { resolveHouseholdAggregateStatus } from "../utils/resolveHouseholdAggregateStatus";
 import { AggregateSyncStatus } from "../models/AggregateSyncStatus";
 import { getAllMunicipalities } from "../repositories/addressRepository";
-// import { useAuth } from "@/src/auth/context/useAuth";
-// import { router } from "expo-router";
+import { getSurveyStatusForHousehold } from "../utils/getSurveyStatusForHousehold";
 
 interface Props {
   householdRepo: HouseholdLocalRepository;
@@ -37,6 +38,7 @@ type HouseholdWithAggregate = {
 
   headName?: string;
   headMobile?: string;
+  surveyStatus?: "NONE" | "DRAFT" | "PENDING" | "SYNCED";
 };
 
 function sortHouseholds(data: HouseholdLocal[]) {
@@ -80,6 +82,9 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const [municipalityMap, setMunicipalityMap] = useState<
     Record<string, string>
   >({});
+  const [syncSteps, setSyncSteps] = useState<
+    { step: string; status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" }[]
+  >([]);
 
   const handleLogout = async () => {
     await logout();
@@ -137,7 +142,20 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
           const headMobile = head?.mobileNo ?? "No mobile";
 
-          const aggregateStatus = resolveHouseholdAggregateStatus(h, members);
+          // const aggregateStatus = resolveHouseholdAggregateStatus(h, members);
+          const baseStatus = resolveHouseholdAggregateStatus(h, members);
+
+          // 🔥 NEW: get survey status
+          const surveyStatus = await getSurveyStatusForHousehold(h.householdId);
+
+          let aggregateStatus = baseStatus;
+
+          // 🔒 SAFE merge (only adjust when needed)
+          if (surveyStatus === "PENDING") {
+            if (baseStatus === "FULLY_SYNCED") {
+              aggregateStatus = "PARTIAL_PENDING";
+            }
+          }
 
           const totalMembers = members.length;
 
@@ -152,6 +170,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
             syncedMembers,
             headName,
             headMobile,
+            surveyStatus,
           };
         }),
       );
@@ -384,6 +403,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
           syncedMembers,
           headName,
           headMobile,
+          surveyStatus,
         } = item as HouseholdWithAggregate;
         if (!local.localId) return null;
 
@@ -430,9 +450,14 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
                   </Text>
                 )}
 
-                {aggregateStatus === "PARTIAL_PENDING" && (
+                {/* {aggregateStatus === "PARTIAL_PENDING" && (
                   <Text className="text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded mt-1">
                     Member Pending
+                  </Text>
+                )} */}
+                {aggregateStatus === "PARTIAL_PENDING" && (
+                  <Text className="text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded mt-1">
+                    Member / Survey Pending
                   </Text>
                 )}
 
@@ -497,6 +522,11 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
                   >
                     {syncedMembers} / {totalMembers} Members Synced
                   </Text>
+                  {surveyStatus === "PENDING" && (
+                    <Text className="text-yellow-600 text-xs mt-1">
+                      Survey Pending
+                    </Text>
+                  )}
                 </>
               )}
             </View>
@@ -561,15 +591,111 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
     try {
       setSyncing(true);
 
-      await globalSyncUseCase.execute(chwProfile.userName);
+      //  Initialize steps BEFORE sync
+      setSyncSteps([
+        { step: "HOUSEHOLD", status: "PENDING" },
+        { step: "MEMBER", status: "PENDING" },
+        { step: "SURVEY", status: "PENDING" },
+      ]);
 
-      // Reload updated local data after sync
+      const result = await globalSyncUseCase.execute(chwProfile.userName);
+
+      //  ADDING THIS GUARD
+      if (!result || !result.steps) {
+        console.log("❌ Sync returned invalid result:", result);
+
+        Alert.alert(
+          "Sync Error",
+          "Unexpected sync response. Please try again.",
+        );
+        return;
+      }
+
+      //  Update step statuses AFTER sync
+      if (result?.steps) {
+        setSyncSteps((prev) =>
+          prev.map((s) => {
+            const found = result.steps.find((r) => r.step === s.step);
+
+            if (!found) return s;
+
+            return {
+              ...s,
+              status: found.status === "SUCCESS" ? "SUCCESS" : "FAILED",
+            };
+          }),
+        );
+      }
+
+      console.log("✅ GLOBAL SYNC RESULT:", result);
+
+      // Extract failures
+      const failedSteps = result.steps.filter((s) => s.status === "FAILED");
+      const successSteps = result.steps.filter((s) => s.status === "SUCCESS");
+
+      // Reload updated local data
       const data = await householdRepo.listAllForCHW(chwProfile.userName);
-
       const enriched = await buildAggregateHouseholds(data);
       setHouseholds(enriched);
 
-      Alert.alert("Success", "Sync completed successfully.");
+      // -----------------------------
+      // Smart Alert Handling
+      // -----------------------------
+      // -----------------------------
+      //  Smart Alert Handling (Improved)
+      // -----------------------------
+      if (failedSteps.length === 0) {
+        Alert.alert(
+          "Sync Complete",
+          successSteps.length > 0
+            ? successSteps
+                .map((s) => {
+                  if (s.step === "HOUSEHOLD") return "• Household synced";
+                  if (s.step === "MEMBER") return "• Members synced";
+                  if (s.step === "SURVEY") return "• Survey synced";
+                  return `• ${s.step}`;
+                })
+                .join("\n")
+            : "Nothing to sync",
+        );
+      } else if (successSteps.length === 0) {
+        Alert.alert(
+          "Sync Failed",
+          failedSteps
+            .map((s) => {
+              if (s.step === "HOUSEHOLD")
+                return `• Household failed: ${s.message || ""}`;
+              if (s.step === "MEMBER")
+                return `• Members failed: ${s.message || ""}`;
+              if (s.step === "SURVEY")
+                return `• Survey failed: ${s.message || ""}`;
+              return `• ${s.step}: ${s.message || "Failed"}`;
+            })
+            .join("\n"),
+        );
+      } else {
+        Alert.alert(
+          "Partial Sync",
+          `✅ Success:\n${successSteps
+            .map((s) => {
+              if (s.step === "HOUSEHOLD") return "• Household synced";
+              if (s.step === "MEMBER") return "• Members synced";
+              if (s.step === "SURVEY") return "• Survey synced";
+              return `• ${s.step}`;
+            })
+            .join("\n")}\n\n❌ Failed:\n${failedSteps
+            .map((s) => {
+              if (s.step === "HOUSEHOLD")
+                return `• Household failed: ${s.message || ""}`;
+              if (s.step === "MEMBER")
+                return `• Members failed: ${s.message || ""}`;
+              if (s.step === "SURVEY")
+                return `• Survey failed: ${s.message || ""}`;
+              return `• ${s.step}: ${s.message || "Failed"}`;
+            })
+            .join("\n")}`,
+        );
+      }
     } catch (error: any) {
       if (error?.message === "SESSION_EXPIRED") {
         Alert.alert("Session expired", "Please login again.");
@@ -695,6 +821,24 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
           <Text className="text-center font-medium">Online</Text>
         </Pressable>
       </View>
+
+      {syncing && (
+        <View className="mx-4 mt-3 bg-white p-3 rounded-lg shadow-sm">
+          <Text className="font-semibold mb-2">Sync Progress</Text>
+
+          {syncSteps.map((s) => (
+            <View key={s.step} className="flex-row justify-between py-1">
+              <Text>{s.step}</Text>
+
+              <Text>
+                {s.status === "PENDING" && "⏳"}
+                {s.status === "SUCCESS" && "✅"}
+                {s.status === "FAILED" && "❌"}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       {/* LIST */}
       <FlatList<HouseholdWithAggregate | Household>
