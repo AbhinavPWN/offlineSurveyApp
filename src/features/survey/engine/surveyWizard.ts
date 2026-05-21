@@ -74,3 +74,38 @@ export function resumeAtSection(
     currentIndex: targetIndex,
   };
 }
+
+export function reconcileWizardState(
+  previousState: SurveyWizardState,
+  nextSections: SurveySectionKey[],
+): SurveyWizardState {
+  // No sections
+  if (nextSections.length === 0) {
+    return {
+      sections: [],
+      currentIndex: 0,
+    };
+  }
+
+  // Preserve current visible section if possible
+  const currentSection = previousState.sections[previousState.currentIndex];
+
+  const nextIndex = nextSections.indexOf(currentSection);
+
+  // If current section still exists
+  if (nextIndex >= 0) {
+    return {
+      sections: nextSections,
+      currentIndex: nextIndex,
+    };
+  }
+
+  // Fallback safely
+  return {
+    sections: nextSections,
+    currentIndex: normalizeIndex(
+      previousState.currentIndex,
+      nextSections.length,
+    ),
+  };
+}

@@ -48,4 +48,12 @@ export const SECTION_CONFIG: Record<SurveySectionKey, sectionConfig> = {
     key: "adultMf",
     title: "Adult Health",
   },
+  socialProtectionWomen: {
+    key: "socialProtectionWomen",
+    title: "Social Protection",
+  },
+  disableInfant: {
+    key: "disableInfant",
+    title: "Disability Social Protection",
+  },
 };

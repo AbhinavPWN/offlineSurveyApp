@@ -2,6 +2,9 @@ import { enqueueAnswerWrite } from "../services/surveyWriteQueue";
 import { surveySQLite } from "@/src/services/surveySQLite";
 import { Dispatch, SetStateAction } from "react";
 import type { SurveyAction } from "../state/surveyReducer";
+import { QUESTION_MAP } from "../utils/questionMap";
+import { isQuestionVisible } from "./surveyValidation";
+import { calculateEDDFromLMP } from "../utils/pregnancyUtils";
 
 type SavingStatus = Record<string, "saving" | "saved" | "error">;
 
@@ -10,9 +13,10 @@ type Props = {
   dispatch: Dispatch<SurveyAction>;
   setSavingStatus: Dispatch<SetStateAction<SavingStatus>>;
   setErrors: Dispatch<SetStateAction<Record<string, string>>>;
+  answers: Record<string, any>;
 };
 
-// ✅ KEEP SAME TIMER MAP (global, not inside hook)
+//  KEEP SAME TIMER MAP (global, not inside hook)
 const clearStatusTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 export function useAnswerHandler({
@@ -20,12 +24,34 @@ export function useAnswerHandler({
   dispatch,
   setSavingStatus,
   setErrors,
+  answers,
 }: Props) {
   return (action: SurveyAction) => {
     if (action.type === "SET_ANSWER") {
       const { questionKey, answer } = action.payload;
 
       if (!surveyId) return;
+
+      // ---------- AUTO CALCULATE EDD ----------
+      if (questionKey === "pregnantWomanQ1" && typeof answer === "string") {
+        const edd = calculateEDDFromLMP(answer);
+
+        if (edd) {
+          dispatch({
+            type: "SET_ANSWER",
+            payload: {
+              questionKey: "pregnantWomanQ2",
+              answer: edd,
+            },
+          });
+
+          enqueueAnswerWrite({
+            surveyId,
+            questionKey: "pregnantWomanQ2",
+            answer: edd,
+          });
+        }
+      }
 
       // ✅ FIXED TYPE
       setSavingStatus((prev) => {
@@ -43,6 +69,25 @@ export function useAnswerHandler({
       } else {
         normalizedAnswer = null;
       }
+
+      const simulatedAnswers = {
+        ...answers,
+        [questionKey]: answer,
+      };
+
+      const removedKeys: string[] = [];
+
+      Object.keys(simulatedAnswers).forEach((key) => {
+        const question = QUESTION_MAP[key];
+        if (!question) return;
+
+        const visible = isQuestionVisible(question, simulatedAnswers);
+
+        if (!visible) {
+          removedKeys.push(key);
+          delete simulatedAnswers[key];
+        }
+      });
 
       enqueueAnswerWrite({
         surveyId,
@@ -98,6 +143,14 @@ export function useAnswerHandler({
           }));
         },
       });
+
+      for (const key of removedKeys) {
+        enqueueAnswerWrite({
+          surveyId,
+          questionKey: key,
+          answer: null,
+        });
+      }
 
       console.log("[Survey] Answer change:", questionKey, answer);
 

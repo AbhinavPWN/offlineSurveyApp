@@ -1,7 +1,6 @@
 // src/usecases/sync/surveySyncService.ts
 
 import { surveySQLite } from "@/src/services/surveySQLite";
-import { detectSectionsFromAnswers } from "@/src/features/survey/utils/surveySyncUtils";
 import { buildSurveyPayload } from "@/src/features/survey/mappers/buildSurveyPayload";
 import { emptySurveyPayload } from "@/src/features/survey/mappers/emptySurveyPayload";
 
@@ -13,6 +12,8 @@ import { analyzeSurveyPayload } from "./validators/payloadAnalyzer";
 import { logPayloadDebug } from "./utils/payloadLogger";
 
 import { AppLogger } from "@/src/utils/AppLogger";
+import { deriveSurveySections } from "@/src/features/survey/engine/deriveSurveySections";
+import { mapMemberToSurveyProfile } from "@/src/features/survey/mappers/memberToProfile";
 
 // ---------- Utils ----------
 function ensureApiDateFormat(dateStr: string | null): string {
@@ -56,6 +57,10 @@ function cleanConditionalOthers(payload: Record<string, any>) {
   }
   if (result.postpartumWoQ11 !== "O") {
     result.postpartumWoQ11Others = "";
+  }
+  // ---------- SOCIAL PROTECTION WOMEN ----------
+  if (result.adultFQ2Ans10 !== "Y") {
+    result.adultFQ2Others = "";
   }
 
   return result;
@@ -109,10 +114,27 @@ export async function syncPendingSurveys(userId: string) {
       rawDate: survey.surveyDate,
     });
 
+    const profile = mapMemberToSurveyProfile({
+      client_age: member.clientAge,
+      dob: member.dobAD,
+      gender: member.gender,
+      maritaL_STATUS: member.maritalStatus,
+      pregnancY_STATUS: member.pregnancyStatus,
+      motherofChild: member.motherofChild,
+      childDob: member.childDobAD,
+      disabilityStatus: member.disabilityStatus,
+      // disabilitY_STATUS: member.disabilitY_STATUS,
+    });
+
     try {
       // ---------- Detect Sections ----------
-      const sections = detectSectionsFromAnswers(answers);
-
+      // const sections = detectSectionsFromAnswers(answers);
+      console.log("[SYNC][PROFILE]", profile);
+      const sections = deriveSurveySections(profile, answers);
+      console.log("[SYNC][DERIVED_SECTIONS]", {
+        surveyId: survey.surveyId,
+        sections,
+      });
       console.log("[SYNC][ACTIVE_SECTIONS]", sections);
 
       // ---------- Build FULL Payload ----------

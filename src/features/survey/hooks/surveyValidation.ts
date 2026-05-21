@@ -53,17 +53,6 @@ function isEmptyValue(value: unknown): boolean {
 }
 
 // ---------- VISIBILITY ----------
-export function isQuestionVisibleNow(
-  question: QuestionConfig,
-  answers: SurveyAnswers,
-): boolean {
-  if (!question.visibleIf) return true;
-
-  const dependentRaw = answers[question.visibleIf.dependsOn];
-  const dependentValue = normalizeValue(dependentRaw);
-
-  return dependentValue === question.visibleIf.value;
-}
 
 // ---------- VALIDATION ----------
 export function validateSection(
@@ -73,14 +62,20 @@ export function validateSection(
   const errors: Record<string, string> = {};
 
   for (const question of questions) {
-    if (!isQuestionVisibleNow(question, answers)) continue;
+    if (!isQuestionVisible(question, answers)) continue;
 
-    if (!question.validation) continue;
+    // if (!question.validation) continue;
 
     const rawValue = answers[question.key];
     const value = normalizeValue(rawValue);
 
-    for (const rule of question.validation) {
+    // ---------- SIMPLE REQUIRED ----------
+    if (question.required && isEmptyValue(value)) {
+      errors[question.key] = "This field is required";
+      continue;
+    }
+
+    for (const rule of question.validation ?? []) {
       // REQUIRED
       if (rule.type === "required") {
         if (isEmptyValue(value)) {
@@ -104,6 +99,22 @@ export function validateSection(
           }
         }
       }
+
+      if (rule.type === "minSelections") {
+        if (Array.isArray(value) && value.length < (rule.value ?? 1)) {
+          errors[question.key] = rule.message;
+          break;
+        }
+      }
+
+      if (rule.type === "requiredIf") {
+        const dependent = normalizeValue(answers[rule.dependsOn]);
+
+        if (dependent === rule.value && isEmptyValue(value)) {
+          errors[question.key] = rule.message;
+          break;
+        }
+      }
     }
   }
 
@@ -116,14 +127,19 @@ export function isSectionComplete(
   answers: SurveyAnswers,
 ): boolean {
   for (const question of questions) {
-    if (!isQuestionVisibleNow(question, answers)) continue;
+    if (!isQuestionVisible(question, answers)) continue;
 
-    if (!question.validation) continue;
+    // if (!question.validation) continue;
 
     const rawValue = answers[question.key];
     const value = normalizeValue(rawValue);
 
-    for (const rule of question.validation) {
+    // ---------- SIMPLE REQUIRED ----------
+    if (question.required && isEmptyValue(value)) {
+      return false;
+    }
+
+    for (const rule of question.validation ?? []) {
       if (rule.type === "required") {
         if (isEmptyValue(value)) {
           return false;
@@ -133,4 +149,34 @@ export function isSectionComplete(
   }
 
   return true;
+}
+
+export function isQuestionVisible(
+  question: QuestionConfig,
+  answers: SurveyAnswers,
+): boolean {
+  if (!question.visibleIf) return true;
+
+  const { dependsOn, operator = "equals", value } = question.visibleIf;
+
+  const actual = normalizeValue(answers[dependsOn]);
+
+  switch (operator) {
+    case "equals":
+      return actual === value;
+
+    case "notEquals":
+      return actual !== value;
+
+    case "includes":
+      return Array.isArray(actual) && actual.includes(value);
+
+    case "notEmpty":
+      return Array.isArray(actual)
+        ? actual.length > 0
+        : actual !== null && actual !== undefined && actual !== "";
+
+    default:
+      return false;
+  }
 }

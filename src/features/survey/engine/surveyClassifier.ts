@@ -8,27 +8,38 @@ export type SurveySectionKey =
   | "feReproductive"
   | "pregnantWoman"
   | "postpartumWo"
-  | "adultMf";
+  | "adultMf"
+  | "socialProtectionWomen"
+  | "disableInfant";
 
 export interface MemberSurveyProfile {
   ageYears?: number | null;
   ageMonths?: number | null;
   ageDays?: number | null;
+
   childAgeDays: number | null;
+
   gender?: "M" | "F" | string | null;
   maritalStatus?: "M" | "U" | string | null;
+
   isPregnant?: boolean | null;
   isPostpartum?: boolean | null;
+
   hasNeonateInCare?: boolean | null;
   hasInfantInCare?: boolean | null;
   hasChildInCare?: boolean | null;
+  isDisabled?: boolean | null;
 }
 
 /* ---------------- CONFIG ---------------- */
+
 const NEONATE_MAX_DAYS = 28;
 const POSTPARTUM_MAX_DAYS = 42;
+
 const INFANT_MAX_DAYS = 180;
-const CHILD_MAX_DAYS = 1800;
+
+// Official: 60 months ≈ 1825 days
+const CHILD_MAX_DAYS = 1825;
 
 /* ---------------- HELPERS ---------------- */
 
@@ -50,18 +61,26 @@ function toSafeNumber(value?: number | null): number | null {
 
 function getAgeInYears(profile: MemberSurveyProfile): number | null {
   const years = toSafeNumber(profile.ageYears);
+
   if (years !== null) return years;
 
   const months = toSafeNumber(profile.ageMonths);
-  if (months !== null) return months / 12;
+
+  if (months !== null) {
+    return months / 12;
+  }
 
   const days = toSafeNumber(profile.ageDays);
-  if (days !== null) return days / 365;
+
+  if (days !== null) {
+    return days / 365;
+  }
 
   return null;
 }
 
-/* MAIN LOGIC */
+/* ---------------- MAIN LOGIC ---------------- */
+
 export function determineSurveyClassification(profile: MemberSurveyProfile): {
   primary: SurveySectionKey | null;
   isPostpartum: boolean;
@@ -75,19 +94,26 @@ export function determineSurveyClassification(profile: MemberSurveyProfile): {
   };
 
   const age = getAgeInYears(profile);
+
   const female = isFemale(profile.gender);
   const male = isMale(profile.gender);
   const married = isMarried(profile.maritalStatus);
 
-  const childAgeDays = profile.childAgeDays ?? null;
+  const childAgeDays = toSafeNumber(profile.childAgeDays);
 
-  // Derived from Ui flags (Later will be replacing with direct input)
+  // Derived temporary UI-based caregiver detection
+  // Later replace with direct backend/source truth
   const isMother =
     profile.hasNeonateInCare === true ||
     profile.hasInfantInCare === true ||
     profile.hasChildInCare === true;
 
-  //  Postpartum = overlay (not primary)
+  /* ---------------- POSTPARTUM OVERLAY ---------------- */
+
+  // Official:
+  // postpartum = within 6 weeks after delivery
+  // We derive from child age for now
+
   const isPostpartum =
     female &&
     isMother &&
@@ -105,80 +131,170 @@ export function determineSurveyClassification(profile: MemberSurveyProfile): {
     isPostpartum,
   };
 
-  // ---------------- CHILD PRIORITY ----------------
-  // Primary Section logic only
+  /* ---------------- CHILD / CAREGIVER PRIORITY ---------------- */
+
+  // Highest priority group
+  // These represent caregiver + child program flows
+
   if (female && isMother && childAgeDays !== null) {
-    // Neonate
+    // Neonate: 0–28 days
+
     const isNeonate = childAgeDays >= 0 && childAgeDays <= NEONATE_MAX_DAYS;
 
-    logs.checks.push({ rule: "neonate", result: isNeonate });
+    logs.checks.push({
+      rule: "neonate",
+      result: isNeonate,
+    });
 
     if (isNeonate) {
       logs.result = "neonate";
-      if (DEBUG) console.log("[CLASSIFIER_TRACE]", logs);
-      return { primary: "neonate", isPostpartum };
+
+      if (DEBUG) {
+        console.log("[CLASSIFIER_TRACE]", logs);
+      }
+
+      return {
+        primary: "neonate",
+        isPostpartum,
+      };
     }
 
-    // Infant
+    // Infant: 29–180 days
+
     const isInfant =
       childAgeDays > NEONATE_MAX_DAYS && childAgeDays <= INFANT_MAX_DAYS;
 
-    logs.checks.push({ rule: "infant", result: isInfant });
+    logs.checks.push({
+      rule: "infant",
+      result: isInfant,
+    });
 
     if (isInfant) {
       logs.result = "infant";
-      if (DEBUG) console.log("[CLASSIFIER_TRACE]", logs);
-      return { primary: "infant", isPostpartum };
+
+      if (DEBUG) {
+        console.log("[CLASSIFIER_TRACE]", logs);
+      }
+
+      return {
+        primary: "infant",
+        isPostpartum,
+      };
     }
 
-    // Children
+    // Children: 181–1825 days
+
     const isChildren =
       childAgeDays > INFANT_MAX_DAYS && childAgeDays <= CHILD_MAX_DAYS;
 
-    logs.checks.push({ rule: "children", result: isChildren });
+    logs.checks.push({
+      rule: "children",
+      result: isChildren,
+    });
 
     if (isChildren) {
       logs.result = "children";
-      if (DEBUG) console.log("[CLASSIFIER_TRACE]", logs);
-      return { primary: "children", isPostpartum };
+
+      if (DEBUG) {
+        console.log("[CLASSIFIER_TRACE]", logs);
+      }
+
+      return {
+        primary: "children",
+        isPostpartum,
+      };
     }
   }
 
-  // ---------------- ADOLESCENT ----------------
+  /* ---------------- ADOLESCENT ---------------- */
 
-  const isAdolescent = age !== null && age >= 10 && age <= 19;
-  logs.checks.push({ rule: "isAdolescent", result: isAdolescent });
+  // Official:
+  // >10 and <19
+  // Meaning: 11–18 only
+
+  const isAdolescent = age !== null && age > 10 && age < 19;
+
+  logs.checks.push({
+    rule: "isAdolescent",
+    result: isAdolescent,
+  });
 
   if (isAdolescent) {
+    // Female unmarried adolescent
+
     const isFeUn = female && !married;
-    logs.checks.push({ rule: "feAdolescentUn", result: isFeUn });
+
+    logs.checks.push({
+      rule: "feAdolescentUn",
+      result: isFeUn,
+    });
 
     if (isFeUn) {
       logs.result = "feAdolescentUn";
-      if (DEBUG) console.log("[CLASSIFIER_TRACE]", logs);
-      return { primary: "feAdolescentUn", isPostpartum };
+
+      if (DEBUG) {
+        console.log("[CLASSIFIER_TRACE]", logs);
+      }
+
+      return {
+        primary: "feAdolescentUn",
+        isPostpartum,
+      };
     }
 
+    // Female married adolescent
+
     const isFeMa = female && married;
-    logs.checks.push({ rule: "feAdolescentMa", result: isFeMa });
+
+    logs.checks.push({
+      rule: "feAdolescentMa",
+      result: isFeMa,
+    });
 
     if (isFeMa) {
       logs.result = "feAdolescentMa";
-      if (DEBUG) console.log("[CLASSIFIER_TRACE]", logs);
-      return { primary: "feAdolescentMa", isPostpartum };
+
+      if (DEBUG) {
+        console.log("[CLASSIFIER_TRACE]", logs);
+      }
+
+      return {
+        primary: "feAdolescentMa",
+        isPostpartum,
+      };
     }
 
+    // Male married adolescent
+
     const isMaMa = male && married;
-    logs.checks.push({ rule: "maAdolescentMa", result: isMaMa });
+
+    logs.checks.push({
+      rule: "maAdolescentMa",
+      result: isMaMa,
+    });
 
     if (isMaMa) {
       logs.result = "maAdolescentMa";
-      if (DEBUG) console.log("[CLASSIFIER_TRACE]", logs);
-      return { primary: "maAdolescentMa", isPostpartum };
+
+      if (DEBUG) {
+        console.log("[CLASSIFIER_TRACE]", logs);
+      }
+
+      return {
+        primary: "maAdolescentMa",
+        isPostpartum,
+      };
     }
   }
 
-  // ---------------- REPRODUCTIVE ----------------
+  /* ---------------- REPRODUCTIVE ---------------- */
+
+  // Official:
+  // Female
+  // Married
+  // 20–49
+  // Non-pregnant
+  // Non-lactating/postpartum
 
   const isReproductiveRange =
     female && married && age !== null && age >= 20 && age <= 49;
@@ -191,34 +307,85 @@ export function determineSurveyClassification(profile: MemberSurveyProfile): {
   if (isReproductiveRange) {
     const isPregnant = profile.isPregnant === true;
 
-    logs.checks.push({ rule: "pregnantWoman", result: isPregnant });
+    logs.checks.push({
+      rule: "pregnantWoman",
+      result: isPregnant,
+    });
+
+    // Pregnant woman
 
     if (isPregnant) {
       logs.result = "pregnantWoman";
-      if (DEBUG) console.log("[CLASSIFIER_TRACE]", logs);
-      return { primary: "pregnantWoman", isPostpartum };
+
+      if (DEBUG) {
+        console.log("[CLASSIFIER_TRACE]", logs);
+      }
+
+      return {
+        primary: "pregnantWoman",
+        isPostpartum,
+      };
     }
 
-    logs.result = "feReproductive";
-    if (DEBUG) console.log("[CLASSIFIER_TRACE]", logs);
-    return { primary: "feReproductive", isPostpartum };
+    // WRA
+    // Must NOT be postpartum/lactating
+
+    const isWra = !isPostpartum;
+
+    logs.checks.push({
+      rule: "feReproductive",
+      result: isWra,
+    });
+
+    if (isWra) {
+      logs.result = "feReproductive";
+
+      if (DEBUG) {
+        console.log("[CLASSIFIER_TRACE]", logs);
+      }
+
+      return {
+        primary: "feReproductive",
+        isPostpartum,
+      };
+    }
   }
 
-  // ---------------- ADULT ----------------
+  /* ---------------- ADULT ---------------- */
 
-  const isAdult = age !== null && age >= 35;
-  logs.checks.push({ rule: "adultMf", result: isAdult });
+  // Official:
+  // >35 years
+
+  const isAdult = age !== null && age > 35;
+
+  logs.checks.push({
+    rule: "adultMf",
+    result: isAdult,
+  });
 
   if (isAdult) {
     logs.result = "adultMf";
-    if (DEBUG) console.log("[CLASSIFIER_TRACE]", logs);
-    return { primary: "adultMf", isPostpartum };
+
+    if (DEBUG) {
+      console.log("[CLASSIFIER_TRACE]", logs);
+    }
+
+    return {
+      primary: "adultMf",
+      isPostpartum,
+    };
   }
 
-  // Fallback - No matching section
+  /* ---------------- FALLBACK ---------------- */
 
   logs.result = null;
-  if (DEBUG) console.log("[CLASSIFIER_TRACE]", logs);
 
-  return { primary: null, isPostpartum };
+  if (DEBUG) {
+    console.log("[CLASSIFIER_TRACE]", logs);
+  }
+
+  return {
+    primary: null,
+    isPostpartum,
+  };
 }

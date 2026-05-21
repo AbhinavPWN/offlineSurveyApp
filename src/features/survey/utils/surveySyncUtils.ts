@@ -17,6 +17,12 @@ export function detectSectionsFromAnswers(
     if (key.startsWith("feReproductive")) sections.add("feReproductive");
     if (key.startsWith("pregnantWoman")) sections.add("pregnantWoman");
     if (key.startsWith("adultMf")) sections.add("adultMf");
+    if (key.startsWith("socialProtectionWomen")) {
+      sections.add("socialProtectionWomen");
+    }
+    if (key.startsWith("disableInfant")) {
+      sections.add("disableInfant");
+    }
   }
 
   return Array.from(sections);

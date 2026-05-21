@@ -8,6 +8,8 @@ type MemberDTO = {
   pregnancY_STATUS?: string | null;
   motherofChild?: string | null;
   childDob?: string | null;
+  disabilityStatus?: string | null;
+  disabilitY_STATUS?: string | null;
 };
 
 // Normalize helper functions
@@ -78,6 +80,15 @@ export function mapMemberToSurveyProfile(
   const isPregnant = member?.pregnancY_STATUS === "Y";
   const isMother = member?.motherofChild === "Y";
 
+  const disabilityValue = member?.disabilityStatus ?? member?.disabilitY_STATUS;
+
+  const isDisabled = disabilityValue === "Y";
+  console.log("[PROFILE][RAW_MEMBER]", member);
+  console.log("[PROFILE][DISABILITY]", {
+    disabilityStatus: member?.disabilityStatus,
+    rawField: member?.disabilitY_STATUS,
+  });
+
   const now = Date.now();
   const childAgeDays = calculateChildAgeDays(childDob);
 
@@ -114,5 +125,6 @@ export function mapMemberToSurveyProfile(
     hasNeonateInCare,
     hasInfantInCare,
     hasChildInCare,
+    isDisabled,
   };
 }

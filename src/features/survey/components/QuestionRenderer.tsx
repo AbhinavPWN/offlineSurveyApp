@@ -5,6 +5,7 @@ import { TextInputField } from "./TextInputField";
 import { RadioGroupField } from "./RadioGroupField";
 import { SelectField } from "./SelectField";
 import { CheckboxGroupField } from "./CheckboxGroupField";
+import { isQuestionVisible } from "../hooks/surveyValidation";
 
 // ---------- TYPES ----------
 
@@ -16,16 +17,23 @@ type Option = {
   value: string;
 };
 
+// Updated this for proper validation handling in surveyValidation.ts
 type VisibleIf = {
   dependsOn: string;
-  value: string;
+  operator?: "equals" | "notEquals" | "includes" | "notEmpty";
+  value?: string;
 };
 
-type ValidationRule = {
-  type: "required" | "minLength" | "maxLength" | "pattern";
-  value?: RegExp;
-  message: string;
-};
+type ValidationRule =
+  | { type: "required"; message: string }
+  | { type: "minSelections"; value: number; message: string }
+  | { type: "pattern"; value?: RegExp; message: string }
+  | {
+      type: "requiredIf";
+      dependsOn: string;
+      value: string;
+      message: string;
+    };
 
 export type QuestionConfig = {
   key: string;
@@ -37,6 +45,7 @@ export type QuestionConfig = {
   options?: Option[];
   visibleIf?: VisibleIf;
   keyboardType?: "default" | "numeric" | "number-pad";
+  readonly?: boolean;
   placeholder?: string;
   validation?: ValidationRule[];
 };
@@ -48,20 +57,12 @@ type Props = {
 
   dispatch: (action: any) => void;
 
-  visibleValue?: string | null;
+  // visibleValue?: string | null;
+  answers: Record<string, any>;
   savingStatus?: "saving" | "saved" | "error";
 };
 
 // ---------- HELPERS ----------
-
-function isQuestionVisible(
-  question: QuestionConfig,
-  visibleValue?: string | null,
-): boolean {
-  if (!question.visibleIf) return true;
-  console.log("Render:", question.key);
-  return visibleValue === question.visibleIf.value;
-}
 
 // Helper for Date format BS :
 
@@ -82,13 +83,14 @@ const QuestionRendererComponent = ({
   value,
   error,
   dispatch,
-  visibleValue,
+  // visibleValue,
+  answers,
   savingStatus,
 }: Props) => {
   // ---------- VISIBILITY ----------
   const visible = useMemo(() => {
-    return isQuestionVisible(question, visibleValue);
-  }, [question, visibleValue]);
+    return isQuestionVisible(question, answers);
+  }, [question, answers]);
 
   const handleChange = useCallback(
     (newValue: string | string[] | null) => {
@@ -114,6 +116,16 @@ const QuestionRendererComponent = ({
     [dispatch, question],
   );
 
+  const handleRetry = useCallback(() => {
+    dispatch({
+      type: "SET_ANSWER",
+      payload: {
+        questionKey: question.key,
+        answer: value,
+      },
+    });
+  }, [dispatch, question.key, value]);
+
   const displayLabel = useMemo(() => {
     return question.labelNp
       ? `${question.label}\n(${question.labelNp})`
@@ -134,10 +146,12 @@ const QuestionRendererComponent = ({
           error={error}
           onChange={handleChange}
           placeholder={question.placeholder ?? ""}
+          onRetry={handleRetry}
           savingStatus={savingStatus}
           keyboardType={
             question.keyboardType === "number-pad" ? "number-pad" : "default"
           }
+          readonly={question.readonly}
         />
       );
       break;
@@ -164,6 +178,7 @@ const QuestionRendererComponent = ({
           onChange={handleChange}
           options={question.options ?? []}
           savingStatus={savingStatus}
+          onRetry={handleRetry}
         />
       );
       break;
@@ -191,6 +206,7 @@ const QuestionRendererComponent = ({
           onChange={handleChange}
           options={question.options ?? []}
           savingStatus={savingStatus}
+          onRetry={handleRetry}
         />
       );
       break;
@@ -199,7 +215,7 @@ const QuestionRendererComponent = ({
       return null;
   }
 
-  return <View>{field}</View>;
+  return <View className="mb-5">{field}</View>;
 };
 
 // ---------- MEMO (CRITICAL) ----------
@@ -208,7 +224,8 @@ const areEqual = (prev: Props, next: Props) => {
   return (
     prev.value === next.value &&
     prev.error === next.error &&
-    prev.visibleValue === next.visibleValue &&
+    // prev.visibleValue === next.visibleValue &&
+    prev.answers === next.answers &&
     prev.question === next.question &&
     prev.savingStatus === next.savingStatus
   );

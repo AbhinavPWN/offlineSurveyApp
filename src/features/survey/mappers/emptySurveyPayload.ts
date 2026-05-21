@@ -28,6 +28,8 @@ export const emptySurveyPayload = {
   infantQ2Ans5: "",
   infantQ3: "",
   infantQ4: "",
+  infantQ5: "",
+  infantQ6: "",
 
   // ---------- Children ----------
   childrenQ1: "",
@@ -167,5 +169,39 @@ export const emptySurveyPayload = {
   adultMfQ2: "",
   adultMfQ3: "",
   adultMfQ4: "",
-  adultMfQ5: "",
+  adultMfQ5Ans1: "",
+  adultMfQ5Ans2: "",
+  adultMfQ5Ans3: "",
+  adultMfQ5Ans4: "",
+
+  // ---------- Social Protection Women ----------
+  adultFQ1: "",
+  adultFQ2Ans1: "",
+  adultFQ2Ans2: "",
+  adultFQ2Ans3: "",
+  adultFQ2Ans4: "",
+  adultFQ2Ans5: "",
+  adultFQ2Ans6: "",
+  adultFQ2Ans7: "",
+  adultFQ2Ans8: "",
+  adultFQ2Ans9: "",
+  adultFQ2Ans10: "",
+  adultFQ2Others: "",
+
+  adultFQ3: "",
+
+  // ---------- Disability Overlay ----------
+  disableInfantQ1: "",
+  disableInfantQ2Ans1: "",
+  disableInfantQ2Ans2: "",
+  disableInfantQ2Ans3: "",
+  disableInfantQ2Ans4: "",
+  disableInfantQ2Ans5: "",
+  disableInfantQ2Ans6: "",
+  disableInfantQ2Ans7: "",
+  disableInfantQ2Ans8: "",
+  disableInfantQ2Ans9: "",
+  disableInfantQ2Ans10: "",
+  disableInfantQ2Others: "",
+  disableInfantQ3: "",
 };

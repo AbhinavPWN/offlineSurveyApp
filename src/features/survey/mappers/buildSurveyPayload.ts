@@ -12,6 +12,8 @@ import { mapFeReproductiveToApi } from "./feReproductiveToApi";
 import { mapPregnantWomanToApi } from "./pregnantWomanToApi";
 import { mapPostpartumWoToApi } from "./postpartumWoToApi";
 import { mapAdultMfToApi } from "./adultMfToApi";
+import { mapSocialProtectionWomenToApi } from "./socialProtectionWomenToApi";
+import { mapDisableInfantToApi } from "./disableInfantToApi";
 
 import { SurveySectionKey } from "../engine/surveyClassifier";
 
@@ -25,6 +27,7 @@ export function buildSurveyPayload(
 
   // Step 2: apply only active sections
   for (const section of sections) {
+    console.log("[PAYLOAD][SECTION]", section);
     switch (section) {
       case "neonate":
         payload = { ...payload, ...mapNeonateToApi(answers) };
@@ -64,6 +67,20 @@ export function buildSurveyPayload(
 
       case "adultMf":
         payload = { ...payload, ...mapAdultMfToApi(answers) };
+        break;
+
+      case "socialProtectionWomen":
+        payload = {
+          ...payload,
+          ...mapSocialProtectionWomenToApi(answers),
+        };
+        break;
+
+      case "disableInfant":
+        payload = {
+          ...payload,
+          ...mapDisableInfantToApi(answers),
+        };
         break;
     }
   }

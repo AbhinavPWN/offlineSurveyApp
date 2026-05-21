@@ -1,7 +1,7 @@
 import { QuestionConfig } from "../components/QuestionRenderer";
 import { SurveyAnswers } from "../state/surveyReducer";
 import { SurveySectionKey } from "../engine/surveyClassifier";
-import { isQuestionVisibleNow } from "./surveyValidation";
+import { isQuestionVisible } from "./surveyValidation";
 
 // ---------- TYPES ----------
 type ProgressResult = {
@@ -34,7 +34,7 @@ export function calculateSurveyProgress(
 
   // filter visible questions
   const visibleQuestions = allQuestions.filter((q) =>
-    isQuestionVisibleNow(q, answers),
+    isQuestionVisible(q, answers),
   );
 
   const totalQuestions = visibleQuestions.length;

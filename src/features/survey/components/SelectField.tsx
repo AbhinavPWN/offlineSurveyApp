@@ -15,6 +15,7 @@ type SelectFieldProps = {
   error?: string | null;
   onChange: (value: string) => void;
   savingStatus?: "saving" | "saved" | "error";
+  onRetry?: () => void;
 };
 
 type SelectOptionItemProps = {
@@ -76,6 +77,7 @@ function SelectFieldComponent({
   error = null,
   onChange,
   savingStatus,
+  onRetry,
 }: SelectFieldProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -111,7 +113,9 @@ function SelectFieldComponent({
         )}
 
         {savingStatus === "error" && (
-          <Text className="text-red-500 text-xs">Failed</Text>
+          <Pressable onPress={onRetry}>
+            <Text className="text-red-500 text-xs underline">Retry</Text>
+          </Pressable>
         )}
       </View>
 

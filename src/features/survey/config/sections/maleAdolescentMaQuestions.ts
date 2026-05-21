@@ -66,16 +66,20 @@ export const maAdolescentMaQuestions: QuestionConfig[] = [
     label: "Visited health facility?",
     labelNp: "के स्वास्थ्य संस्था जानुभयो?",
     type: "select",
-    required: true,
     visibleIf: {
       dependsOn: "maAdolescentMaQ3",
-      value: "1",
+      operator: "notEmpty",
     },
     options: [
       { label: "Yes", labelNp: "गयौं", value: "Y" },
       { label: "No", labelNp: "गएनौं", value: "N" },
     ],
-    validation: [{ type: "required", message: "This field is required" }],
+    validation: [
+      {
+        type: "required",
+        message: "Please select whether you visited a health facility",
+      },
+    ],
   },
 
   // ---------- Awareness ----------
@@ -84,7 +88,7 @@ export const maAdolescentMaQuestions: QuestionConfig[] = [
     label: "Do you know these are harmful to health?",
     labelNp: "के तपाईंलाई तलका कुरा हानिकारक छन् भन्ने थाहा छ?",
     required: true,
-    type: "select",
+    type: "checkbox",
     options: [
       { label: "Drug", labelNp: "लागुऔषध", value: "D" },
       { label: "Alcohol", labelNp: "रक्सी", value: "A" },

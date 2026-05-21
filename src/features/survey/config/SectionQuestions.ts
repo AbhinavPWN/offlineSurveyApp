@@ -10,6 +10,8 @@ import { maAdolescentMaQuestions } from "./sections/maleAdolescentMaQuestions";
 import { feReproductiveQuestions } from "./sections/femaleReproductiveQuestions";
 import { pregnantWomanQuestions } from "./sections/pregnantWomanQuestions";
 import { adultMfQuestions } from "./sections/adultMfQuestions";
+import { socialProtectionWomenQuestions } from "./sections/socialProtectionWomenQuestions";
+import { disableInfantQuestions } from "./sections/disableInfantQuestions";
 
 export const SECTION_QUESTIONS: Record<SurveySectionKey, QuestionConfig[]> = {
   neonate: neonateQuestions,
@@ -22,4 +24,6 @@ export const SECTION_QUESTIONS: Record<SurveySectionKey, QuestionConfig[]> = {
   pregnantWoman: pregnantWomanQuestions,
   postpartumWo: postpartumWoQuestions,
   adultMf: adultMfQuestions,
+  socialProtectionWomen: socialProtectionWomenQuestions,
+  disableInfant: disableInfantQuestions,
 };

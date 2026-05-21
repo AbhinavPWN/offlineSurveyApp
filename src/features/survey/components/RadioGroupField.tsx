@@ -13,6 +13,7 @@ type RadioGroupFieldProps = {
   error?: string | null;
   onChange: (value: string) => void;
   savingStatus?: "saving" | "saved" | "error";
+  onRetry?: () => void;
 };
 
 type RadioOptionItemProps = {
@@ -81,6 +82,7 @@ function RadioGroupFieldComponent({
   error = null,
   onChange,
   savingStatus,
+  onRetry,
 }: RadioGroupFieldProps) {
   const handleSelect = useCallback(
     (nextValue: string) => {
@@ -103,7 +105,9 @@ function RadioGroupFieldComponent({
         )}
 
         {savingStatus === "error" && (
-          <Text className="text-red-500 text-xs">Failed</Text>
+          <Pressable onPress={onRetry}>
+            <Text className="text-red-500 text-xs underline">Retry</Text>
+          </Pressable>
         )}
       </View>
 

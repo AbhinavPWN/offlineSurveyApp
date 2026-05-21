@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from "react";
 import { View } from "react-native";
-import { isQuestionVisibleNow } from "../hooks/surveyValidation";
+// import { isQuestionVisibleNow } from "../hooks/surveyValidation";
 
 import {
   QuestionConfig,
@@ -13,6 +13,7 @@ type Props = {
   responses: Record<string, string | string[] | null>;
   errors: Record<string, string | null>;
   savingStatus: Record<string, "saving" | "saved" | "error">;
+  setQuestionPosition?: (key: string, y: number) => void;
   dispatch: (action: any) => void;
 };
 
@@ -22,60 +23,66 @@ const SurveySectionRendererComponent = ({
   errors,
   dispatch,
   savingStatus,
+  setQuestionPosition,
 }: Props) => {
   const renderedQuestions = useMemo(() => {
-    return questions
-      .filter((question) => isQuestionVisibleNow(question, responses))
-      .map((question) => {
-        let visibleValue: string | null | undefined = undefined;
+    return (
+      questions
+        // .filter((question) => isQuestionVisibleNow(question, responses))
+        .map((question) => {
+          const rawValue = responses[question.key];
 
-        if (question.visibleIf) {
-          const rawValue = responses[question.visibleIf.dependsOn];
+          let parsedValue: string | string[] | null = rawValue ?? null;
 
-          if (typeof rawValue === "string") {
-            visibleValue = rawValue;
-          } else {
-            visibleValue = null;
-          }
-        }
+          if (question.type === "checkbox") {
+            if (Array.isArray(rawValue)) {
+              parsedValue = rawValue;
+            } else if (typeof rawValue === "string") {
+              try {
+                const parsed = JSON.parse(rawValue);
 
-        const rawValue = responses[question.key];
-
-        let parsedValue: string | string[] | null = rawValue ?? null;
-
-        if (question.type === "checkbox") {
-          if (Array.isArray(rawValue)) {
-            parsedValue = rawValue;
-          } else if (typeof rawValue === "string") {
-            try {
-              const parsed = JSON.parse(rawValue);
-
-              if (Array.isArray(parsed)) {
-                parsedValue = parsed;
-              } else {
+                if (Array.isArray(parsed)) {
+                  parsedValue = parsed;
+                } else {
+                  parsedValue = [];
+                }
+              } catch {
                 parsedValue = [];
               }
-            } catch {
+            } else {
               parsedValue = [];
             }
-          } else {
-            parsedValue = [];
           }
-        }
 
-        return (
-          <QuestionRenderer
-            key={question.key}
-            question={question}
-            value={parsedValue}
-            error={errors[question.key] ?? null}
-            savingStatus={savingStatus[question.key]}
-            visibleValue={visibleValue}
-            dispatch={dispatch}
-          />
-        );
-      });
-  }, [questions, responses, errors, savingStatus, dispatch]);
+          return (
+            <View
+              key={question.key}
+              onLayout={(e) => {
+                setQuestionPosition?.(question.key, e.nativeEvent.layout.y);
+              }}
+            >
+              <QuestionRenderer
+                // key={question.key}
+                question={question}
+                value={parsedValue}
+                error={errors[question.key] ?? null}
+                savingStatus={savingStatus[question.key]}
+                // visibleValue={visibleValue}
+                answers={responses}
+                dispatch={dispatch}
+              />
+            </View>
+          );
+        })
+    );
+  }, [
+    questions,
+    responses,
+    errors,
+    savingStatus,
+    dispatch,
+    setQuestionPosition,
+  ]);
   console.log("[RENDER WITH ERRORS]", errors);
   return <View>{renderedQuestions}</View>;
 };

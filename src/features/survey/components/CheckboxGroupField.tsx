@@ -14,6 +14,7 @@ type Props = {
   onChange: (value: string[]) => void;
   error?: string | null;
   savingStatus?: "saving" | "saved" | "error";
+  onRetry?: () => void;
 };
 
 function CheckboxGroupFieldComponent({
@@ -23,6 +24,7 @@ function CheckboxGroupFieldComponent({
   onChange,
   error,
   savingStatus,
+  onRetry,
 }: Props) {
   //  GUARANTEE: value is always array
   const current = value;
@@ -57,7 +59,9 @@ function CheckboxGroupFieldComponent({
           <Text className="text-green-500 text-xs">Saved</Text>
         )}
         {savingStatus === "error" && (
-          <Text className="text-red-500 text-xs">Failed</Text>
+          <Pressable onPress={onRetry}>
+            <Text className="text-red-500 text-xs underline">Retry</Text>
+          </Pressable>
         )}
       </View>
 

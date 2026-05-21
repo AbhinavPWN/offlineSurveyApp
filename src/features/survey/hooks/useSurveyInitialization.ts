@@ -2,10 +2,7 @@
 import { useEffect, useState } from "react";
 import { getMemberForSurvey } from "../services/getMemberForSurvey";
 import { mapMemberToSurveyProfile } from "../mappers/memberToProfile";
-import {
-  determineSurveyClassification,
-  SurveySectionKey,
-} from "../engine/surveyClassifier";
+import { determineSurveyClassification } from "../engine/surveyClassifier";
 import { surveySQLite } from "@/src/services/surveySQLite";
 import { loadSurveyDraft, SurveyAnswers } from "../state/surveyReducer";
 import {
@@ -17,6 +14,7 @@ import { isSurveySectionKey } from "../engine/sectionRegistry";
 import type { SurveyWizardState } from "../engine/surveyWizard";
 import type { MemberSurveyProfile } from "../engine/surveyClassifier";
 import { householdLocalRepository } from "@/src/di/container";
+import { deriveSurveySections } from "../engine/deriveSurveySections";
 
 type UseSurveyInitializationReturn = {
   loading: boolean;
@@ -101,6 +99,7 @@ export function useSurveyInitialization({
           pregnancY_STATUS: member.pregnancyStatus,
           motherofChild: member.motherofChild,
           childDob: member.childDobAD,
+          disabilityStatus: member.disabilityStatus,
         });
 
         setProfileState(profile);
@@ -110,9 +109,6 @@ export function useSurveyInitialization({
 
         console.log("[SURVEY_PROFILE]", profile);
         console.log("[SURVEY_CLASSIFICATION]", classification);
-
-        const primary = classification.primary;
-        const isPostpartum = classification.isPostpartum;
 
         // 4. Create or load survey draft in SQLite
         if (!member.clientNo) throw new Error("Missing clientNo");
@@ -129,11 +125,11 @@ export function useSurveyInitialization({
         setSurveyId(survey.surveyId);
 
         // handle empty survey case
-        if (!primary) {
-          setHasEligibleSections(false);
-          dispatch(loadSurveyDraft({}));
-          return;
-        }
+        // if (!primary) {
+        //   setHasEligibleSections(false);
+        //   dispatch(loadSurveyDraft({}));
+        //   return;
+        // }
 
         // 5. Load existing answers if any and initialize wizard state
         // const answers = await surveySQLite.loadSurveyAnswers(survey.surveyId);
@@ -173,12 +169,15 @@ export function useSurveyInitialization({
         dispatch(loadSurveyDraft(cleanedAnswers));
 
         // 6. initialize wizard with eligible sections and resume at last section if applicable
-        const sections: SurveySectionKey[] = [primary];
+        // 6. derive final sections
+        const sections = deriveSurveySections(profile, cleanedAnswers);
 
-        //  ADDING postpartum overlay
-        if (isPostpartum && primary !== "postpartumWo") {
-          sections.push("postpartumWo");
+        // handle empty survey case
+        if (sections.length === 0) {
+          setHasEligibleSections(false);
+          return;
         }
+
         let nextWizardState = createSurveyWizard(sections);
 
         // 7. Resume logic

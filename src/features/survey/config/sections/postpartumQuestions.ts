@@ -8,7 +8,7 @@ export const postpartumWoQuestions: QuestionConfig[] = [
     type: "text",
     inputFormat: "bs-date",
     keyboardType: "number-pad",
-    placeholder: "Enter BS date",
+    placeholder: "Enter BS date (YYYY-MM-DD)",
     required: true,
     validation: [
       { type: "required", message: "Delivery date is required" },
@@ -32,7 +32,9 @@ export const postpartumWoQuestions: QuestionConfig[] = [
       { label: "Public hospital", labelNp: "सरकारी अस्पताल", value: "U" },
       { label: "Health centre", labelNp: "स्वास्थ्य चौकी", value: "C" },
     ],
-    validation: [{ type: "required", message: "This field is required" }],
+    validation: [
+      { type: "required", message: "Please select at least one answer" },
+    ],
   },
 
   {
@@ -137,9 +139,17 @@ export const postpartumWoQuestions: QuestionConfig[] = [
     label: "Number of PNC visits",
     labelNp: "कति पटक जाँच गराउनुभयो?",
     type: "text",
+    keyboardType: "number-pad",
     visibleIf: { dependsOn: "postpartumWoQ8", value: "Y" },
     required: true,
-    validation: [{ type: "required", message: "Enter number" }],
+    validation: [
+      { type: "required", message: "Enter number" },
+      {
+        type: "pattern",
+        value: /^\d+$/,
+        message: "Enter valid number",
+      },
+    ],
   },
 
   {
@@ -187,7 +197,15 @@ export const postpartumWoQuestions: QuestionConfig[] = [
     labelNp: "रक्तचाप",
     type: "text",
     required: true,
-    validation: [{ type: "required", message: "Enter BP" }],
+    keyboardType: "number-pad",
+    placeholder: "e.g. 120/80",
+    validation: [
+      {
+        type: "pattern",
+        value: /^\d{2,3}\/\d{2,3}$/,
+        message: "Enter BP like 120/80",
+      },
+    ],
   },
 
   {
@@ -196,7 +214,9 @@ export const postpartumWoQuestions: QuestionConfig[] = [
     labelNp: "रगतमा चिनीको मात्रा",
     type: "text",
     required: true,
-    validation: [{ type: "required", message: "Enter glucose level" }],
+    keyboardType: "number-pad",
+    placeholder: "e.g. 7.2",
+    // validation: [{ type: "required", message: "Enter glucose level" }],
   },
 
   {

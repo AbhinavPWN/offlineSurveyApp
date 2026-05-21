@@ -3,64 +3,82 @@ import { QuestionConfig } from "../../components/QuestionRenderer";
 export const childrenQuestions: QuestionConfig[] = [
   {
     key: "childrenQ1",
-    label:
-      "In the last 24 hours, is the baby eating any food other than breast milk?",
+    label: "Child ate food other than breast milk (last 24 hrs)?",
     labelNp:
       "पछिल्लो २४ घण्टामा बच्चाले आमाको दूध बाहेक अरु खानेकुरा खाएको छ? (२४ महिनासम्म)",
     type: "select",
-    required: true,
     options: [
       { label: "Yes", labelNp: "छ", value: "Y" },
       { label: "No", labelNp: "छैन", value: "N" },
     ],
-    validation: [{ type: "required", message: "This field is required" }],
+    validation: [
+      {
+        type: "required",
+        message:
+          "Please confirm if the child ate any food other than breast milk",
+      },
+    ],
   },
 
   {
     key: "childrenQ2",
-    label: "Has the child received Vitamin A supplementation in last 6 months?",
-    labelNp: "के बच्चाले पछिल्लो ६ महिनामा भिटामिन 'ए' क्याप्सुल खाएको छ?",
+    label: "Vitamin A taken in last 6 months?",
+    labelNp: "पछिल्लो ६ महिनामा भिटामिन 'ए' खाएको छ?",
     type: "select",
-    required: true,
     options: [
       { label: "Yes", labelNp: "खाएको छ", value: "Y" },
       { label: "No", labelNp: "खाएको छैन", value: "N" },
     ],
-    validation: [{ type: "required", message: "This field is required" }],
+    validation: [
+      {
+        type: "required",
+        message:
+          "Please select if the child received Vitamin A in the last 6 months",
+      },
+    ],
   },
 
   {
     key: "childrenQ3",
-    label: "Has the child received Deworming tablet in last 6 months?",
-    labelNp: "के बच्चाले पछिल्लो ६ महिनामा जुकाको औषधि खाएको छ?",
+    label: "Deworming tablet taken in last 6 months?",
+    labelNp: "पछिल्लो ६ महिनामा जुकाको औषधि खाएको छ?",
     type: "select",
-    required: true,
     options: [
       { label: "Yes", labelNp: "खाएको छ", value: "Y" },
       { label: "No", labelNp: "खाएको छैन", value: "N" },
     ],
-    validation: [{ type: "required", message: "This field is required" }],
+    validation: [
+      {
+        type: "required",
+        message:
+          "Please select if the child took deworming medicine in the last 6 months",
+      },
+    ],
   },
 
   {
     key: "childrenQ4",
-    label: "Has the child had diarrhea in last 15 days?",
-    labelNp: "के पछिल्लो १५ दिनमा बच्चालाई पखाला लागेको छ?",
+    label: "Had diarrhea in last 15 days?",
+    labelNp: "पछिल्लो १५ दिनमा बच्चालाई पखाला लागेको छ?",
     type: "select",
-    required: true,
     options: [
       { label: "Yes", labelNp: "छ", value: "Y" },
       { label: "No", labelNp: "छैन", value: "N" },
     ],
-    validation: [{ type: "required", message: "This field is required" }],
+    validation: [
+      {
+        type: "required",
+        message:
+          "Please indicate whether the child had diarrhea in the last 15 days",
+      },
+    ],
   },
 
   {
     key: "childrenQ5",
-    label: "Did you give ORS to the child?",
-    labelNp: "के तपाईंले बच्चालाई जीवनजल (ORS) दिनुभयो?",
+    label: "Was ORS given during diarrhea?",
+    labelNp: "पखाला हुँदा जीवनजल (ORS) दिइयो?",
     type: "select",
-    required: true,
     visibleIf: {
       dependsOn: "childrenQ4",
       value: "Y",
@@ -69,6 +87,11 @@ export const childrenQuestions: QuestionConfig[] = [
       { label: "Yes", labelNp: "दिएँ", value: "Y" },
       { label: "No", labelNp: "दिइनँ", value: "N" },
     ],
-    validation: [{ type: "required", message: "This field is required" }],
+    validation: [
+      {
+        type: "required",
+        message: "Please confirm if ORS was given to the child during diarrhea",
+      },
+    ],
   },
 ];

@@ -1,21 +1,27 @@
 export function mapInfantToApi(a: Record<string, any>) {
-  const q7 = a.infantQ7;
+  const vaccinations = a.infantQ2 || [];
+
+  const hadDiarrhea = a.infantQ5 === "Y";
 
   return {
-    // ---------- Basic ----------
-    infantQ1: a.infantQ1 ?? "N",
+    // ---------- Feeding ----------
+    infantQ1: a.infantQ1 ?? "",
 
-    // ---------- Vaccination (map directly) ----------
-    infantQ2Ans1: a.infantQ2 ?? "N", // BCG
-    infantQ2Ans2: a.infantQ3 ?? "N", // Penta1
-    infantQ2Ans3: a.infantQ4 ?? "N", // Penta2
-    infantQ2Ans4: a.infantQ5 ?? "N", // Penta3
-    infantQ2Ans5: a.infantQ6 ?? "N", // PCV3
+    // ---------- Vaccination History ----------
+    infantQ2Ans1: vaccinations.includes("1") ? "Y" : "N",
+    infantQ2Ans2: vaccinations.includes("2") ? "Y" : "N",
+    infantQ2Ans3: vaccinations.includes("3") ? "Y" : "N",
+    infantQ2Ans4: vaccinations.includes("4") ? "Y" : "N",
+    infantQ2Ans5: vaccinations.includes("5") ? "Y" : "N",
 
-    // ---------- Health ----------
-    infantQ7: q7 ?? "N",
+    // ---------- Latest Vaccination ----------
+    infantQ3: a.infantQ3 ?? "",
+    infantQ4: a.infantQ4 ?? "",
+
+    // ---------- Diarrhea ----------
+    infantQ5: a.infantQ5 ?? "",
 
     // ---------- Conditional ----------
-    infantQ8: q7 === "Y" ? (a.infantQ8 ?? "N") : "",
+    infantQ6: hadDiarrhea ? (a.infantQ6 ?? "") : "",
   };
 }

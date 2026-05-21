@@ -13,7 +13,7 @@ export const neonateQuestions: QuestionConfig[] = [
     validation: [
       {
         type: "required",
-        message: "This field is required",
+        message: "Please select current status of the child",
       },
     ],
   },
@@ -22,6 +22,10 @@ export const neonateQuestions: QuestionConfig[] = [
     key: "neonateQ2",
     label: "In the last 24 hours, is the baby breastfed only?",
     labelNp: "गएको २४ घण्टामा बच्चालाई आमाको दूध मात्र खुवाइएको छ?",
+    visibleIf: {
+      dependsOn: "neonateQ1",
+      value: "A",
+    },
     type: "select",
     options: [
       { label: "Yes", labelNp: "छ", value: "Y" },
@@ -30,7 +34,7 @@ export const neonateQuestions: QuestionConfig[] = [
     validation: [
       {
         type: "required",
-        message: "This field is required",
+        message: "Please answer breastfeeding question",
       },
     ],
   },
@@ -39,6 +43,10 @@ export const neonateQuestions: QuestionConfig[] = [
     key: "neonateQ3",
     label: "Was the newborn vaccinated within 24 hours (BCG)?",
     labelNp: "के बच्चा जन्मेको २४ घण्टाभित्र खोप (BCG) लगाइयो?",
+    visibleIf: {
+      dependsOn: "neonateQ1",
+      value: "A",
+    },
     type: "select",
     options: [
       { label: "Yes", labelNp: "लगाइयो", value: "Y" },
@@ -47,7 +55,7 @@ export const neonateQuestions: QuestionConfig[] = [
     validation: [
       {
         type: "required",
-        message: "This field is required",
+        message: "Please answer if the baby is vaccinated or not .",
       },
     ],
   },
@@ -57,6 +65,10 @@ export const neonateQuestions: QuestionConfig[] = [
     label: "Was there any danger sign observed since birth?",
     labelNp: "जन्मेदेखि अहिलेसम्म बच्चामा केही खतराका संकेतहरू देखियो?",
     type: "select",
+    visibleIf: {
+      dependsOn: "neonateQ1",
+      value: "A",
+    },
     options: [
       { label: "Yes", labelNp: "देखियो", value: "Y" },
       { label: "No", labelNp: "देखिएन", value: "N" },
@@ -64,7 +76,7 @@ export const neonateQuestions: QuestionConfig[] = [
     validation: [
       {
         type: "required",
-        message: "This field is required",
+        message: "Please select at least one danger sign",
       },
     ],
   },
@@ -212,8 +224,10 @@ export const neonateQuestions: QuestionConfig[] = [
     ],
     validation: [
       {
-        type: "required",
-        message: "This field is required",
+        type: "requiredIf",
+        dependsOn: "neonateQ9",
+        value: "6",
+        message: "Please specify other complication",
       },
     ],
   },

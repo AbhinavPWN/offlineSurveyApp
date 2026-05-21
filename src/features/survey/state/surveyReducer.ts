@@ -1,8 +1,12 @@
 // src\features\survey\state\surveyReducer.ts
+import { QUESTION_MAP } from "../utils/questionMap";
+import { isQuestionVisible } from "../hooks/surveyValidation";
+
 export type SurveyAnswers = Record<string, string | string[] | null>;
 
 export interface SurveyState {
   answers: SurveyAnswers;
+  removedKeys?: string[];
 }
 
 export type SurveyAction =
@@ -50,12 +54,29 @@ export function surveyReducer(
       if (!questionKey) return state;
       if (isEqual(state.answers[questionKey], answer)) return state;
 
+      const newAnswers = {
+        ...state.answers,
+        [questionKey]: answer,
+      };
+
+      const removedKeys: string[] = [];
+
+      Object.keys(newAnswers).forEach((key) => {
+        const question = QUESTION_MAP[key];
+        if (!question) return;
+
+        const visible = isQuestionVisible(question, newAnswers);
+
+        if (!visible) {
+          delete newAnswers[key];
+          removedKeys.push(key);
+        }
+      });
+
       return {
         ...state,
-        answers: {
-          ...state.answers,
-          [questionKey]: answer,
-        },
+        answers: newAnswers,
+        removedKeys, // 👈 ADD THIS
       };
     }
 

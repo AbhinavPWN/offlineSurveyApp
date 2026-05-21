@@ -26,9 +26,17 @@ export const adultMfQuestions: QuestionConfig[] = [
     label: "Other health problem",
     labelNp: "अन्य समस्या (लेख्नुहोस्)",
     type: "text",
-    visibleIf: { dependsOn: "adultMfQ1", value: "O" },
-    required: true,
-    validation: [{ type: "required", message: "Please specify" }],
+    visibleIf: {
+      dependsOn: "adultMfQ1",
+      operator: "includes",
+      value: "O",
+    },
+    validation: [
+      {
+        type: "required",
+        message: "Please specify the other health problem",
+      },
+    ],
   },
 
   {
@@ -36,38 +44,63 @@ export const adultMfQuestions: QuestionConfig[] = [
     label: "Are you taking medication for these?",
     labelNp: "के तपाईं यी रोगका लागि औषधि खाइरहनुभएको छ?",
     type: "select",
-    required: true,
-    visibleIf: { dependsOn: "adultMfQ1", value: "H" }, // any selection trigger
+    visibleIf: {
+      dependsOn: "adultMfQ1",
+      operator: "notEmpty",
+    },
     options: [
       { label: "Yes", labelNp: "छ", value: "Y" },
       { label: "No", labelNp: "छैन", value: "N" },
     ],
-    validation: [{ type: "required", message: "This field is required" }],
+    validation: [
+      {
+        type: "required",
+        message: "Please select if you are taking medication",
+      },
+    ],
   },
 
   {
     key: "adultMfQ3",
-    label: "Blood Pressure",
+    label: "Blood Pressure (mm of Hg)",
     labelNp: "रक्तचाप",
     type: "text",
-    required: true,
-    validation: [{ type: "required", message: "Enter BP" }],
+    keyboardType: "number-pad",
+    placeholder: "e.g. 120/80",
+    validation: [
+      {
+        type: "required",
+        message: "Please enter blood pressure",
+      },
+      {
+        type: "pattern",
+        value: /^\d{2,3}\/\d{2,3}$/,
+        message: "Enter format like 120/80",
+      },
+    ],
   },
 
   {
     key: "adultMfQ4",
-    label: "Blood Glucose",
+    label: "Blood Glucose (mmol/L)",
     labelNp: "रगतमा चिनी",
     type: "text",
-    required: true,
-    validation: [{ type: "required", message: "Enter glucose level" }],
+    keyboardType: "number-pad",
+    placeholder: "e.g. 5.6",
+    validation: [
+      {
+        type: "required",
+        message: "Please enter glucose level",
+      },
+    ],
   },
 
+  //  FIXED: checkbox instead of select
   {
     key: "adultMfQ5",
-    label: "Do you practice the following healthy habits?",
-    labelNp: "के तपाईं तलका स्वस्थ बानी अपनाउनुहुन्छ?",
-    type: "select",
+    label: "Which healthy habits do you practice?",
+    labelNp: "तपाईं तलका स्वस्थ बानीहरू मध्ये कुन अपनाउनुहुन्छ?",
+    type: "checkbox",
     options: [
       {
         label: "Avoid smoking/tobacco",
