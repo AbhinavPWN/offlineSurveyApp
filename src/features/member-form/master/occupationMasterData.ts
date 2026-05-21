@@ -30,6 +30,82 @@ export const occupationOptions: DropdownOption[] = [
   { value: "5", labelEn: "Casual Labor", labelNp: "अनौपचारिक श्रम" },
   { value: "6", labelEn: "Service", labelNp: "सेवा" },
   { value: "7", labelEn: "Student", labelNp: "विद्यार्थी" },
+
+  { value: "8", labelEn: "Business", labelNp: "व्यवसाय" },
+
+  {
+    value: "9",
+    labelEn: "Daily Wage Laborer",
+    labelNp: "दैनिक ज्याला मजदुर",
+  },
+
+  {
+    value: "10",
+    labelEn: "Government Employee",
+    labelNp: "सरकारी कर्मचारी",
+  },
+
+  {
+    value: "11",
+    labelEn: "Private Sector Employee",
+    labelNp: "निजी क्षेत्रको कर्मचारी",
+  },
+
+  {
+    value: "12",
+    labelEn: "Self-Employed/Business",
+    labelNp: "स्वरोजगार / व्यवसाय",
+  },
+
+  {
+    value: "13",
+    labelEn: "Agriculture/Farming",
+    labelNp: "कृषि / खेतीपाती",
+  },
+
+  {
+    value: "14",
+    labelEn: "Daily Wage Laborer",
+    labelNp: "ज्यालादारी मजदुर",
+  },
+
+  {
+    value: "15",
+    labelEn: "Foreign Employment",
+    labelNp: "वैदेशिक रोजगार",
+  },
+
+  {
+    value: "16",
+    labelEn: "Skilled Worker/Technician",
+    labelNp: "सीपयुक्त कामदार / प्राविधिक",
+  },
+
+  {
+    value: "17",
+    labelEn: "Domestic Worker/Care Worker",
+    labelNp: "घरेलु कामदार / स्याहारकर्ता",
+  },
+
+  {
+    value: "18",
+    labelEn: "Unemployed",
+    labelNp: "बेरोजगार",
+  },
+
+  {
+    value: "19",
+    labelEn: "Retired/Pensioner",
+    labelNp: "अवकाशप्राप्त / पेन्सनर",
+  },
+
+  {
+    value: "20",
+    labelEn: "Unable to Work / Disabled",
+    labelNp: "काम गर्न असमर्थ / अपांगता भएका",
+  },
+
+  { value: "99", labelEn: "Others", labelNp: "अन्य" },
 ];
 
 /**
