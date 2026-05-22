@@ -23,6 +23,8 @@ const SECTION_REGISTRY: Record<SurveySectionKey, SurveySectionComponentName> = {
   pregnantWoman: "PregnantWomanSection",
   postpartumWo: "PostpartumWomanSection",
   adultMf: "AdultSection",
+  socialProtectionWomen: "NeonateSection",
+  disableInfant: "NeonateSection",
 };
 
 export function getSectionComponentName(
