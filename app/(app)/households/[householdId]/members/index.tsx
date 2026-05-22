@@ -60,13 +60,13 @@ export default function MembersListScreen() {
     if (!household) return;
 
     // Rule 1: Lock if household pending
-    if (household.syncStatus === "PENDING" && members.length > 0) {
-      Alert.alert(
-        "Household Locked",
-        "Members cannot be modified while this household is waiting for sync.",
-      );
-      return;
-    }
+    // if (household.syncStatus === "PENDING" && members.length > 0) {
+    //   Alert.alert(
+    //     "Household Locked",
+    //     "Members cannot be modified while this household is waiting for sync.",
+    //   );
+    //   return;
+    // }
 
     // Rule 2: Prevent exceeding household size
     const allowedMembers = household.noofHHMembers ?? 0;
