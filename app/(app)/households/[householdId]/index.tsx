@@ -33,6 +33,10 @@ import {
   getMunicipalitiesByDistrict,
   getAllowedDistricts,
 } from "@/src/repositories/addressRepository";
+import {
+  // convertApiDateToISO,
+  convertISODateToApi,
+} from "@/src/utils/dateUtils";
 
 function formatDate(date: Date) {
   return date.toISOString().split("T")[0];
@@ -196,6 +200,7 @@ export default function HouseholdDetailScreen() {
     pendingCount: 0,
     failedCount: 0,
   });
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Load districts
   useEffect(() => {
@@ -235,6 +240,7 @@ export default function HouseholdDetailScreen() {
       }
 
       setHousehold(result);
+      console.log("[HOUSEHOLD_LOAD]", JSON.stringify(result, null, 2));
 
       setInitialSnapshot({
         dateoflistingAD: result.dateoflistingAD,
@@ -274,6 +280,7 @@ export default function HouseholdDetailScreen() {
         setChwName(chwProfile.userName);
       }
 
+      setIsHydrated(true);
       setLoading(false);
     }
 
@@ -302,12 +309,13 @@ export default function HouseholdDetailScreen() {
 
   // ---------------- AUTO SAVE ----------------
   useEffect(() => {
-    if (!household) return;
+    if (!household || !isHydrated) return;
 
     const timeout = setTimeout(async () => {
       // 1️⃣ Always update draft fields
       await householdLocalRepository.updateDraft(household.localId, {
-        dateoflistingAD: dateOfListing,
+        // dateoflistingAD: dateOfListing,
+        dateoflistingAD: convertISODateToApi(dateOfListing) ?? "",
         provinceCode,
         districtCode,
         vdcnpCode,
@@ -316,7 +324,7 @@ export default function HouseholdDetailScreen() {
         noofHHMembers:
           membersCount.trim() !== "" && !isNaN(Number(membersCount))
             ? Number(membersCount)
-            : 1,
+            : 0,
         typeofHousing: typeOfHousing as any,
         accesstoCleanWater: cleanWater as any,
         accesstoSanitation: sanitation as any,
@@ -327,7 +335,8 @@ export default function HouseholdDetailScreen() {
         if (!initialSnapshot) return false;
 
         const currentState = {
-          dateoflistingAD: dateOfListing,
+          // dateoflistingAD: dateOfListing,
+          dateoflistingAD: convertISODateToApi(dateOfListing) ?? "",
           provinceCode,
           districtCode,
           vdcnpCode,
@@ -340,6 +349,21 @@ export default function HouseholdDetailScreen() {
           gpsCoordinates,
         };
 
+        // console.log(
+        //   "[HOUSEHOLD_COMPARE]",
+        //   JSON.stringify(
+        //     {
+        //       initialSnapshot,
+        //       currentState,
+        //     },
+        //     null,
+        //     2,
+        //   ),
+        // );
+        // const changed =
+        //   JSON.stringify(currentState) !== JSON.stringify(initialSnapshot);
+        // // console.log("[HAS_CHANGES]", changed);
+        // return changed;
         return JSON.stringify(currentState) !== JSON.stringify(initialSnapshot);
       }
 
@@ -373,6 +397,7 @@ export default function HouseholdDetailScreen() {
     household,
     gpsCoordinates,
     initialSnapshot,
+    isHydrated,
   ]);
 
   // ---------------- VALIDATION ----------------

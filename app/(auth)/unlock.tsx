@@ -36,7 +36,7 @@ export default function UnlockScreen() {
         style: "destructive",
         onPress: async () => {
           await logout();
-          // router.replace("/login");
+          router.replace("/login");
         },
       },
     ]);

@@ -1,10 +1,14 @@
-import React, { useCallback, useEffect, useState } from "react";
+// app\(app)\households\[householdId]\members\[memberId].tsx
+
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
   ActivityIndicator,
   Pressable,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -39,6 +43,7 @@ import { validateHealthStep } from "@/src/features/member-form/validation/health
 import { ErrorBoundary } from "@/src/features/member-form/components/ErrorBoundary";
 import { AppLogger } from "@/src/utils/AppLogger";
 import { HouseholdLocal } from "@/src/models/household.model";
+import { useFormErrorFocus } from "@/src/features/member-form/hooks/useFormErrorFocus";
 
 /* 
    STEP CONFIG
@@ -93,6 +98,9 @@ export default function MemberFormScreen() {
   const [currentStep, setCurrentStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [household, setHousehold] = useState<HouseholdLocal | null>(null);
+
+  const scrollRef = useRef<ScrollView>(null);
+  const { registerField, scrollToFirstError } = useFormErrorFocus(scrollRef);
 
   /*
      LOAD MEMBER
@@ -204,6 +212,23 @@ export default function MemberFormScreen() {
     }
   }, [form, localId]);
 
+  // const scrollToFirstError = useCallback(
+  //   (stepErrors: Record<string, string>) => {
+  //     const firstErrorKey = Object.keys(stepErrors)[0];
+
+  //     if (!firstErrorKey) return;
+
+  //     const y = fieldPositions.current[firstErrorKey];
+
+  //     if (typeof y !== "number") return;
+
+  //     scrollRef.current?.scrollTo({
+  //       y: Math.max(y - 120, 0),
+  //       animated: true,
+  //     });
+  //   },
+  //   [],
+  // );
   /* 
      STEP VALIDATION
   */
@@ -222,11 +247,18 @@ export default function MemberFormScreen() {
         return true;
       }
 
-      setErrors(result.errors ?? result);
+      const errs = result.errors ?? result;
+
+      setErrors(errs);
+
+      // wait one frame so UI + error text render
+      requestAnimationFrame(() => {
+        scrollToFirstError(errs);
+      });
 
       return false;
     },
-    [form],
+    [form, scrollToFirstError],
   );
 
   /*
@@ -322,69 +354,82 @@ export default function MemberFormScreen() {
       <Stack.Screen options={{ title: "Member Details" }} />
 
       <SafeAreaView edges={["bottom"]} className="flex-1 bg-white">
-        <ScrollView
-          className="flex-1 px-4 pt-4"
-          contentContainerStyle={{ paddingBottom: 40 }}
-          keyboardShouldPersistTaps="handled"
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={90}
         >
-          <Text className="text-sm text-gray-500 mb-2">
-            Step {currentStep + 1} of {STEP_CONFIG.length}
-          </Text>
+          <ScrollView
+            ref={scrollRef}
+            className="flex-1 px-4 pt-4"
+            contentContainerStyle={{
+              paddingBottom: 140,
+              flexGrow: 1,
+            }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+          >
+            <Text className="text-sm text-gray-500 mb-2">
+              Step {currentStep + 1} of {STEP_CONFIG.length}
+            </Text>
 
-          <Text className="text-xl font-bold mb-4">{stepTitle}</Text>
+            <Text className="text-xl font-bold mb-4">{stepTitle}</Text>
 
-          {STEP_CONFIG[currentStep].title === "Review" ? (
-            household ? (
-              <StepComponent form={form} household={household} />
+            {STEP_CONFIG[currentStep].title === "Review" ? (
+              household ? (
+                <StepComponent form={form} household={household} />
+              ) : (
+                <ActivityIndicator />
+              )
             ) : (
-              <ActivityIndicator />
-            )
-          ) : (
-            <StepComponent
-              form={form}
-              updateField={updateField}
-              errors={errors}
-              householdLocalId={form.householdLocalId}
-            />
-          )}
-        </ScrollView>
-
-        {/* Footer Navigation */}
-
-        <View className="px-4 py-2 pt-3 pb-4 border-t border-gray-200 bg-white">
-          <View className="flex-row justify-between">
-            {!isFirstStep ? (
-              <Pressable
-                onPress={handleBack}
-                className="flex-1 mr-2 py-3 bg-gray-300 rounded-lg"
-              >
-                <Text className="text-center">Back</Text>
-              </Pressable>
-            ) : (
-              <View className="flex-1 mr-2" />
+              <StepComponent
+                form={form}
+                updateField={updateField}
+                errors={errors}
+                householdLocalId={form.householdLocalId}
+                registerField={registerField}
+                // unregisterField={unregisterField}
+              />
             )}
+          </ScrollView>
 
-            {!isLastStep ? (
-              <Pressable
-                onPress={handleNext}
-                className="flex-1 ml-2 py-3 bg-blue-600 rounded-lg"
-              >
-                <Text className="text-white text-center font-semibold">
-                  Next
-                </Text>
-              </Pressable>
-            ) : (
-              <Pressable
-                onPress={handleFinish}
-                className="flex-1 ml-2 py-3 bg-green-600 rounded-lg"
-              >
-                <Text className="text-white text-center font-semibold">
-                  Finish
-                </Text>
-              </Pressable>
-            )}
+          {/* Footer Navigation */}
+
+          <View className="px-4 py-2 pt-3 pb-4 border-t border-gray-200 bg-white">
+            <View className="flex-row justify-between">
+              {!isFirstStep ? (
+                <Pressable
+                  onPress={handleBack}
+                  className="flex-1 mr-2 py-3 bg-gray-300 rounded-lg"
+                >
+                  <Text className="text-center">Back</Text>
+                </Pressable>
+              ) : (
+                <View className="flex-1 mr-2" />
+              )}
+
+              {!isLastStep ? (
+                <Pressable
+                  onPress={handleNext}
+                  className="flex-1 ml-2 py-3 bg-blue-600 rounded-lg"
+                >
+                  <Text className="text-white text-center font-semibold">
+                    Next
+                  </Text>
+                </Pressable>
+              ) : (
+                <Pressable
+                  onPress={handleFinish}
+                  className="flex-1 ml-2 py-3 bg-green-600 rounded-lg"
+                >
+                  <Text className="text-white text-center font-semibold">
+                    Finish
+                  </Text>
+                </Pressable>
+              )}
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </ErrorBoundary>
   );

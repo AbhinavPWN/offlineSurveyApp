@@ -642,6 +642,6 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
       console.log("MAPPED MEMBER:", mapped);
     }
 
-    await this.recalculateMemberCount(householdLocalId);
+    // await this.recalculateMemberCount(householdLocalId);
   }
 }

@@ -10,33 +10,33 @@ import { AppLogger } from "@/src/utils/AppLogger";
 import { loadAuthSession } from "@/src/auth/storage/authStorage";
 
 // Date Formatter helper function
-function formatForApi(dateString: string): string {
-  if (!dateString) return "";
+// function formatForApi(dateString: string): string {
+//   if (!dateString) return "";
 
-  const date = new Date(dateString);
+//   const date = new Date(dateString);
 
-  const day = date.getDate().toString().padStart(2, "0");
+//   const day = date.getDate().toString().padStart(2, "0");
 
-  const months = [
-    "JAN",
-    "FEB",
-    "MAR",
-    "APR",
-    "MAY",
-    "JUN",
-    "JUL",
-    "AUG",
-    "SEP",
-    "OCT",
-    "NOV",
-    "DEC",
-  ];
+//   const months = [
+//     "JAN",
+//     "FEB",
+//     "MAR",
+//     "APR",
+//     "MAY",
+//     "JUN",
+//     "JUL",
+//     "AUG",
+//     "SEP",
+//     "OCT",
+//     "NOV",
+//     "DEC",
+//   ];
 
-  const month = months[date.getMonth()];
-  const year = date.getFullYear();
+//   const month = months[date.getMonth()];
+//   const year = date.getFullYear();
 
-  return `${day}-${month}-${year}`;
-}
+//   return `${day}-${month}-${year}`;
+// }
 
 export class SyncHouseholdUseCase {
   constructor(
@@ -109,7 +109,8 @@ export class SyncHouseholdUseCase {
     const session = await loadAuthSession();
 
     const payload: InsertHouseholdPayload = {
-      dateofListingAD: formatForApi(household.dateoflistingAD),
+      // dateofListingAD: formatForApi(household.dateoflistingAD),
+      dateofListingAD: household.dateoflistingAD,
       idofCHW: household.idofCHW,
       provinceCode: String(household.provinceCode),
       districtCode: household.districtCode,
@@ -127,6 +128,7 @@ export class SyncHouseholdUseCase {
       insertUpdate: "I",
     };
 
+    console.log(" INSERT PAYLOAD", JSON.stringify(payload, null, 2));
     const response = await this.householdApi.insertHousehold(payload);
 
     await AppLogger.log("SYNC_INSERT_SUCCESS", "Insert success", {
@@ -162,7 +164,8 @@ export class SyncHouseholdUseCase {
 
     const payload: UpdateHouseholdPayload = {
       householdId: household.householdId,
-      dateofListingAD: formatForApi(household.dateoflistingAD),
+      // dateofListingAD: formatForApi(household.dateoflistingAD),
+      dateofListingAD: household.dateoflistingAD,
       idofCHW: household.idofCHW,
       provinceCode: String(household.provinceCode),
       districtCode: household.districtCode,

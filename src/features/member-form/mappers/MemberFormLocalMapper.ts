@@ -18,7 +18,8 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     // Identity
     // Identity
     idDocumentType: local.idDocumentType || "CITIZENSHIP",
-    idDocumentNo: local.idDocumentNo || "NA",
+    // idDocumentNo: local.idDocumentNo || "NA",
+    idDocumentNo: local.idDocumentNo?.trim() || "",
     idIssueDistrictCode: local.idIssueDistrictCode || "000",
     memIdIssueDate: local.idIssueDateAD ?? local.enrollDateAD ?? null,
     dob: local.dobAD ?? null,
@@ -103,7 +104,8 @@ export function mapFormToLocalPatch(
     clientAge: form.clientAge,
 
     idDocumentType: form.idDocumentType || "CITIZENSHIP",
-    idDocumentNo: form.idDocumentNo || "NA",
+    // idDocumentNo: form.idDocumentNo || "NA",
+    idDocumentNo: form.idDocumentNo?.trim() || "",
     idIssueDistrictCode: form.idIssueDistrictCode || "000",
     idIssueDateAD: form.memIdIssueDate || form.enrollDate || null,
     dobAD: form.dob ?? null,
