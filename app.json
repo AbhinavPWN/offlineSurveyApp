@@ -2,7 +2,7 @@
   "expo": {
     "name": "Nirdhan Survey",
     "slug": "nirdhan-survey",
-    "version": "1.0.5.1",
+    "version": "1.0.5.2",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "surveyapp",

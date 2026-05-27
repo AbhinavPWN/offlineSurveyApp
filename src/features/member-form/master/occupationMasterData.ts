@@ -23,8 +23,8 @@ export const religionOptions: DropdownOption[] = [
  * Occupation Options
  */
 export const occupationOptions: DropdownOption[] = [
-  { value: "1", labelEn: "Agriculture", labelNp: "कृषि" },
-  { value: "2", labelEn: "Hotel", labelNp: "होटल" },
+  { value: "1", labelEn: "Agriculture/Framing", labelNp: "कृषि/खेतीपाती" },
+  // { value: "2", labelEn: "Hotel", labelNp: "होटल" },
   { value: "3", labelEn: "Housewife", labelNp: "गृहिणी" },
   { value: "4", labelEn: "Cottage Industry", labelNp: "घरेलु उद्योग" },
   { value: "5", labelEn: "Casual Labor", labelNp: "अनौपचारिक श्रम" },
@@ -33,11 +33,11 @@ export const occupationOptions: DropdownOption[] = [
 
   { value: "8", labelEn: "Business", labelNp: "व्यवसाय" },
 
-  {
-    value: "9",
-    labelEn: "Daily Wage Laborer",
-    labelNp: "दैनिक ज्याला मजदुर",
-  },
+  // {
+  //   value: "9",
+  //   labelEn: "Daily Wage Laborer",
+  //   labelNp: "दैनिक ज्याला मजदुर",
+  // },
 
   {
     value: "10",
@@ -57,11 +57,11 @@ export const occupationOptions: DropdownOption[] = [
     labelNp: "स्वरोजगार / व्यवसाय",
   },
 
-  {
-    value: "13",
-    labelEn: "Agriculture/Farming",
-    labelNp: "कृषि / खेतीपाती",
-  },
+  // {
+  //   value: "13",
+  //   labelEn: "Agriculture/Farming",
+  //   labelNp: "कृषि / खेतीपाती",
+  // },
 
   {
     value: "14",

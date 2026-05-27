@@ -29,7 +29,8 @@ export function mapDbToDomainMember(db: HouseholdMemberLocal): MemberLocal {
 
     // Identity
     idDocumentType: db.idDocumentType || "CITIZENSHIP",
-    idDocumentNo: db.idDocumentNo || "NA",
+    // idDocumentNo: db.idDocumentNo || "NA",
+    idDocumentNo: db.idDocumentNo?.trim() || "",
     idIssueDistrictCode: db.idIssueDistrictCode || "000",
     idIssueDateAD: db.idIssueDateAD || db.enrollDateAD || "",
 

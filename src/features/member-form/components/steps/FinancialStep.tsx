@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { View, Text, TextInput, Switch } from "react-native";
 import { MemberFormState } from "../../models/MemberFormState";
 
@@ -9,12 +9,15 @@ interface Props {
     value: MemberFormState[K],
   ) => void;
   errors?: Record<string, string>;
+
+  registerField: (fieldName: string) => (node: View | null) => void;
 }
 
 export const FinancialStep = React.memo(function FinancialStep({
   form,
   updateField,
   errors,
+  registerField,
 }: Props) {
   if (__DEV__) console.log("FinancialStep render");
 
@@ -22,20 +25,42 @@ export const FinancialStep = React.memo(function FinancialStep({
     Number(form.totalAsset || 0) - Number(form.totalLiabilities || 0);
 
   const incomeOptions = [
-    { key: "soiSalary", label: "Salary / तलब" },
-    { key: "soiBusIncome", label: "Business / व्यवसाय" },
-    { key: "soiAgriculture", label: "Agriculture / कृषि" },
-    { key: "soiReturnfrmInvest", label: "Investment Return / लगानी आम्दानी" },
-    { key: "soiInheritance", label: "Inheritance / पैतृक" },
-    { key: "soiRemittance", label: "Remittance / रेमिटेन्स" },
-    { key: "soiOthers", label: "Others / अन्य" },
+    {
+      key: "soiSalary",
+      label: "Salary / तलब",
+    },
+    {
+      key: "soiBusIncome",
+      label: "Business / व्यवसाय",
+    },
+    {
+      key: "soiAgriculture",
+      label: "Agriculture / कृषि",
+    },
+    {
+      key: "soiReturnfrmInvest",
+      label: "Investment Return / लगानी आम्दानी",
+    },
+    {
+      key: "soiInheritance",
+      label: "Inheritance / पैतृक",
+    },
+    {
+      key: "soiRemittance",
+      label: "Remittance / रेमिटेन्स",
+    },
+    {
+      key: "soiOthers",
+      label: "Others / अन्य",
+    },
   ] as const;
 
   return (
     <View className="space-y-4">
       {/* Total Asset */}
-      <View>
+      <View ref={registerField("totalAsset")} collapsable={false}>
         <Text className="mb-1 font-medium">Total Asset (कुल सम्पत्ति) *</Text>
+
         <TextInput
           className="border rounded-lg px-3 py-2"
           keyboardType="numeric"
@@ -46,15 +71,17 @@ export const FinancialStep = React.memo(function FinancialStep({
           placeholder="Enter total asset"
         />
       </View>
+
       {errors?.totalAsset && (
         <Text className="text-red-500 text-xs">{errors.totalAsset}</Text>
       )}
 
       {/* Total Liabilities */}
-      <View>
+      <View ref={registerField("totalLiabilities")} collapsable={false}>
         <Text className="mb-1 font-medium">
           Total Liabilities (कुल दायित्व) *
         </Text>
+
         <TextInput
           className="border rounded-lg px-3 py-2"
           keyboardType="numeric"
@@ -65,6 +92,7 @@ export const FinancialStep = React.memo(function FinancialStep({
           placeholder="Enter total liabilities"
         />
       </View>
+
       {errors?.totalLiabilities && (
         <Text className="text-red-500 text-xs">{errors.totalLiabilities}</Text>
       )}
@@ -74,6 +102,7 @@ export const FinancialStep = React.memo(function FinancialStep({
         <Text className="mb-1 font-medium">
           Net Worth (कुल सम्पत्ति - दायित्व)
         </Text>
+
         <TextInput
           className="border rounded-lg px-3 py-2 bg-gray-100"
           value={calculatedNetWorth.toString()}
@@ -82,22 +111,25 @@ export const FinancialStep = React.memo(function FinancialStep({
       </View>
 
       {/* Source of Income */}
-      <Text className="font-semibold mt-4">
-        Source of Income (आम्दानीको स्रोत) *
-      </Text>
+      <View ref={registerField("soiSalary")} collapsable={false}>
+        <Text className="font-semibold mt-4">
+          Source of Income (आम्दानीको स्रोत) *
+        </Text>
 
-      {incomeOptions.map((item) => (
-        <View
-          key={item.key}
-          className="flex-row justify-between items-center py-2"
-        >
-          <Text>{item.label}</Text>
-          <Switch
-            value={form[item.key]}
-            onValueChange={(val) => updateField(item.key, val)}
-          />
-        </View>
-      ))}
+        {incomeOptions.map((item) => (
+          <View
+            key={item.key}
+            className="flex-row justify-between items-center py-2"
+          >
+            <Text>{item.label}</Text>
+
+            <Switch
+              value={form[item.key]}
+              onValueChange={(val) => updateField(item.key, val)}
+            />
+          </View>
+        ))}
+      </View>
 
       {errors?.soiSalary && (
         <Text className="text-red-500 text-xs">{errors.soiSalary}</Text>

@@ -90,23 +90,33 @@ export class HouseholdApiServiceImpl implements HouseholdApiService {
   ): Promise<InsertHouseholdResponse> {
     const response = await this.client.post(HOUSEHOLD_ENTRY_ENDPOINT, payload);
 
-    // 🔎 Log full response once for debugging
+    const data = response.data;
+
     if (__DEV__) {
-      console.log(
-        "🟢 INSERT RAW RESPONSE:",
-        JSON.stringify(response.data, null, 2),
-      );
+      console.log(" INSERT RAW RESPONSE:", JSON.stringify(data, null, 2));
     }
 
-    // ✅ According to API doc, server returns outHouseholdId
-    const serverId = response.data?.household_id;
-
-    if (!serverId) {
-      await AppLogger.log("ERROR", "Insert response invalid", {
-        fullResponse: response.data,
+    // Log backend failures properly
+    if (data?.response_code !== "SUCCESS") {
+      await AppLogger.log("ERROR", "HOUSEHOLD_INSERT_API_FAILED", {
+        payload,
+        response: data,
+        responseCode: data?.response_code,
+        responseMessage: data?.response_message,
       });
 
-      throw new Error("Invalid insert response: outHouseholdId missing");
+      throw new Error(data?.response_message || "Household insert failed");
+    }
+
+    const serverId = data?.household_id;
+
+    if (!serverId) {
+      await AppLogger.log("ERROR", "HOUSEHOLD_INSERT_ID_MISSING", {
+        payload,
+        response: data,
+      });
+
+      throw new Error("Household insert succeeded but household_id missing");
     }
 
     return {
@@ -131,7 +141,7 @@ export class HouseholdApiServiceImpl implements HouseholdApiService {
       response: data,
     });
     if (__DEV__) {
-      console.log("🔵Household UPDATE RESPONSE:", JSON.stringify(data));
+      console.log("Household UPDATE RESPONSE:", JSON.stringify(data));
     }
 
     // If API returns response_code, validate it

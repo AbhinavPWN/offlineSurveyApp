@@ -5,7 +5,6 @@ import { FormDropdown } from "../FormDropdown";
 import { BSDateInput } from "../BSDateInput";
 import {
   yesNoOptions,
-  disabilityTypeOptions,
   difficultyOptions,
 } from "../../master/memberHealthMasterData";
 
@@ -16,12 +15,14 @@ interface Props {
     value: MemberFormState[K],
   ) => void;
   errors?: Record<string, string>;
+  registerField: (fieldName: string) => (node: View | null) => void;
 }
 
 export const HealthStep = React.memo(function HealthStep({
   form,
   updateField,
   errors,
+  registerField,
 }: Props) {
   const isFemale = form.gender === "F";
 
@@ -56,7 +57,9 @@ export const HealthStep = React.memo(function HealthStep({
       {/* Health Conditions */}
       <View>
         <Text className="text-lg font-semibold">Health Conditions</Text>
+
         <Text className="text-gray-500 mb-2">स्वास्थ्य समस्या</Text>
+
         <Text className="text-gray-400 text-sm mb-2">
           Select all that apply
         </Text>
@@ -108,26 +111,44 @@ export const HealthStep = React.memo(function HealthStep({
           />
 
           {form.healthConditionsOth && (
-            <View className="mt-2">
+            <View
+              className="mt-2"
+              ref={registerField("healthConditionsOthers")}
+              collapsable={false}
+            >
               <Text className="text-sm text-gray-500 mb-1">
                 Specify other condition
               </Text>
 
               <TextInput
-                className="border border-gray-300 rounded-lg px-3 py-4"
+                className={`border rounded-lg px-3 py-4 ${
+                  errors?.healthConditionsOthers
+                    ? "border-red-500"
+                    : "border-gray-300"
+                }`}
                 placeholder="Enter condition"
                 value={form.healthConditionsOthers ?? ""}
                 onChangeText={(text) =>
                   updateField("healthConditionsOthers", text)
                 }
               />
+
+              {errors?.healthConditionsOthers && (
+                <Text className="text-red-500 text-sm mt-1">
+                  {errors.healthConditionsOthers}
+                </Text>
+              )}
             </View>
           )}
         </View>
       </View>
 
       {/* Disability Identification */}
-      <View className="mt-6">
+      <View
+        className="mt-6"
+        ref={registerField("disabilityIdent")}
+        collapsable={false}
+      >
         <FormDropdown
           label="Disability Identified? (अपाङ्गता छ?)"
           value={form.disabilityIdentYn ? "Y" : "N"}
@@ -135,76 +156,72 @@ export const HealthStep = React.memo(function HealthStep({
           onChange={(val) => updateField("disabilityIdentYn", val === "Y")}
         />
 
-        {form.disabilityIdentYn && (
-          <>
-            <FormDropdown
-              label="Disability Type (अपाङ्गताको प्रकार)"
-              value={form.disabilityIdent}
-              options={disabilityTypeOptions}
-              onChange={(val) => updateField("disabilityIdent", val)}
-            />
-          </>
+        {errors?.disabilityIdent && (
+          <Text className="text-red-500 text-xs mt-1">
+            {errors.disabilityIdent}
+          </Text>
         )}
       </View>
 
-      {/* Disability Status */}
+      {/* Functional Difficulties */}
       <View className="mt-6">
-        <FormDropdown
-          label="Disability Status (अपाङ्गता स्थिति)"
-          value={form.disabilityStatus ?? "N"}
-          options={yesNoOptions}
-          onChange={(val) => updateField("disabilityStatus", val)}
-        />
+        <Text className="font-medium mb-2">
+          Functional Difficulties (कार्यात्मक कठिनाइ)
+        </Text>
 
-        {form.disabilityStatus === "Y" && (
-          <>
-            <Text className="font-medium mt-2">
-              Functional Difficulties (कार्यात्मक कठिनाइ)
-            </Text>
+        <View ref={registerField("seeing")} collapsable={false}>
+          <FormDropdown
+            label="Seeing"
+            value={form.seeing}
+            options={difficultyOptions}
+            onChange={(val) => updateField("seeing", val)}
+          />
+        </View>
 
-            <FormDropdown
-              label="Seeing"
-              value={form.seeing}
-              options={difficultyOptions}
-              onChange={(val) => updateField("seeing", val)}
-            />
+        <View ref={registerField("hearing")} collapsable={false}>
+          <FormDropdown
+            label="Hearing"
+            value={form.hearing}
+            options={difficultyOptions}
+            onChange={(val) => updateField("hearing", val)}
+          />
+        </View>
 
-            <FormDropdown
-              label="Hearing"
-              value={form.hearing}
-              options={difficultyOptions}
-              onChange={(val) => updateField("hearing", val)}
-            />
+        <View ref={registerField("walking")} collapsable={false}>
+          <FormDropdown
+            label="Walking"
+            value={form.walking}
+            options={difficultyOptions}
+            onChange={(val) => updateField("walking", val)}
+          />
+        </View>
 
-            <FormDropdown
-              label="Walking"
-              value={form.walking}
-              options={difficultyOptions}
-              onChange={(val) => updateField("walking", val)}
-            />
+        <View ref={registerField("remembering")} collapsable={false}>
+          <FormDropdown
+            label="Remembering"
+            value={form.remembering}
+            options={difficultyOptions}
+            onChange={(val) => updateField("remembering", val)}
+          />
+        </View>
 
-            <FormDropdown
-              label="Remembering"
-              value={form.remembering}
-              options={difficultyOptions}
-              onChange={(val) => updateField("remembering", val)}
-            />
+        <View ref={registerField("selfCare")} collapsable={false}>
+          <FormDropdown
+            label="Self Care"
+            value={form.selfCare}
+            options={difficultyOptions}
+            onChange={(val) => updateField("selfCare", val)}
+          />
+        </View>
 
-            <FormDropdown
-              label="Self Care"
-              value={form.selfCare}
-              options={difficultyOptions}
-              onChange={(val) => updateField("selfCare", val)}
-            />
-
-            <FormDropdown
-              label="Communicating"
-              value={form.communicating}
-              options={difficultyOptions}
-              onChange={(val) => updateField("communicating", val)}
-            />
-          </>
-        )}
+        <View ref={registerField("communicating")} collapsable={false}>
+          <FormDropdown
+            label="Communicating"
+            value={form.communicating}
+            options={difficultyOptions}
+            onChange={(val) => updateField("communicating", val)}
+          />
+        </View>
       </View>
 
       {/* Pregnancy */}
@@ -218,11 +235,19 @@ export const HealthStep = React.memo(function HealthStep({
           />
 
           {form.pregnancyStatus === "Y" && (
-            <BSDateInput
-              label="Pregnancy Date (B.S.)"
-              adValue={form.pregnancyDate}
-              onChangeAD={(adIso) => updateField("pregnancyDate", adIso)}
-            />
+            <View ref={registerField("pregnancyDate")} collapsable={false}>
+              <BSDateInput
+                label="Pregnancy Date (B.S.)"
+                adValue={form.pregnancyDate}
+                onChangeAD={(adIso) => updateField("pregnancyDate", adIso)}
+              />
+
+              {errors?.pregnancyDate && (
+                <Text className="text-red-500 text-xs mt-1">
+                  {errors.pregnancyDate}
+                </Text>
+              )}
+            </View>
           )}
 
           <FormDropdown
@@ -231,6 +256,7 @@ export const HealthStep = React.memo(function HealthStep({
             options={yesNoOptions}
             onChange={(val) => {
               const isMother = val === "Y";
+
               updateField("motherofChild", isMother);
 
               if (!isMother) {
@@ -240,32 +266,50 @@ export const HealthStep = React.memo(function HealthStep({
           />
 
           {form.motherofChild && (
-            <BSDateInput
-              label="Child Date of Birth (B.S.)"
-              adValue={form.childDob}
-              onChangeAD={(adIso) => updateField("childDob", adIso)}
-            />
+            <View ref={registerField("childDob")} collapsable={false}>
+              <BSDateInput
+                label="Child Date of Birth (B.S.)"
+                adValue={form.childDob}
+                onChangeAD={(adIso) => updateField("childDob", adIso)}
+              />
+
+              {errors?.childDob && (
+                <Text className="text-red-500 text-xs mt-1">
+                  {errors.childDob}
+                </Text>
+              )}
+            </View>
           )}
         </View>
       )}
 
       {/* Vaccination */}
       {form.minorYn && (
-        <FormDropdown
-          label="Vaccination Status (खोप स्थिति)"
-          value={form.vaccinationStatus ?? "N"}
-          options={yesNoOptions}
-          onChange={(val) => updateField("vaccinationStatus", val)}
-        />
+        <View ref={registerField("vaccinationStatus")} collapsable={false}>
+          <FormDropdown
+            label="Vaccination Status (खोप स्थिति)"
+            value={form.vaccinationStatus ?? "N"}
+            options={yesNoOptions}
+            onChange={(val) => updateField("vaccinationStatus", val)}
+          />
+
+          {errors?.vaccinationStatus && (
+            <Text className="text-red-500 text-xs mt-1">
+              {errors.vaccinationStatus}
+            </Text>
+          )}
+        </View>
       )}
 
       {/* Insurance */}
-      <FormDropdown
-        label="Health Insurance Coverage (स्वास्थ्य बीमा)"
-        value={form.healthInsCoverage}
-        options={yesNoOptions}
-        onChange={(val) => updateField("healthInsCoverage", val)}
-      />
+      <View ref={registerField("healthInsCoverage")} collapsable={false}>
+        <FormDropdown
+          label="Health Insurance Coverage (स्वास्थ्य बीमा)"
+          value={form.healthInsCoverage}
+          options={yesNoOptions}
+          onChange={(val) => updateField("healthInsCoverage", val)}
+        />
+      </View>
     </View>
   );
 });

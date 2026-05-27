@@ -227,11 +227,11 @@ export const ReviewStep = React.memo(function ReviewStep({
           value={form.disabilityIdentYn ? "Yes" : "No"}
         />
 
-        {form.disabilityIdentYn && (
+        {/* {form.disabilityIdentYn && (
           <Row label="Disability Type" value={form.disabilityIdent || "-"} />
-        )}
+        )} */}
 
-        <Row label="Disability Status" value={yesNo(form.disabilityStatus)} />
+        {/* <Row label="Disability Status" value={yesNo(form.disabilityStatus)} /> */}
 
         {form.disabilityStatus === "Y" && (
           <>

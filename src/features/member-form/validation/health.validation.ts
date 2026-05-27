@@ -1,7 +1,7 @@
 import { MemberFormState } from "../models/MemberFormState";
 
 export interface HealthValidationErrors {
-  healthConditions?: string;
+  healthConditionsOthers?: string;
   disabilityIdent?: string;
   disabilityDifficulty?: string;
   pregnancyDate?: string;
@@ -20,7 +20,7 @@ export function validateHealthStep(
    * Only validate if "Other" is selected.
    */
   if (state.healthConditionsOth && !state.healthConditionsOthers?.trim()) {
-    errors.healthConditions = "Please specify other health condition";
+    errors.healthConditionsOthers = "Please specify other health condition";
   }
 
   /**
@@ -33,24 +33,24 @@ export function validateHealthStep(
   /**
    * Disability functional difficulty
    */
-  if (state.disabilityStatus === "Y") {
-    const difficulties = [
-      state.seeing,
-      state.hearing,
-      state.walking,
-      state.remembering,
-      state.selfCare,
-      state.communicating,
-    ];
+  // if (state.disabilityStatus === "Y") {
+  //   const difficulties = [
+  //     state.seeing,
+  //     state.hearing,
+  //     state.walking,
+  //     state.remembering,
+  //     state.selfCare,
+  //     state.communicating,
+  //   ];
 
-    const hasAnyDifficulty = difficulties.some(
-      (value) => value && value !== "N",
-    );
+  //   const hasAnyDifficulty = difficulties.some(
+  //     (value) => value && value !== "N",
+  //   );
 
-    if (!hasAnyDifficulty) {
-      errors.disabilityDifficulty = "At least one difficulty must be selected";
-    }
-  }
+  //   if (!hasAnyDifficulty) {
+  //     errors.disabilityDifficulty = "At least one difficulty must be selected";
+  //   }
+  // }
 
   /**
    * Pregnancy rules

@@ -49,3 +49,31 @@ export function calculateAgeFromISO(isoDate: string): number | null {
 
   return age;
 }
+
+export function convertISODateToApi(isoDate?: string | null): string | null {
+  if (!isoDate) return null;
+
+  const date = new Date(isoDate);
+  if (isNaN(date.getTime())) return null;
+
+  const months = [
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC",
+  ];
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+
+  return `${day}-${month}-${year}`;
+}

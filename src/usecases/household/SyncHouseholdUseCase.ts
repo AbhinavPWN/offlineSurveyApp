@@ -12,33 +12,33 @@ import { loadAuthSession } from "@/src/auth/storage/authStorage";
 // import { SyncContextGuard } from "../sync/SyncContextGuard";
 
 // Date Formatter helper function
-function formatForApi(dateString: string): string {
-  if (!dateString) return "";
+// function formatForApi(dateString: string): string {
+//   if (!dateString) return "";
 
-  const date = new Date(dateString);
+//   const date = new Date(dateString);
 
-  const day = date.getDate().toString().padStart(2, "0");
+//   const day = date.getDate().toString().padStart(2, "0");
 
-  const months = [
-    "JAN",
-    "FEB",
-    "MAR",
-    "APR",
-    "MAY",
-    "JUN",
-    "JUL",
-    "AUG",
-    "SEP",
-    "OCT",
-    "NOV",
-    "DEC",
-  ];
+//   const months = [
+//     "JAN",
+//     "FEB",
+//     "MAR",
+//     "APR",
+//     "MAY",
+//     "JUN",
+//     "JUL",
+//     "AUG",
+//     "SEP",
+//     "OCT",
+//     "NOV",
+//     "DEC",
+//   ];
 
-  const month = months[date.getMonth()];
-  const year = date.getFullYear();
+//   const month = months[date.getMonth()];
+//   const year = date.getFullYear();
 
-  return `${day}-${month}-${year}`;
-}
+//   return `${day}-${month}-${year}`;
+// }
 
 export class SyncHouseholdUseCase {
   constructor(
@@ -124,7 +124,8 @@ export class SyncHouseholdUseCase {
     const session = await loadAuthSession();
 
     const payload: InsertHouseholdPayload = {
-      dateofListingAD: formatForApi(household.dateoflistingAD),
+      // dateofListingAD: formatForApi(household.dateoflistingAD),
+      dateofListingAD: household.dateoflistingAD,
       idofCHW: household.idofCHW,
       provinceCode: String(household.provinceCode),
       districtCode: household.districtCode,
@@ -145,6 +146,7 @@ export class SyncHouseholdUseCase {
     // console.log("SYNC INSERT IDOFCHW:", household.idofCHW);
     // console.log("In SyncInsert SESSION IDOFCHW:", session?.idofCHW);
 
+    console.log(" INSERT PAYLOAD", JSON.stringify(payload, null, 2));
     const response = await this.householdApi.insertHousehold(payload);
 
     await AppLogger.log("SYNC_INSERT_SUCCESS", "Insert success", {
@@ -160,10 +162,10 @@ export class SyncHouseholdUseCase {
 
   // update flow  - household must exist
   private async syncUpdate(household: HouseholdLocal): Promise<void> {
-    if (__DEV__) console.log("🟢 ENTERING syncUpdate");
+    if (__DEV__) console.log(" ENTERING syncUpdate");
 
     if (!household.idofCHW) {
-      if (__DEV__) console.log("❌ idofCHW missing");
+      if (__DEV__) console.log(" idofCHW missing");
 
       await AppLogger.log("ERROR", "SYNC_ABORT_NULL_IDOFCHW_UPDATE", {
         localId: household.localId,
@@ -172,7 +174,7 @@ export class SyncHouseholdUseCase {
     }
 
     if (!household.householdId) {
-      if (__DEV__) console.log("❌ householdId missing");
+      if (__DEV__) console.log(" householdId missing");
       throw new Error("Cannot UPDATE household without householdId");
     }
 
@@ -180,7 +182,8 @@ export class SyncHouseholdUseCase {
 
     const payload: UpdateHouseholdPayload = {
       householdId: household.householdId,
-      dateofListingAD: formatForApi(household.dateoflistingAD),
+      // dateofListingAD: formatForApi(household.dateoflistingAD),
+      dateofListingAD: household.dateoflistingAD,
       idofCHW: household.idofCHW,
       provinceCode: String(household.provinceCode),
       districtCode: household.districtCode,
@@ -208,7 +211,7 @@ export class SyncHouseholdUseCase {
       household.householdId,
     );
 
-    if (__DEV__) console.log("✅ AFTER markSynced");
+    if (__DEV__) console.log(" AFTER markSynced");
     await AppLogger.log("SYNC_UPDATE_SUCCESS", "Update success", {
       localId: household.localId,
       serverHouseholdId: household.householdId,

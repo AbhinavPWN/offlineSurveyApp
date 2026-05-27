@@ -626,6 +626,6 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
       console.log("💾 Inserted member clientNo:", mapped.clientNo);
     }
 
-    await this.recalculateMemberCount(householdLocalId);
+    // await this.recalculateMemberCount(householdLocalId);
   }
 }
