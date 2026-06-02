@@ -1,4 +1,4 @@
-// src\usecases\members\SyncMemberUseCase.ts
+// src/usecases/members/SyncMemberUseCase.ts
 
 import { HouseholdMemberLocalRepository } from "@/src/repositories/HouseholdMemberLocalRepository";
 import { HouseholdLocalRepository } from "@/src/repositories/HouseholdLocalRepository";
@@ -6,13 +6,30 @@ import { MemberApiService } from "@/src/services/MemberApiService";
 import { SyncContextGuard } from "../sync/SyncContextGuard";
 import { AppLogger } from "@/src/utils/AppLogger";
 import { loadAuthSession } from "@/src/auth/storage/authStorage";
+
 import {
   mapMemberToInsertPayload,
   mapMemberToUpdatePayload,
   MemberLocal,
 } from "@/src/services/api/mappers/MemberMapper";
+
 import { mapDbToDomainMember } from "@/src/services/api/mappers/MemberDomainMapper";
 import { HouseholdMemberLocal } from "@/src/models/householdMember.model";
+
+import {
+  SyncEntitySummary,
+  createEmptySyncSummary,
+  getSafeSyncReason,
+} from "@/src/usecases/sync/SyncSummary";
+
+function getMemberLabel(member: HouseholdMemberLocal | MemberLocal): string {
+  const name = [member.firstName, member.middleName, member.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  return name || member.clientNo || "Member";
+}
 
 export class SyncMembersUseCase {
   constructor(
@@ -62,11 +79,18 @@ export class SyncMembersUseCase {
     return `${year}-${month}-${day}`;
   }
 
-  async execute(chwUsername: string): Promise<void> {
+  async execute(chwUsername: string): Promise<SyncEntitySummary> {
     try {
       await this.syncGuard.ensureValidContext(chwUsername);
     } catch (error: any) {
-      if (error?.message === "OFFLINE") return;
+      if (error?.message === "OFFLINE") {
+        await AppLogger.log("SYNC", "[MEMBER][SKIPPED_OFFLINE]", {
+          chwUsername,
+        });
+
+        return createEmptySyncSummary();
+      }
+
       throw error;
     }
 
@@ -77,6 +101,9 @@ export class SyncMembersUseCase {
       ...(await this.memberRepo.listBySyncStatus("FAILED")),
     ];
 
+    const summary = createEmptySyncSummary();
+    summary.total = pendingMembers.length;
+
     await AppLogger.log("SYNC", "[MEMBER][PENDING_COUNT]", {
       count: pendingMembers.length,
     });
@@ -85,21 +112,36 @@ export class SyncMembersUseCase {
       console.log("[MEMBER][START]", {
         pendingCount: pendingMembers.length,
       });
-      console.log("[MEMBER][DATA]", pendingMembers);
+
+      console.log(
+        "[MEMBER][DATA]",
+        pendingMembers.map((m) => ({
+          localId: m.localId,
+          clientNo: m.clientNo,
+          householdLocalId: m.householdLocalId,
+          syncStatus: m.syncStatus,
+          syncAction: m.syncAction,
+          name: getMemberLabel(m),
+        })),
+      );
     }
 
     for (const dbMember of pendingMembers ?? []) {
       const member = mapDbToDomainMember(dbMember);
+      const memberLabel = getMemberLabel(dbMember);
 
       try {
         await AppLogger.log("SYNC", "[MEMBER][PROCESSING]", {
           localId: dbMember.localId,
+          clientNo: dbMember.clientNo,
+          householdLocalId: dbMember.householdLocalId,
           syncAction: dbMember.syncAction,
         });
 
         if (__DEV__) {
           console.log("[MEMBER][PROCESSING]", {
             localId: dbMember.localId,
+            clientNo: dbMember.clientNo,
             action: dbMember.syncAction,
           });
         }
@@ -109,20 +151,39 @@ export class SyncMembersUseCase {
         );
 
         if (!parent) {
+          const reason = "Household record not found.";
+
           if (__DEV__) {
             console.log("[MEMBER][SKIP][NO_PARENT]", dbMember.localId);
           }
 
           await AppLogger.log("SYNC_DEBUG", "[MEMBER][SKIPPED_NO_PARENT]", {
             localId: dbMember.localId,
+            clientNo: dbMember.clientNo,
+            householdLocalId: dbMember.householdLocalId,
+            reason,
+          });
+
+          summary.skipped += 1;
+          summary.items.push({
+            id: dbMember.localId,
+            label: memberLabel,
+            status: "SKIPPED",
+            reason,
           });
 
           continue;
         }
 
         if (parent.syncStatus !== "SYNCED") {
+          const reason = "Household needs to sync first.";
+
           if (__DEV__) {
-            console.log("[MEMBER][SKIP][PARENT_NOT_SYNCED]", dbMember.localId);
+            console.log("[MEMBER][SKIP][PARENT_NOT_SYNCED]", {
+              localId: dbMember.localId,
+              parentLocalId: parent.localId,
+              parentStatus: parent.syncStatus,
+            });
           }
 
           await AppLogger.log(
@@ -130,8 +191,20 @@ export class SyncMembersUseCase {
             "[MEMBER][SKIPPED_PARENT_NOT_SYNCED]",
             {
               localId: dbMember.localId,
+              clientNo: dbMember.clientNo,
+              householdLocalId: dbMember.householdLocalId,
+              parentStatus: parent.syncStatus,
+              reason,
             },
           );
+
+          summary.skipped += 1;
+          summary.items.push({
+            id: dbMember.localId,
+            label: memberLabel,
+            status: "SKIPPED",
+            reason,
+          });
 
           continue;
         }
@@ -139,8 +212,15 @@ export class SyncMembersUseCase {
         // Safety: infer syncAction if missing
         if (!dbMember.syncAction) {
           const inferredAction = dbMember.clientNo ? "UPDATE" : "INSERT";
+
           await this.memberRepo.markPending(dbMember.localId, inferredAction);
+
           dbMember.syncAction = inferredAction;
+
+          await AppLogger.log("SYNC", "[MEMBER][ACTION_INFERRED]", {
+            localId: dbMember.localId,
+            inferredAction,
+          });
         }
 
         if (__DEV__) {
@@ -151,35 +231,83 @@ export class SyncMembersUseCase {
         }
 
         if (dbMember.syncAction === "INSERT") {
-          if (__DEV__) console.log("[MEMBER][INSERT][START]", dbMember.localId);
+          if (__DEV__) {
+            console.log("[MEMBER][INSERT][START]", dbMember.localId);
+          }
 
           await this.syncInsert(dbMember, member, parent.householdId!);
         } else if (dbMember.syncAction === "UPDATE") {
-          if (__DEV__) console.log("[MEMBER][UPDATE][START]", dbMember.localId);
+          if (__DEV__) {
+            console.log("[MEMBER][UPDATE][START]", dbMember.localId);
+          }
 
           await this.syncUpdate(dbMember, member, parent.householdId!);
+        } else {
+          throw new Error(`Invalid syncAction: ${dbMember.syncAction}`);
         }
+
+        summary.success += 1;
+        summary.items.push({
+          id: dbMember.localId,
+          label: memberLabel,
+          status: "SUCCESS",
+        });
+
+        await AppLogger.log("SYNC", "[MEMBER][SUCCESS]", {
+          localId: dbMember.localId,
+          clientNo: dbMember.clientNo,
+          syncAction: dbMember.syncAction,
+        });
       } catch (error: any) {
+        if (error?.message === "SESSION_EXPIRED") {
+          throw error;
+        }
+
+        const reason = getSafeSyncReason(error);
+
         if (__DEV__) {
           console.log("[MEMBER][ERROR]", {
             localId: member.localId,
             message: error?.message,
+            status: error?.response?.status,
             response: error?.response?.data,
+            reason,
           });
         }
 
         await AppLogger.log("ERROR", "[MEMBER][FAIL]", {
           localId: member.localId,
+          clientNo: member.clientNo,
           syncAction: dbMember.syncAction,
           message: error?.message,
-          response: error?.response?.data,
+          status: error?.response?.status,
+          reason,
         });
 
         await this.memberRepo.markFailed(member.localId);
+
+        summary.failed += 1;
+        summary.items.push({
+          id: dbMember.localId,
+          label: memberLabel,
+          status: "FAILED",
+          reason,
+        });
       }
     }
 
-    await AppLogger.log("SYNC", "[MEMBER][END]");
+    await AppLogger.log("SYNC", "[MEMBER][END]", {
+      total: summary.total,
+      success: summary.success,
+      failed: summary.failed,
+      skipped: summary.skipped,
+    });
+
+    if (__DEV__) {
+      console.log("[MEMBER][SUMMARY]", summary);
+    }
+
+    return summary;
   }
 
   // ---------------- INSERT FLOW ----------------
@@ -211,6 +339,12 @@ export class SyncMembersUseCase {
       session?.userName ?? "",
       sessionEmployeeId,
     );
+
+    await AppLogger.log("SYNC", "[MEMBER][INSERT][REQUEST]", {
+      localId: dbMember.localId,
+      householdId: serverHouseholdId,
+      userId: session?.userName ?? "",
+    });
 
     if (__DEV__) {
       console.log("[MEMBER][INSERT][PAYLOAD]", payload);
@@ -271,6 +405,13 @@ export class SyncMembersUseCase {
       session?.userName ?? "",
       sessionEmployeeId,
     );
+
+    await AppLogger.log("SYNC", "[MEMBER][UPDATE][REQUEST]", {
+      localId: dbMember.localId,
+      clientNo: member.clientNo,
+      householdId: serverHouseholdId,
+      userId: session?.userName ?? "",
+    });
 
     if (__DEV__) {
       console.log("[MEMBER][UPDATE][PAYLOAD]", payload);

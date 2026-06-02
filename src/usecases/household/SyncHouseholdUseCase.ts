@@ -1,4 +1,5 @@
-// src\usecases\household\SyncHouseholdUseCase.ts
+// src/usecases/household/SyncHouseholdUseCase.ts
+
 import { HouseholdLocalRepository } from "@/src/repositories/HouseholdLocalRepository";
 import {
   HouseholdApiService,
@@ -9,107 +10,140 @@ import { HouseholdLocal } from "@/src/models/household.model";
 import { AppLogger } from "@/src/utils/AppLogger";
 import { loadAuthSession } from "@/src/auth/storage/authStorage";
 
-// Date Formatter helper function
-// function formatForApi(dateString: string): string {
-//   if (!dateString) return "";
+import {
+  SyncEntitySummary,
+  createEmptySyncSummary,
+  getSafeSyncReason,
+} from "@/src/usecases/sync/SyncSummary";
 
-//   const date = new Date(dateString);
+function getHouseholdLabel(household: HouseholdLocal): string {
+  if (household.address) {
+    return household.address;
+  }
 
-//   const day = date.getDate().toString().padStart(2, "0");
+  if (household.householdId) {
+    return household.householdId;
+  }
 
-//   const months = [
-//     "JAN",
-//     "FEB",
-//     "MAR",
-//     "APR",
-//     "MAY",
-//     "JUN",
-//     "JUL",
-//     "AUG",
-//     "SEP",
-//     "OCT",
-//     "NOV",
-//     "DEC",
-//   ];
-
-//   const month = months[date.getMonth()];
-//   const year = date.getFullYear();
-
-//   return `${day}-${month}-${year}`;
-// }
+  return "Household";
+}
 
 export class SyncHouseholdUseCase {
   constructor(
     private readonly householdRepo: HouseholdLocalRepository,
     private readonly householdApi: HouseholdApiService,
-    // private readonly syncGuard: SyncContextGuard,
   ) {}
 
   /**
    * Entry point for syncing households.
    * Safe to call multiple times.
    */
-
-  async execute(chwUsername: string): Promise<void> {
-    await AppLogger.log("SYNC", "Sync started", { chwUsername });
+  async execute(chwUsername: string): Promise<SyncEntitySummary> {
+    await AppLogger.log("SYNC", "[HOUSEHOLD][START]", { chwUsername });
 
     const pendingHouseholds = await this.householdRepo.listBySyncStatus(
       chwUsername,
       "PENDING",
     );
-    console.log("Pending households:", pendingHouseholds);
-    await AppLogger.log("SYNC", "Pending households found", {
+
+    const summary = createEmptySyncSummary();
+    summary.total = pendingHouseholds.length;
+
+    if (__DEV__) {
+      console.log("[SYNC][HOUSEHOLD][PENDING]", {
+        count: pendingHouseholds.length,
+        pendingHouseholds,
+      });
+    }
+
+    await AppLogger.log("SYNC", "[HOUSEHOLD][PENDING_FOUND]", {
       count: pendingHouseholds.length,
       chwUsername,
     });
 
     for (const household of pendingHouseholds) {
+      const label = getHouseholdLabel(household);
+
+      await AppLogger.log("SYNC", "[HOUSEHOLD][PROCESSING]", {
+        localId: household.localId,
+        householdId: household.householdId,
+        action: household.syncAction,
+        address: household.address,
+      });
+
       try {
         if (household.syncAction === "INSERT") {
           await this.syncInsert(household);
         } else if (household.syncAction === "UPDATE") {
           await this.syncUpdate(household);
         } else {
-          // Defensive unknown action
           throw new Error(`Invalid syncAction: ${household.syncAction}`);
         }
-        await AppLogger.log("SYNC", "Household synced successfully", {
+
+        await AppLogger.log("SYNC", "[HOUSEHOLD][SUCCESS]", {
           localId: household.localId,
+          householdId: household.householdId,
           action: household.syncAction,
         });
+
+        summary.success += 1;
+        summary.items.push({
+          id: household.localId,
+          label,
+          status: "SUCCESS",
+        });
       } catch (error: any) {
-        //  If session expired → stop whole sync
+        // If session expired → stop whole sync
         if (error?.message === "SESSION_EXPIRED") {
           throw error;
         }
 
-        await AppLogger.log("ERROR", "Household sync failed.", {
+        const reason = getSafeSyncReason(error);
+
+        await AppLogger.log("ERROR", "[HOUSEHOLD][FAIL]", {
           localId: household.localId,
+          householdId: household.householdId,
+          action: household.syncAction,
           message: error?.message,
           status: error?.response?.status,
-          response: error?.response?.data,
+          reason,
         });
 
         await this.householdRepo.markFailed(household.localId);
+
+        summary.failed += 1;
+        summary.items.push({
+          id: household.localId,
+          label,
+          status: "FAILED",
+          reason,
+        });
       }
     }
-    await AppLogger.log("SYNC", "Sync completed", {
-      processed: pendingHouseholds.length,
+
+    await AppLogger.log("SYNC", "[HOUSEHOLD][END]", {
+      total: summary.total,
+      success: summary.success,
+      failed: summary.failed,
+      skipped: summary.skipped,
     });
+
+    return summary;
   }
 
   // Insert flow - household must not exist and server generates householdId
   private async syncInsert(household: HouseholdLocal): Promise<void> {
     if (!household.idofCHW) {
-      await AppLogger.log("ERROR", "Missing idofCHW during syncInsert", {
+      await AppLogger.log("ERROR", "[HOUSEHOLD][INSERT_ABORT_NO_CHW_ID]", {
         localId: household.localId,
       });
+
       throw new Error("INVALID_STATE_NO_CHW_ID");
     }
+
     const session = await loadAuthSession();
 
     const payload: InsertHouseholdPayload = {
-      // dateofListingAD: formatForApi(household.dateoflistingAD),
       dateofListingAD: household.dateoflistingAD,
       idofCHW: household.idofCHW,
       provinceCode: String(household.provinceCode),
@@ -128,10 +162,19 @@ export class SyncHouseholdUseCase {
       insertUpdate: "I",
     };
 
-    console.log(" INSERT PAYLOAD", JSON.stringify(payload, null, 2));
+    await AppLogger.log("SYNC", "[HOUSEHOLD][INSERT_REQUEST]", {
+      localId: household.localId,
+      address: household.address,
+      wardNo: household.wardNo,
+    });
+
+    if (__DEV__) {
+      console.log("[SYNC][HOUSEHOLD][INSERT_PAYLOAD]", payload);
+    }
+
     const response = await this.householdApi.insertHousehold(payload);
 
-    await AppLogger.log("SYNC_INSERT_SUCCESS", "Insert success", {
+    await AppLogger.log("SYNC", "[HOUSEHOLD][INSERT_SUCCESS]", {
       localId: household.localId,
       serverHouseholdId: response.outHouseholdId,
     });
@@ -140,23 +183,40 @@ export class SyncHouseholdUseCase {
       household.localId,
       response.outHouseholdId,
     );
+
+    await AppLogger.log("SYNC", "[HOUSEHOLD][MARKED_SYNCED]", {
+      localId: household.localId,
+      serverHouseholdId: response.outHouseholdId,
+    });
   }
 
-  // update flow  - household must exist
+  // Update flow - household must exist
   private async syncUpdate(household: HouseholdLocal): Promise<void> {
-    if (__DEV__) console.log(" ENTERING syncUpdate");
+    if (__DEV__) {
+      console.log("[SYNC][HOUSEHOLD][ENTER_UPDATE]", {
+        localId: household.localId,
+        householdId: household.householdId,
+      });
+    }
 
     if (!household.idofCHW) {
-      if (__DEV__) console.log(" idofCHW missing");
-
-      await AppLogger.log("ERROR", "SYNC_ABORT_NULL_IDOFCHW_UPDATE", {
+      await AppLogger.log("ERROR", "[HOUSEHOLD][UPDATE_ABORT_NO_CHW_ID]", {
         localId: household.localId,
+        householdId: household.householdId,
       });
+
       throw new Error("INVALID_STATE_NO_CHW_ID");
     }
 
     if (!household.householdId) {
-      if (__DEV__) console.log(" householdId missing");
+      await AppLogger.log(
+        "ERROR",
+        "[HOUSEHOLD][UPDATE_ABORT_NO_HOUSEHOLD_ID]",
+        {
+          localId: household.localId,
+        },
+      );
+
       throw new Error("Cannot UPDATE household without householdId");
     }
 
@@ -164,7 +224,6 @@ export class SyncHouseholdUseCase {
 
     const payload: UpdateHouseholdPayload = {
       householdId: household.householdId,
-      // dateofListingAD: formatForApi(household.dateoflistingAD),
       dateofListingAD: household.dateoflistingAD,
       idofCHW: household.idofCHW,
       provinceCode: String(household.provinceCode),
@@ -183,18 +242,34 @@ export class SyncHouseholdUseCase {
       insertUpdate: "U",
     };
 
-    if (__DEV__) console.log("UPDATE PAYLOAD:", payload);
+    await AppLogger.log("SYNC", "[HOUSEHOLD][UPDATE_REQUEST]", {
+      localId: household.localId,
+      householdId: household.householdId,
+      address: household.address,
+      wardNo: household.wardNo,
+    });
+
+    if (__DEV__) {
+      console.log("[SYNC][HOUSEHOLD][UPDATE_PAYLOAD]", payload);
+    }
 
     const response = await this.householdApi.updateHousehold(payload);
-    if (__DEV__) console.log("UPDATE RESPONSE:", response);
+
+    if (__DEV__) {
+      console.log("[SYNC][HOUSEHOLD][UPDATE_RESPONSE]", response);
+    }
 
     await this.householdRepo.markSynced(
       household.localId,
       household.householdId,
     );
 
-    if (__DEV__) console.log(" AFTER markSynced");
-    await AppLogger.log("SYNC_UPDATE_SUCCESS", "Update success", {
+    await AppLogger.log("SYNC", "[HOUSEHOLD][UPDATE_SUCCESS]", {
+      localId: household.localId,
+      serverHouseholdId: household.householdId,
+    });
+
+    await AppLogger.log("SYNC", "[HOUSEHOLD][MARKED_SYNCED]", {
       localId: household.localId,
       serverHouseholdId: household.householdId,
     });

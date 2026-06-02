@@ -22,6 +22,46 @@ import {
 import type { HouseholdMemberLocal } from "@/src/models/householdMember.model";
 import type { HouseholdLocal } from "@/src/models/household.model";
 import { FEATURES } from "@/src/config/features";
+import {
+  getSurveyStatusForMember,
+  SurveyMemberDisplayStatus,
+} from "@/src/utils/getSurveyStatusForMember";
+
+function getSurveyStatusUI(status?: SurveyMemberDisplayStatus) {
+  switch (status) {
+    case "IN_PROGRESS":
+      return {
+        label: "In Progress",
+        bg: "bg-blue-100",
+        text: "text-blue-700",
+        button: "Continue Survey",
+      };
+
+    case "READY_TO_SYNC":
+      return {
+        label: "Saved Locally",
+        bg: "bg-yellow-100",
+        text: "text-yellow-700",
+        button: "Review Survey",
+      };
+
+    case "SYNCED":
+      return {
+        label: "Synced",
+        bg: "bg-green-100",
+        text: "text-green-700",
+        button: "Review Survey",
+      };
+
+    default:
+      return {
+        label: "Not Started",
+        bg: "bg-gray-100",
+        text: "text-gray-600",
+        button: "Start Survey",
+      };
+  }
+}
 
 export default function MembersListScreen() {
   const router = useRouter();
@@ -34,6 +74,10 @@ export default function MembersListScreen() {
   const [loading, setLoading] = useState(true);
   const [creatingMember, setCreatingMember] = useState(false);
 
+  const [surveyStatuses, setSurveyStatuses] = useState<
+    Record<string, SurveyMemberDisplayStatus>
+  >({});
+
   const loadData = useCallback(async () => {
     if (!householdLocalId) return;
 
@@ -41,6 +85,21 @@ export default function MembersListScreen() {
 
     const list =
       await householdMemberLocalRepository.listByHousehold(householdLocalId);
+
+    // setHousehold(hh);
+    // setMembers(list);
+    // setLoading(false);
+    const statusEntries = await Promise.all(
+      list.map(async (member) => {
+        const surveyMemberId = member.clientNo || member.localId;
+
+        const status = await getSurveyStatusForMember(surveyMemberId);
+
+        return [member.localId, status] as const;
+      }),
+    );
+
+    setSurveyStatuses(Object.fromEntries(statusEntries));
 
     setHousehold(hh);
     setMembers(list);
@@ -181,124 +240,145 @@ export default function MembersListScreen() {
           ListEmptyComponent={
             <Text className="text-gray-500">No members added yet.</Text>
           }
-          renderItem={({ item }) => (
-            <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
-              {/* TOP ROW */}
-              <View className="flex-row justify-between items-start">
-                <View className="flex-1">
+          renderItem={({ item }) => {
+            const surveyStatus = surveyStatuses[item.localId];
+
+            const surveyUI = getSurveyStatusUI(surveyStatus);
+
+            return (
+              <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
+                {/* TOP ROW */}
+                <View className="flex-row justify-between items-start">
+                  <View className="flex-1">
+                    <Pressable
+                      onPress={() =>
+                        router.push(
+                          `/households/${householdLocalId}/members/${item.localId}`,
+                        )
+                      }
+                    >
+                      <Text className="font-semibold text-lg">
+                        {item.firstName ?? "Unnamed Member"}
+                      </Text>
+
+                      {item.headHousehold === "Y" && (
+                        <Text className="text-green-600 text-sm">
+                          Head of Household
+                        </Text>
+                      )}
+
+                      <View
+                        className={`px-2 py-1 rounded-full self-start mt-1 ${
+                          item.syncStatus === "SYNCED"
+                            ? "bg-green-100"
+                            : item.syncStatus === "PENDING"
+                              ? "bg-yellow-100"
+                              : item.syncStatus === "FAILED"
+                                ? "bg-red-100"
+                                : "bg-gray-100"
+                        }`}
+                      >
+                        <Text
+                          className={`text-xs font-medium ${
+                            item.syncStatus === "SYNCED"
+                              ? "text-green-700"
+                              : item.syncStatus === "PENDING"
+                                ? "text-yellow-700"
+                                : item.syncStatus === "FAILED"
+                                  ? "text-red-700"
+                                  : "text-gray-600"
+                          }`}
+                        >
+                          {item.syncStatus}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  </View>
+
+                  {household?.syncStatus !== "SYNCED" && (
+                    <Pressable
+                      onPress={() =>
+                        Alert.alert("Member Options", "", [
+                          {
+                            text: "Delete",
+                            style: "destructive",
+                            onPress: () => handleDelete(item),
+                          },
+                          {
+                            text: "Cancel",
+                            style: "cancel",
+                          },
+                        ])
+                      }
+                      className="px-2 py-1"
+                    >
+                      <Text style={{ fontSize: 18 }}>⋮</Text>
+                    </Pressable>
+                  )}
+                </View>
+
+                {/* Survey status */}
+                <View className="mt-3">
+                  <Text className="text-xs text-gray-500">Survey Status</Text>
+
+                  <View
+                    className={`self-start mt-1 rounded-full px-3 py-1 ${surveyUI.bg}`}
+                  >
+                    <Text className={`text-xs font-medium ${surveyUI.text}`}>
+                      {surveyUI.label}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* 🔥 NEW ACTION BUTTONS */}
+                <View className="flex-row mt-3 gap-2">
+                  {/* Edit Button */}
                   <Pressable
                     onPress={() =>
                       router.push(
                         `/households/${householdLocalId}/members/${item.localId}`,
                       )
                     }
+                    className="flex-1 py-2 bg-gray-200 rounded-lg"
                   >
-                    <Text className="font-semibold text-lg">
-                      {item.firstName ?? "Unnamed Member"}
-                    </Text>
+                    <Text className="text-center text-sm">Edit</Text>
+                  </Pressable>
 
-                    {item.headHousehold === "Y" && (
-                      <Text className="text-green-600 text-sm">
-                        Head of Household
-                      </Text>
-                    )}
-
-                    <View
-                      className={`px-2 py-1 rounded-full self-start mt-1 ${
-                        item.syncStatus === "SYNCED"
-                          ? "bg-green-100"
-                          : item.syncStatus === "PENDING"
-                            ? "bg-yellow-100"
-                            : item.syncStatus === "FAILED"
-                              ? "bg-red-100"
-                              : "bg-gray-100"
-                      }`}
+                  {/* Survey Button */}
+                  {FEATURES.SURVEY_ENABLED ? (
+                    <Pressable
+                      onPress={() =>
+                        router.push({
+                          pathname: "/(app)/survey",
+                          params: {
+                            memberId: item.localId,
+                            householdId: householdLocalId,
+                            surveyType: "client",
+                          },
+                        })
+                      }
+                      className="flex-1 py-2 bg-purple-600 rounded-lg"
                     >
-                      <Text
-                        className={`text-xs font-medium ${
-                          item.syncStatus === "SYNCED"
-                            ? "text-green-700"
-                            : item.syncStatus === "PENDING"
-                              ? "text-yellow-700"
-                              : item.syncStatus === "FAILED"
-                                ? "text-red-700"
-                                : "text-gray-600"
-                        }`}
-                      >
-                        {item.syncStatus}
+                      <Text className="text-white text-center text-sm">
+                        {/* Survey */}
+                        {surveyUI.button}
                       </Text>
-                    </View>
-                  </Pressable>
+                    </Pressable>
+                  ) : (
+                    <Pressable
+                      onPress={() => alert("Survey feature coming soon")}
+                      className="flex-1 py-2 bg-gray-400 rounded-lg"
+                    >
+                      <Text className="text-white text-center text-sm">
+                        {/* Survey */}
+                        {surveyUI.button}
+                      </Text>
+                    </Pressable>
+                  )}
                 </View>
-
-                {household?.syncStatus !== "SYNCED" && (
-                  <Pressable
-                    onPress={() =>
-                      Alert.alert("Member Options", "", [
-                        {
-                          text: "Delete",
-                          style: "destructive",
-                          onPress: () => handleDelete(item),
-                        },
-                        {
-                          text: "Cancel",
-                          style: "cancel",
-                        },
-                      ])
-                    }
-                    className="px-2 py-1"
-                  >
-                    <Text style={{ fontSize: 18 }}>⋮</Text>
-                  </Pressable>
-                )}
               </View>
-
-              {/* 🔥 NEW ACTION BUTTONS */}
-              <View className="flex-row mt-3 gap-2">
-                {/* Edit Button */}
-                <Pressable
-                  onPress={() =>
-                    router.push(
-                      `/households/${householdLocalId}/members/${item.localId}`,
-                    )
-                  }
-                  className="flex-1 py-2 bg-gray-200 rounded-lg"
-                >
-                  <Text className="text-center text-sm">Edit</Text>
-                </Pressable>
-
-                {/* Survey Button */}
-                {FEATURES.SURVEY_ENABLED ? (
-                  <Pressable
-                    onPress={() =>
-                      router.push({
-                        pathname: "/(app)/survey",
-                        params: {
-                          memberId: item.localId,
-                          householdId: householdLocalId,
-                          surveyType: "client",
-                        },
-                      })
-                    }
-                    className="flex-1 py-2 bg-purple-600 rounded-lg"
-                  >
-                    <Text className="text-white text-center text-sm">
-                      Survey
-                    </Text>
-                  </Pressable>
-                ) : (
-                  <Pressable
-                    onPress={() => alert("Survey feature coming soon")}
-                    className="flex-1 py-2 bg-gray-400 rounded-lg"
-                  >
-                    <Text className="text-white text-center text-sm">
-                      Survey
-                    </Text>
-                  </Pressable>
-                )}
-              </View>
-            </View>
-          )}
+            );
+          }}
         />
 
         {household?.syncStatus !== "SYNCED" && (

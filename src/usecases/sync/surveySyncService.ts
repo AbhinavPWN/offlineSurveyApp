@@ -15,6 +15,12 @@ import { AppLogger } from "@/src/utils/AppLogger";
 import { deriveSurveySections } from "@/src/features/survey/engine/deriveSurveySections";
 import { mapMemberToSurveyProfile } from "@/src/features/survey/mappers/memberToProfile";
 
+import {
+  SyncEntitySummary,
+  createEmptySyncSummary,
+  getSafeSyncReason,
+} from "./SyncSummary";
+
 // ---------- Utils ----------
 function ensureApiDateFormat(dateStr: string | null): string {
   if (!dateStr) return "";
@@ -24,11 +30,25 @@ function ensureApiDateFormat(dateStr: string | null): string {
   }
 
   const d = new Date(dateStr);
+
+  if (Number.isNaN(d.getTime())) {
+    return "";
+  }
+
   const day = String(d.getDate()).padStart(2, "0");
   const month = d.toLocaleString("en-US", { month: "short" }).toUpperCase();
   const year = d.getFullYear();
 
   return `${day}-${month}-${year}`;
+}
+
+function getMemberDisplayName(member: any): string {
+  const name = [member.firstName, member.middleName, member.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  return name || member.clientNo || "Survey";
 }
 
 // ---------- Clean conditional "Others" ----------
@@ -39,6 +59,7 @@ function cleanConditionalOthers(payload: Record<string, any>) {
     result.neonateQ9 = "";
     result.neonateQ9Others = "";
   }
+
   if (result.neonateQ9 !== "6") {
     result.neonateQ9Others = "";
   }
@@ -47,6 +68,7 @@ function cleanConditionalOthers(payload: Record<string, any>) {
     result.postpartumWoQ6 = "";
     result.postpartumWoQ6Others = "";
   }
+
   if (result.postpartumWoQ6 !== "O") {
     result.postpartumWoQ6Others = "";
   }
@@ -55,9 +77,11 @@ function cleanConditionalOthers(payload: Record<string, any>) {
     result.postpartumWoQ11 = "";
     result.postpartumWoQ11Others = "";
   }
+
   if (result.postpartumWoQ11 !== "O") {
     result.postpartumWoQ11Others = "";
   }
+
   // ---------- SOCIAL PROTECTION WOMEN ----------
   if (result.adultFQ2Ans10 !== "Y") {
     result.adultFQ2Others = "";
@@ -67,16 +91,24 @@ function cleanConditionalOthers(payload: Record<string, any>) {
 }
 
 // ---------- Main Sync ----------
-export async function syncPendingSurveys(userId: string) {
+export async function syncPendingSurveys(
+  userId: string,
+): Promise<SyncEntitySummary> {
   const pending = await surveySQLite.getPendingSurveysForSync();
+
+  const summary = createEmptySyncSummary();
+  summary.total = pending.length;
 
   await AppLogger.log("SYNC", "[SURVEY][START]", {
     totalPending: pending.length,
+    userId,
   });
 
-  console.log("[SYNC][START]", {
-    totalPending: pending.length,
-  });
+  if (__DEV__) {
+    console.log("[SYNC][SURVEY][START]", {
+      totalPending: pending.length,
+    });
+  }
 
   const api = BaseApiClient.getInstance();
 
@@ -88,30 +120,61 @@ export async function syncPendingSurveys(userId: string) {
 
     await AppLogger.log("SYNC", "[SURVEY][PROCESSING]", {
       surveyId: survey.surveyId,
+      memberId: survey.memberId,
+      householdId: survey.householdId,
+      surveyDate: survey.surveyDate,
     });
+
+    if (__DEV__) {
+      console.log("[SYNC][SURVEY][PROCESSING]", {
+        surveyId: survey.surveyId,
+        memberId: survey.memberId,
+        householdId: survey.householdId,
+        rawDate: survey.surveyDate,
+      });
+    }
 
     const member = await householdMemberLocalRepository.getByClientNo(
       survey.memberId,
     );
 
     if (!member) {
+      const reason = "Member record not found for this survey.";
+
       await AppLogger.log("ERROR", "[SURVEY][MEMBER_NOT_FOUND]", {
         surveyId: survey.surveyId,
         memberId: survey.memberId,
+        householdId: survey.householdId,
+        reason,
       });
 
-      console.error("[SYNC][ERROR] Member not found", {
-        surveyId: survey.surveyId,
-        memberId: survey.memberId,
-      });
+      if (__DEV__) {
+        console.error("[SYNC][SURVEY][MEMBER_NOT_FOUND]", {
+          surveyId: survey.surveyId,
+          memberId: survey.memberId,
+          householdId: survey.householdId,
+        });
+      }
 
       failCount++;
+      summary.failed += 1;
+      summary.items.push({
+        id: survey.surveyId,
+        label: `Survey ${survey.surveyId}`,
+        status: "FAILED",
+        reason,
+      });
+
       continue;
     }
 
-    console.log("[SYNC][SURVEY_START]", {
+    const memberLabel = getMemberDisplayName(member);
+
+    await AppLogger.log("SYNC", "[SURVEY][MEMBER_FOUND]", {
       surveyId: survey.surveyId,
-      rawDate: survey.surveyDate,
+      memberId: survey.memberId,
+      memberLocalId: member.localId,
+      clientNo: member.clientNo,
     });
 
     const profile = mapMemberToSurveyProfile({
@@ -127,15 +190,27 @@ export async function syncPendingSurveys(userId: string) {
     });
 
     try {
+      if (__DEV__) {
+        console.log("[SYNC][SURVEY][PROFILE]", {
+          surveyId: survey.surveyId,
+          profile,
+        });
+      }
+
       // ---------- Detect Sections ----------
-      // const sections = detectSectionsFromAnswers(answers);
-      console.log("[SYNC][PROFILE]", profile);
       const sections = deriveSurveySections(profile, answers);
-      console.log("[SYNC][DERIVED_SECTIONS]", {
+
+      await AppLogger.log("SYNC", "[SURVEY][SECTIONS_DERIVED]", {
         surveyId: survey.surveyId,
         sections,
       });
-      console.log("[SYNC][ACTIVE_SECTIONS]", sections);
+
+      if (__DEV__) {
+        console.log("[SYNC][SURVEY][DERIVED_SECTIONS]", {
+          surveyId: survey.surveyId,
+          sections,
+        });
+      }
 
       // ---------- Build FULL Payload ----------
       let payload: Record<string, any> = {
@@ -157,81 +232,142 @@ export async function syncPendingSurveys(userId: string) {
         insertUpdate: "I",
       };
 
-      // ---------- DEBUG ----------
-      console.log("[SYNC][PAYLOAD_META]", {
+      const payloadMeta = {
         surveyId: survey.surveyId,
+        householdId: survey.householdId,
+        clientNo: survey.memberId,
         sections,
         totalKeys: Object.keys(payload).length,
-      });
+      };
 
-      console.log("[SYNC][IDENTIFIERS]", {
-        householdId: survey.householdId,
-        memberId: survey.memberId,
-      });
+      await AppLogger.log("SYNC_DEBUG", "[SURVEY][PAYLOAD_READY]", payloadMeta);
+
+      if (__DEV__) {
+        console.log("[SYNC][SURVEY][PAYLOAD_META]", payloadMeta);
+        console.log("[SYNC][SURVEY][IDENTIFIERS]", {
+          householdId: survey.householdId,
+          memberId: survey.memberId,
+        });
+      }
 
       const analysis = analyzeSurveyPayload(payload);
-      console.log("[PAYLOAD][ANALYSIS]", analysis);
+
+      if (__DEV__) {
+        console.log("[PAYLOAD][ANALYSIS]", {
+          surveyId: survey.surveyId,
+          analysis,
+        });
+      }
 
       const validationErrors = validateSurveyPayload(payload);
 
       if (validationErrors.length > 0) {
         await AppLogger.log("WARN", "[SURVEY][VALIDATION_ERRORS]", {
           surveyId: survey.surveyId,
+          householdId: survey.householdId,
+          memberId: survey.memberId,
+          errorCount: validationErrors.length,
           errors: validationErrors,
         });
 
-        console.warn("[PAYLOAD][VALIDATION_ERRORS]", {
-          surveyId: survey.surveyId,
-          errors: validationErrors,
-        });
+        if (__DEV__) {
+          console.warn("[PAYLOAD][VALIDATION_ERRORS]", {
+            surveyId: survey.surveyId,
+            errors: validationErrors,
+          });
+        }
       } else {
-        console.log("[PAYLOAD][VALIDATION_OK]", {
+        await AppLogger.log("SYNC", "[SURVEY][VALIDATION_OK]", {
           surveyId: survey.surveyId,
+          totalKeys: Object.keys(payload).length,
         });
+
+        if (__DEV__) {
+          console.log("[PAYLOAD][VALIDATION_OK]", {
+            surveyId: survey.surveyId,
+          });
+        }
       }
 
-      logPayloadDebug(payload);
-
-      console.log("[SYNC][FINAL_PAYLOAD]", JSON.stringify(payload, null, 2));
-
-      await AppLogger.log("SYNC_DEBUG", "[SURVEY][PAYLOAD_READY]", {
-        surveyId: survey.surveyId,
-      });
+      if (__DEV__) {
+        logPayloadDebug(payload);
+        console.log(
+          "[SYNC][SURVEY][FINAL_PAYLOAD]",
+          JSON.stringify(payload, null, 2),
+        );
+      }
 
       // ---------- API CALL ----------
+      await AppLogger.log("SYNC", "[SURVEY][API_REQUEST]", {
+        surveyId: survey.surveyId,
+        endpoint: "/Household_Member_Survey_Entry",
+        householdId: survey.householdId,
+        clientNo: survey.memberId,
+      });
+
       const response = await api.post(
         "/Household_Member_Survey_Entry",
         payload,
       );
 
-      console.log("[SYNC][API_SUCCESS]", {
+      await AppLogger.log("SYNC", "[SURVEY][API_SUCCESS]", {
         surveyId: survey.surveyId,
         status: response.status,
-        data: response.data,
       });
+
+      if (__DEV__) {
+        console.log("[SYNC][SURVEY][API_SUCCESS]", {
+          surveyId: survey.surveyId,
+          status: response.status,
+          data: response.data,
+        });
+      }
 
       await surveySQLite.markSurveySynced(survey.surveyId);
 
-      await AppLogger.log("SYNC", "[SURVEY][SUCCESS]", {
+      await AppLogger.log("SYNC", "[SURVEY][MARKED_SYNCED]", {
         surveyId: survey.surveyId,
       });
 
       successCount++;
+      summary.success += 1;
+      summary.items.push({
+        id: survey.surveyId,
+        label: memberLabel,
+        status: "SUCCESS",
+      });
     } catch (error: any) {
       failCount++;
 
+      const reason = getSafeSyncReason(error);
+
       await AppLogger.log("ERROR", "[SURVEY][FAIL]", {
         surveyId: survey.surveyId,
+        memberId: survey.memberId,
+        householdId: survey.householdId,
         message: error?.message,
         status: error?.response?.status,
-        data: error?.response?.data,
+        reason,
       });
 
-      console.error("[SYNC][FAILED]", {
-        surveyId: survey.surveyId,
-        message: error?.message,
-        status: error?.response?.status,
-        data: error?.response?.data,
+      if (__DEV__) {
+        console.error("[SYNC][SURVEY][FAILED]", {
+          surveyId: survey.surveyId,
+          memberId: survey.memberId,
+          householdId: survey.householdId,
+          message: error?.message,
+          status: error?.response?.status,
+          data: error?.response?.data,
+          reason,
+        });
+      }
+
+      summary.failed += 1;
+      summary.items.push({
+        id: survey.surveyId,
+        label: memberLabel,
+        status: "FAILED",
+        reason,
       });
     }
   }
@@ -240,11 +376,17 @@ export async function syncPendingSurveys(userId: string) {
     total: pending.length,
     success: successCount,
     failed: failCount,
+    summary,
   });
 
-  console.log("[SYNC][SUMMARY]", {
-    total: pending.length,
-    success: successCount,
-    failed: failCount,
-  });
+  if (__DEV__) {
+    console.log("[SYNC][SURVEY][SUMMARY]", {
+      total: pending.length,
+      success: successCount,
+      failed: failCount,
+      summary,
+    });
+  }
+
+  return summary;
 }

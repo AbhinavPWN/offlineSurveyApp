@@ -4,18 +4,63 @@ import { syncPendingSurveys } from "./surveySyncService";
 import { SyncContextGuard } from "./SyncContextGuard";
 import { AppLogger } from "@/src/utils/AppLogger";
 
-//  NEW TYPES
-export type SyncStep = "HOUSEHOLD" | "MEMBER" | "SURVEY";
+import {
+  SyncStep,
+  SyncStepStatus,
+  SyncEntitySummary,
+  createEmptySyncSummary,
+  getSafeSyncReason,
+  getStepStatus,
+} from "./SyncSummary";
 
 export type SyncStepResult = {
   step: SyncStep;
-  status: "SUCCESS" | "FAILED";
+  status: SyncStepStatus;
   message?: string;
+  summary: SyncEntitySummary;
 };
 
 export type GlobalSyncResult = {
   steps: SyncStepResult[];
 };
+
+function createFailedStepSummary(params: {
+  id: string;
+  label: string;
+  reason: string;
+}): SyncEntitySummary {
+  return {
+    total: 1,
+    success: 0,
+    failed: 1,
+    skipped: 0,
+    items: [
+      {
+        id: params.id,
+        label: params.label,
+        status: "FAILED",
+        reason: params.reason,
+      },
+    ],
+  };
+}
+
+/**
+ * Temporary compatibility helper.
+ *
+ * Right now some old sync functions may still return void.
+ * After we update SyncHouseholdUseCase, SyncMemberUseCase,
+ * and syncPendingSurveys, they will return real summaries.
+ */
+function normalizeSummary(
+  summary: SyncEntitySummary | void | undefined,
+): SyncEntitySummary {
+  if (!summary) {
+    return createEmptySyncSummary();
+  }
+
+  return summary;
+}
 
 export class GlobalSyncUseCase {
   constructor(
@@ -38,11 +83,40 @@ export class GlobalSyncUseCase {
           chwUsername,
         });
 
+        const offlineReason = "No internet connection.";
+
         return {
           steps: [
-            { step: "HOUSEHOLD", status: "FAILED", message: "Offline" },
-            { step: "MEMBER", status: "FAILED", message: "Offline" },
-            { step: "SURVEY", status: "FAILED", message: "Offline" },
+            {
+              step: "HOUSEHOLD",
+              status: "FAILED",
+              message: offlineReason,
+              summary: createFailedStepSummary({
+                id: "HOUSEHOLD_OFFLINE",
+                label: "Households",
+                reason: offlineReason,
+              }),
+            },
+            {
+              step: "MEMBER",
+              status: "FAILED",
+              message: offlineReason,
+              summary: createFailedStepSummary({
+                id: "MEMBER_OFFLINE",
+                label: "Members",
+                reason: offlineReason,
+              }),
+            },
+            {
+              step: "SURVEY",
+              status: "FAILED",
+              message: offlineReason,
+              summary: createFailedStepSummary({
+                id: "SURVEY_OFFLINE",
+                label: "Surveys",
+                reason: offlineReason,
+              }),
+            },
           ],
         };
       }
@@ -66,23 +140,41 @@ export class GlobalSyncUseCase {
     try {
       await AppLogger.log("SYNC", "[HOUSEHOLD][START]");
 
-      await this.syncHouseholdUseCase.execute(chwUsername);
+      const householdSummary = normalizeSummary(
+        await this.syncHouseholdUseCase.execute(chwUsername),
+      );
 
-      await AppLogger.log("SYNC", "[HOUSEHOLD][SUCCESS]");
+      const householdStatus = getStepStatus(householdSummary);
+
+      await AppLogger.log("SYNC", "[HOUSEHOLD][END]", {
+        status: householdStatus,
+        summary: householdSummary,
+      });
 
       results.push({
         step: "HOUSEHOLD",
-        status: "SUCCESS",
+        status: householdStatus,
+        summary: householdSummary,
       });
     } catch (error: any) {
+      const reason = getSafeSyncReason(error);
+
       await AppLogger.log("ERROR", "[HOUSEHOLD][FAIL]", {
         message: error?.message,
+        reason,
+      });
+
+      const summary = createFailedStepSummary({
+        id: "HOUSEHOLD_SYNC",
+        label: "Households",
+        reason,
       });
 
       results.push({
         step: "HOUSEHOLD",
         status: "FAILED",
-        message: error?.message,
+        message: reason,
+        summary,
       });
     }
 
@@ -92,23 +184,41 @@ export class GlobalSyncUseCase {
     try {
       await AppLogger.log("SYNC", "[MEMBER][START]");
 
-      await this.syncMembersUseCase.execute(chwUsername);
+      const memberSummary = normalizeSummary(
+        await this.syncMembersUseCase.execute(chwUsername),
+      );
 
-      await AppLogger.log("SYNC", "[MEMBER][SUCCESS]");
+      const memberStatus = getStepStatus(memberSummary);
+
+      await AppLogger.log("SYNC", "[MEMBER][END]", {
+        status: memberStatus,
+        summary: memberSummary,
+      });
 
       results.push({
         step: "MEMBER",
-        status: "SUCCESS",
+        status: memberStatus,
+        summary: memberSummary,
       });
     } catch (error: any) {
+      const reason = getSafeSyncReason(error);
+
       await AppLogger.log("ERROR", "[MEMBER][FAIL]", {
         message: error?.message,
+        reason,
+      });
+
+      const summary = createFailedStepSummary({
+        id: "MEMBER_SYNC",
+        label: "Members",
+        reason,
       });
 
       results.push({
         step: "MEMBER",
         status: "FAILED",
-        message: error?.message,
+        message: reason,
+        summary,
       });
     }
 
@@ -118,23 +228,41 @@ export class GlobalSyncUseCase {
     try {
       await AppLogger.log("SYNC", "[SURVEY][START]");
 
-      await syncPendingSurveys(chwUsername);
+      const surveySummary = normalizeSummary(
+        await syncPendingSurveys(chwUsername),
+      );
 
-      await AppLogger.log("SYNC", "[SURVEY][SUCCESS]");
+      const surveyStatus = getStepStatus(surveySummary);
+
+      await AppLogger.log("SYNC", "[SURVEY][END]", {
+        status: surveyStatus,
+        summary: surveySummary,
+      });
 
       results.push({
         step: "SURVEY",
-        status: "SUCCESS",
+        status: surveyStatus,
+        summary: surveySummary,
       });
     } catch (error: any) {
+      const reason = getSafeSyncReason(error);
+
       await AppLogger.log("ERROR", "[SURVEY][FAIL]", {
         message: error?.message,
+        reason,
+      });
+
+      const summary = createFailedStepSummary({
+        id: "SURVEY_SYNC",
+        label: "Surveys",
+        reason,
       });
 
       results.push({
         step: "SURVEY",
         status: "FAILED",
-        message: error?.message,
+        message: reason,
+        summary,
       });
     }
 
