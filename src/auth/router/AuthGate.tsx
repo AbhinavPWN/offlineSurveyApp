@@ -72,7 +72,9 @@ export default function AuthGate() {
         }}
       >
         <Pressable onPress={handleVersionPress}>
-          <Text style={{ fontSize: 12, color: "#9ca3af" }}>Version 1.5.2</Text>
+          <Text style={{ fontSize: 12, color: "#9ca3af" }}>
+            Version 1.0.6.2{" "}
+          </Text>
         </Pressable>
       </View>
 

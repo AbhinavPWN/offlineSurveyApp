@@ -300,9 +300,55 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
     { step: string; status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" }[]
   >([]);
 
-  const handleLogout = async () => {
-    await logout();
-    // router.replace("/login");
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Logging out will remove offline access on this device. You will need internet to login again.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            const netState = await NetInfo.fetch();
+
+            const hasConfirmedInternet =
+              netState.isConnected === true &&
+              netState.isInternetReachable === true;
+
+            if (!hasConfirmedInternet) {
+              Alert.alert(
+                "Offline Logout Disabled",
+                "You are currently offline. To protect field work, logout is disabled while offline. Please continue using the app and unlock with your PIN when needed.",
+              );
+              return;
+            }
+
+            Alert.alert(
+              "Confirm Logout",
+              "Are you sure you want to logout? You will need internet to login again.",
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel",
+                },
+                {
+                  text: "Yes, Logout",
+                  style: "destructive",
+                  onPress: async () => {
+                    await logout();
+                    router.replace("/login");
+                  },
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
   };
 
   // Check CONNECTIVITY

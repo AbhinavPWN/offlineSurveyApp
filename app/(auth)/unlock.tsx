@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/src/auth/context/useAuth";
 import { useState, useRef, useEffect } from "react";
 import { useRouter, Stack } from "expo-router";
+import NetInfo from "@react-native-community/netinfo";
 
 export default function UnlockScreen() {
   const router = useRouter();
@@ -29,17 +30,48 @@ export default function UnlockScreen() {
   }, []);
 
   const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          await logout();
-          router.replace("/login");
+    Alert.alert(
+      "Logout",
+      "Logging out will remove offline access on this device. You will need internet to login again.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            const netState = await NetInfo.fetch();
+
+            const isOnline =
+              netState.isConnected === true &&
+              netState.isInternetReachable !== false;
+
+            if (!isOnline) {
+              Alert.alert(
+                "Offline Logout Disabled",
+                "You are currently offline. To protect field work, logout is disabled while offline. Please unlock using your PIN.",
+              );
+              return;
+            }
+
+            Alert.alert(
+              "Confirm Logout",
+              "Are you sure? After logout, you must login again using internet.",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Yes, Logout",
+                  style: "destructive",
+                  onPress: async () => {
+                    await logout();
+                    router.replace("/login");
+                  },
+                },
+              ],
+            );
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   async function handleUnlock() {

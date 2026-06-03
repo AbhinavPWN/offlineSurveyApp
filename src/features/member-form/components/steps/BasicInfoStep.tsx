@@ -144,7 +144,7 @@ export const BasicInfoStep = React.memo(function BasicInfoStep({
 
       {/* Client Age */}
       <View ref={registerField("clientAge")} collapsable={false}>
-        <Text className="mb-1 font-medium">Client Age / उमेर *</Text>
+        <Text className="mb-1 font-medium">Client Age (पूरा भएको उमेर)</Text>
 
         <TextInput
           className="border rounded-lg px-3 py-2"

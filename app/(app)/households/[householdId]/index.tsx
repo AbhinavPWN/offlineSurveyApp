@@ -880,8 +880,14 @@ export default function HouseholdDetailScreen() {
             onChange={(value) => setCleanWater(value as "Y" | "N" | "")}
             options={[
               { label: "Select option", value: "" },
-              { label: "Yes", value: "Y" },
-              { label: "No", value: "N" },
+              {
+                label: "Yes - हो",
+                value: "Y",
+              },
+              {
+                label: "No - होइन",
+                value: "N",
+              },
             ]}
             placeholder="Select option"
           />
@@ -897,8 +903,14 @@ export default function HouseholdDetailScreen() {
             onChange={(value) => setSanitation(value as "Y" | "N" | "")}
             options={[
               { label: "Select option", value: "" },
-              { label: "Yes", value: "Y" },
-              { label: "No", value: "N" },
+              {
+                label: "Yes - हो",
+                value: "Y",
+              },
+              {
+                label: "No - होइन",
+                value: "N",
+              },
             ]}
             placeholder="Select option"
           />

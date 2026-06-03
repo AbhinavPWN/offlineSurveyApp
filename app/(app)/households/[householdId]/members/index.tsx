@@ -128,15 +128,49 @@ export default function MembersListScreen() {
     // }
 
     // Rule 2: Prevent exceeding household size
-    const allowedMembers = household.noofHHMembers ?? 0;
+    // const allowedMembers = household.noofHHMembers ?? 0;
+    // const currentMembers = members.length;
+
+    // if (currentMembers >= allowedMembers) {
+    //   Alert.alert(
+    //     "Member Limit Reached",
+    //     `This household is limited to ${allowedMembers} members.`,
+    //   );
+    //   return;
+    // }
+    const rawAllowedMembers = household.noofHHMembers;
+
+    const allowedMembers =
+      typeof rawAllowedMembers === "number"
+        ? rawAllowedMembers
+        : Number(rawAllowedMembers);
+
     const currentMembers = members.length;
 
-    if (currentMembers >= allowedMembers) {
-      Alert.alert(
-        "Member Limit Reached",
-        `This household is limited to ${allowedMembers} members.`,
-      );
-      return;
+    console.log("[ADD_MEMBER_LIMIT_DEBUG]", {
+      householdLocalId,
+      householdId: household.householdId,
+      rawAllowedMembers,
+      allowedMembers,
+      currentMembers,
+      householdSyncStatus: household.syncStatus,
+    });
+
+    // Only apply limit if household member count is valid
+    if (Number.isFinite(allowedMembers) && allowedMembers > 0) {
+      if (currentMembers >= allowedMembers) {
+        Alert.alert(
+          "Member Limit Reached",
+          `This household is limited to ${allowedMembers} members.`,
+        );
+        return;
+      }
+    } else {
+      console.warn("[ADD_MEMBER_LIMIT_INVALID]", {
+        householdLocalId,
+        rawAllowedMembers,
+        allowedMembers,
+      });
     }
 
     try {
@@ -216,7 +250,7 @@ export default function MembersListScreen() {
           ) : (
             <>
               <Text className="text-gray-600 text-sm">
-                {totalMembers} / {household?.noofHHMembers ?? 0} Members
+                {totalMembers} / {household?.noofHHMembers ?? "?"} Members
               </Text>
 
               <Text

@@ -179,7 +179,7 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
     );
 
     // Maintain aggregate consistency
-    await this.recalculateMemberCount(householdLocalId);
+    // await this.recalculateMemberCount(householdLocalId);
 
     const row = await db.getFirstAsync<any>(
       `
@@ -405,7 +405,7 @@ export class SQLiteHouseholdMemberLocalRepository implements HouseholdMemberLoca
       [new Date().toISOString(), new Date().toISOString(), localId],
     );
 
-    await this.recalculateMemberCount(existing.householdLocalId);
+    // await this.recalculateMemberCount(existing.householdLocalId);
   }
 
   async markAllDraftMembersPending(householdLocalId: string): Promise<void> {

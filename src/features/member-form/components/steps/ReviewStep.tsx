@@ -22,6 +22,7 @@ import {
 } from "../../master/occupationMasterData";
 import { relationToHHOptions } from "../../master/memberMasterData";
 import { HouseholdLocal } from "@/src/models/household.model";
+import { DisabilityType } from "../../master/health.enum";
 
 interface Props {
   form: MemberFormState;
@@ -35,12 +36,36 @@ const Section = ({ title, children }: any) => (
   </View>
 );
 
-const Row = ({ label, value }: { label: string; value: any }) => (
-  <View className="flex-row justify-between">
-    <Text className="text-gray-600">{label}</Text>
-    <Text className="font-medium">{value || "-"}</Text>
-  </View>
-);
+const Row = ({ label, value }: { label: string; value: any }) => {
+  const displayValue =
+    value === null || value === undefined || value === "" ? "-" : value;
+
+  return (
+    <View className="flex-row justify-between">
+      <Text className="text-gray-600">{label}</Text>
+      <Text className="font-medium">{displayValue}</Text>
+    </View>
+  );
+};
+
+const disabilityTypeLabel = (value: string | null | undefined) => {
+  const labels: Record<string, string> = {
+    [DisabilityType.VISION]: "Vision",
+    [DisabilityType.HEARING]: "Hearing",
+    [DisabilityType.MOBILITY]: "Mobility",
+    [DisabilityType.COGNITION]: "Cognition",
+    [DisabilityType.SELF_CARE]: "Self Care",
+    [DisabilityType.COMMUNICATION]: "Communication",
+    [DisabilityType.AFFECT]: "Affect",
+    [DisabilityType.UPPER_BODY]: "Upper Body",
+    [DisabilityType.PAIN]: "Pain",
+    [DisabilityType.FATIGUE]: "Fatigue",
+  };
+
+  if (!value) return "-";
+
+  return labels[value] ?? value;
+};
 
 export const ReviewStep = React.memo(function ReviewStep({
   form,
@@ -52,6 +77,9 @@ export const ReviewStep = React.memo(function ReviewStep({
   // const [issueDistrictLabel, setIssueDistrictLabel] = useState("-");
   const [municipalityLabel, setMunicipalityLabel] = useState("-");
 
+  const calculatedNetWorth =
+    Number(form.totalAsset || 0) - Number(form.totalLiabilities || 0);
+
   useEffect(() => {
     let mounted = true;
 
@@ -59,7 +87,7 @@ export const ReviewStep = React.memo(function ReviewStep({
       try {
         if (!mounted) return;
 
-        // ✅ DISTRICT FROM HOUSEHOLD
+        //  DISTRICT FROM HOUSEHOLD
         if (household.districtCode) {
           const districts = await getAllDistricts();
           const districtMap = new Map(districts.map((d) => [d.id, d.name_en]));
@@ -67,7 +95,7 @@ export const ReviewStep = React.memo(function ReviewStep({
           setDistrictLabel(districtMap.get(household.districtCode) ?? "-");
         }
 
-        // ✅ MUNICIPALITY FROM HOUSEHOLD
+        //  MUNICIPALITY FROM HOUSEHOLD
         if (household.districtCode && household.vdcnpCode) {
           const municipalities = await getMunicipalitiesByDistrict(
             household.districtCode,
@@ -101,10 +129,11 @@ export const ReviewStep = React.memo(function ReviewStep({
         <Row label="Gender" value={genderLabel(form.gender)} />
         <Row label="Mobile" value={form.mobileNo} />
 
-        <Row
+        {/* <Row
           label="DOB (BS)"
           value={form.dob ? convertADToBSISO(form.dob) : "-"}
-        />
+        /> */}
+        <Row label="Client Age" value={form.clientAge} />
 
         <Row
           label="Marital Status"
@@ -169,9 +198,13 @@ export const ReviewStep = React.memo(function ReviewStep({
 
       {/* FINANCIAL */}
       <Section title="Financial">
-        <Row label="Total Asset" value={form.totalAsset} />
-        <Row label="Total Liabilities" value={form.totalLiabilities} />
-        <Row label="Net Worth" value={form.netWorth} />
+        <Row label="Monthly Income (मासिक आय)" value={form.totalAsset} />
+        <Row
+          label="Monthly Expenses (मासिक खर्च)"
+          value={form.totalLiabilities}
+        />
+        <Row label="Monthly Saving (मासिक बचत)" value={calculatedNetWorth} />
+        {/* <Row label="Net Worth" value={form.netWorth} /> */}
 
         {(() => {
           const selectedSOI = [
@@ -227,9 +260,12 @@ export const ReviewStep = React.memo(function ReviewStep({
           value={form.disabilityIdentYn ? "Yes" : "No"}
         />
 
-        {/* {form.disabilityIdentYn && (
-          <Row label="Disability Type" value={form.disabilityIdent || "-"} />
-        )} */}
+        {form.disabilityIdentYn && (
+          <Row
+            label="Disability Type"
+            value={disabilityTypeLabel(form.disabilityIdent)}
+          />
+        )}
 
         {/* <Row label="Disability Status" value={yesNo(form.disabilityStatus)} /> */}
 

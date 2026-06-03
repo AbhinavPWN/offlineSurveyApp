@@ -24,6 +24,12 @@ export const FinancialStep = React.memo(function FinancialStep({
   const calculatedNetWorth =
     Number(form.totalAsset || 0) - Number(form.totalLiabilities || 0);
 
+  React.useEffect(() => {
+    if (form.netWorth !== calculatedNetWorth) {
+      updateField("netWorth", calculatedNetWorth);
+    }
+  }, [calculatedNetWorth, form.netWorth, updateField]);
+
   const incomeOptions = [
     {
       key: "soiSalary",
@@ -57,9 +63,9 @@ export const FinancialStep = React.memo(function FinancialStep({
 
   return (
     <View className="space-y-4">
-      {/* Total Asset */}
+      {/* Monthly Income */}
       <View ref={registerField("totalAsset")} collapsable={false}>
-        <Text className="mb-1 font-medium">Total Asset (कुल सम्पत्ति) *</Text>
+        <Text className="mb-1 font-medium">Monthly Income (मासिक आय) *</Text>
 
         <TextInput
           className="border rounded-lg px-3 py-2"
@@ -68,7 +74,7 @@ export const FinancialStep = React.memo(function FinancialStep({
           onChangeText={(text) =>
             updateField("totalAsset", Number(text.replace(/\D/g, "")))
           }
-          placeholder="Enter total asset"
+          placeholder="Enter monthly income"
         />
       </View>
 
@@ -76,10 +82,10 @@ export const FinancialStep = React.memo(function FinancialStep({
         <Text className="text-red-500 text-xs">{errors.totalAsset}</Text>
       )}
 
-      {/* Total Liabilities */}
+      {/* Monthly Expenses */}
       <View ref={registerField("totalLiabilities")} collapsable={false}>
         <Text className="mb-1 font-medium">
-          Total Liabilities (कुल दायित्व) *
+          Monthly Expenses (मासिक खर्च) *
         </Text>
 
         <TextInput
@@ -89,7 +95,7 @@ export const FinancialStep = React.memo(function FinancialStep({
           onChangeText={(text) =>
             updateField("totalLiabilities", Number(text.replace(/\D/g, "")))
           }
-          placeholder="Enter total liabilities"
+          placeholder="Enter monthly expenses"
         />
       </View>
 
@@ -97,11 +103,9 @@ export const FinancialStep = React.memo(function FinancialStep({
         <Text className="text-red-500 text-xs">{errors.totalLiabilities}</Text>
       )}
 
-      {/* Net Worth (Read Only) */}
+      {/* Monthly Saving (Read Only) */}
       <View>
-        <Text className="mb-1 font-medium">
-          Net Worth (कुल सम्पत्ति - दायित्व)
-        </Text>
+        <Text className="mb-1 font-medium">Monthly Saving (मासिक बचत)</Text>
 
         <TextInput
           className="border rounded-lg px-3 py-2 bg-gray-100"

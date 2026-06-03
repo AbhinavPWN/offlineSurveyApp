@@ -7,6 +7,7 @@ import {
   yesNoOptions,
   difficultyOptions,
 } from "../../master/memberHealthMasterData";
+import { DifficultyLevel, DisabilityType } from "../../master/health.enum";
 
 interface Props {
   form: MemberFormState;
@@ -18,6 +19,59 @@ interface Props {
   registerField: (fieldName: string) => (node: View | null) => void;
 }
 
+const disabilityTypeOptions = [
+  {
+    labelEn: "Vision",
+    labelNp: "दृष्टि सम्बन्धी",
+    value: DisabilityType.VISION,
+  },
+  {
+    labelEn: "Hearing",
+    labelNp: "सुनाइ सम्बन्धी",
+    value: DisabilityType.HEARING,
+  },
+  {
+    labelEn: "Mobility",
+    labelNp: "हिँडडुल सम्बन्धी",
+    value: DisabilityType.MOBILITY,
+  },
+  {
+    labelEn: "Cognition",
+    labelNp: "स्मरण/बुझाइ सम्बन्धी",
+    value: DisabilityType.COGNITION,
+  },
+  {
+    labelEn: "Self Care",
+    labelNp: "आफ्नो हेरचाह सम्बन्धी",
+    value: DisabilityType.SELF_CARE,
+  },
+  {
+    labelEn: "Communication",
+    labelNp: "सञ्चार सम्बन्धी",
+    value: DisabilityType.COMMUNICATION,
+  },
+  {
+    labelEn: "Affect",
+    labelNp: "भावनात्मक/मानसिक",
+    value: DisabilityType.AFFECT,
+  },
+  {
+    labelEn: "Upper Body",
+    labelNp: "माथिल्लो शरीर सम्बन्धी",
+    value: DisabilityType.UPPER_BODY,
+  },
+  {
+    labelEn: "Pain",
+    labelNp: "दुखाइ सम्बन्धी",
+    value: DisabilityType.PAIN,
+  },
+  {
+    labelEn: "Fatigue",
+    labelNp: "थकान सम्बन्धी",
+    value: DisabilityType.FATIGUE,
+  },
+];
+
 export const HealthStep = React.memo(function HealthStep({
   form,
   updateField,
@@ -25,6 +79,47 @@ export const HealthStep = React.memo(function HealthStep({
   registerField,
 }: Props) {
   const isFemale = form.gender === "F";
+
+  const hasFunctionalDifficulty = React.useMemo(() => {
+    const functionalDifficultyValues = [
+      form.seeing,
+      form.hearing,
+      form.walking,
+      form.remembering,
+      form.selfCare,
+      form.communicating,
+    ];
+
+    return functionalDifficultyValues.some(
+      (value) =>
+        value !== null &&
+        value !== undefined &&
+        value !== "" &&
+        value !== DifficultyLevel.NO_DIFFICULTY,
+    );
+  }, [
+    form.seeing,
+    form.hearing,
+    form.walking,
+    form.remembering,
+    form.selfCare,
+    form.communicating,
+  ]);
+
+  React.useEffect(() => {
+    if (form.disabilityIdentYn !== hasFunctionalDifficulty) {
+      updateField("disabilityIdentYn", hasFunctionalDifficulty);
+    }
+
+    if (!hasFunctionalDifficulty && form.disabilityIdent) {
+      updateField("disabilityIdent", "");
+    }
+  }, [
+    hasFunctionalDifficulty,
+    form.disabilityIdentYn,
+    form.disabilityIdent,
+    updateField,
+  ]);
 
   const CheckboxCard = ({
     labelEn,
@@ -143,26 +238,6 @@ export const HealthStep = React.memo(function HealthStep({
         </View>
       </View>
 
-      {/* Disability Identification */}
-      <View
-        className="mt-6"
-        ref={registerField("disabilityIdent")}
-        collapsable={false}
-      >
-        <FormDropdown
-          label="Disability Identified? (अपाङ्गता छ?)"
-          value={form.disabilityIdentYn ? "Y" : "N"}
-          options={yesNoOptions}
-          onChange={(val) => updateField("disabilityIdentYn", val === "Y")}
-        />
-
-        {errors?.disabilityIdent && (
-          <Text className="text-red-500 text-xs mt-1">
-            {errors.disabilityIdent}
-          </Text>
-        )}
-      </View>
-
       {/* Functional Difficulties */}
       <View className="mt-6">
         <Text className="font-medium mb-2">
@@ -224,6 +299,65 @@ export const HealthStep = React.memo(function HealthStep({
         </View>
       </View>
 
+      {/* Auto Disability Identification */}
+      <View
+        className="mt-6"
+        ref={registerField("disabilityIdentYn")}
+        collapsable={false}
+      >
+        <Text className="font-medium mb-1">
+          Disability Identified? (अपाङ्गता छ?)
+        </Text>
+
+        <View
+          className={`border rounded-lg px-3 py-4 ${
+            form.disabilityIdentYn
+              ? "border-green-500 bg-green-50"
+              : "border-gray-300 bg-gray-50"
+          }`}
+        >
+          <Text
+            className={`font-semibold ${
+              form.disabilityIdentYn ? "text-green-700" : "text-gray-700"
+            }`}
+          >
+            {form.disabilityIdentYn ? "Yes" : "No"}
+          </Text>
+
+          <Text className="text-xs text-gray-500 mt-1">
+            Auto-calculated from functional difficulties.
+          </Text>
+        </View>
+
+        {errors?.disabilityIdentYn && (
+          <Text className="text-red-500 text-xs mt-1">
+            {errors.disabilityIdentYn}
+          </Text>
+        )}
+      </View>
+
+      {/* Disability Type */}
+      {form.disabilityIdentYn && (
+        <View
+          className="mt-6"
+          ref={registerField("disabilityIdent")}
+          collapsable={false}
+        >
+          <FormDropdown
+            label="Disability Type (अपाङ्गताको प्रकार)"
+            value={form.disabilityIdent}
+            options={disabilityTypeOptions}
+            onChange={(val) => updateField("disabilityIdent", val)}
+          />
+
+          {errors?.disabilityIdent && (
+            <Text className="text-red-500 text-xs mt-1">
+              {errors.disabilityIdent}
+            </Text>
+          )}
+        </View>
+      )}
+
       {/* Pregnancy */}
       {isFemale && (
         <View className="mt-6">
@@ -268,7 +402,7 @@ export const HealthStep = React.memo(function HealthStep({
           {form.motherofChild && (
             <View ref={registerField("childDob")} collapsable={false}>
               <BSDateInput
-                label="Child Date of Birth (B.S.)"
+                label="Last Menstrual Period (LMP) / गर्भवती महिलाको अन्तिम महिनाबारी (LMP) - (B.S)"
                 adValue={form.childDob}
                 onChangeAD={(adIso) => updateField("childDob", adIso)}
               />
