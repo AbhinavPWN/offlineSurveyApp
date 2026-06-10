@@ -24,5 +24,6 @@
   "files.associations": {
     "*.css": "tailwindcss"
   },
-  "java.compile.nullAnalysis.mode": "disabled"
+  "java.compile.nullAnalysis.mode": "disabled",
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

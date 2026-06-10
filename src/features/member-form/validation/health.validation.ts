@@ -7,6 +7,7 @@ export interface HealthValidationErrors {
   pregnancyDate?: string;
   vaccinationStatus?: string;
   childDob?: string;
+  hasHealthCondition?: string;
 }
 
 export function validateHealthStep(
@@ -14,12 +15,30 @@ export function validateHealthStep(
 ): HealthValidationErrors {
   const errors: HealthValidationErrors = {};
 
-  /**
-   * Health conditions
-   * Not mandatory.
-   * Only validate if "Other" is selected.
-   */
-  if (state.healthConditionsOth && !state.healthConditionsOthers?.trim()) {
+  // For UI only field, not part of actual form state
+  if (!state.hasHealthCondition) {
+    errors.hasHealthCondition =
+      "Please select whether this member has any health condition.";
+  }
+
+  const hasSelectedHealthCondition =
+    state.healthConditionsDia ||
+    state.healthConditionsHyp ||
+    state.healthConditionsCar ||
+    state.healthConditionsChr ||
+    state.healthConditionsOth;
+
+  if (state.hasHealthCondition === "Y" && !hasSelectedHealthCondition) {
+    errors.hasHealthCondition = "Please select at least one health condition.";
+  }
+
+  //  Health conditions Not mandatory. Only validate if "Other" is selected.
+
+  if (
+    state.hasHealthCondition === "Y" &&
+    state.healthConditionsOth &&
+    !state.healthConditionsOthers?.trim()
+  ) {
     errors.healthConditionsOthers = "Please specify other health condition";
   }
 
@@ -65,15 +84,24 @@ export function validateHealthStep(
     }
   }
 
-  /**
-   * Vaccination rule for children (<18)
-   */
-  if (state.dob) {
-    const age = calculateAge(state.dob);
+  // Vaccination rule for children aged 5 or below.Uses clientAge, not DOB.
 
-    if (age < 18 && !state.vaccinationStatus) {
-      errors.vaccinationStatus = "Vaccination status required for children";
-    }
+  const clientAge =
+    state.clientAge !== null &&
+    state.clientAge !== undefined &&
+    state.clientAge !== ""
+      ? Number(state.clientAge)
+      : null;
+
+  const isVaccinationAge =
+    clientAge !== null &&
+    Number.isFinite(clientAge) &&
+    clientAge >= 0 &&
+    clientAge <= 5;
+
+  if (isVaccinationAge && !state.vaccinationStatus) {
+    errors.vaccinationStatus =
+      "Vaccination status is required for children aged 5 or below";
   }
 
   return errors;
@@ -82,7 +110,7 @@ export function validateHealthStep(
 /**
  * Lightweight age calculation
  */
-function calculateAge(isoDate: string): number {
+/*function calculateAge(isoDate: string): number {
   const today = new Date();
   const dob = new Date(isoDate);
 
@@ -95,3 +123,4 @@ function calculateAge(isoDate: string): number {
 
   return age;
 }
+*/

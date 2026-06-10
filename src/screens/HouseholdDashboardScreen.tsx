@@ -24,6 +24,7 @@ import { resolveHouseholdAggregateStatus } from "../utils/resolveHouseholdAggreg
 import { AggregateSyncStatus } from "../models/AggregateSyncStatus";
 import { getAllMunicipalities } from "../repositories/addressRepository";
 // import { getSurveyStatusForHousehold } from "../utils/getSurveyStatusForHousehold";
+import SupportLogButton from "@/src/components/support/SupportLogButton";
 import {
   getSurveyStatusForMember,
   SurveyMemberDisplayStatus,
@@ -340,7 +341,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
                   style: "destructive",
                   onPress: async () => {
                     await logout();
-                    router.replace("/login");
+                    // router.replace("/login");
                   },
                 },
               ],
@@ -947,12 +948,16 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         <View className="flex-row justify-between items-center">
           <Text className="text-2xl font-bold text-gray-900">Households</Text>
 
-          <Pressable
-            onPress={handleLogout}
-            className="bg-red-100 px-3 py-1 rounded-md"
-          >
-            <Text className="text-red-600 text-sm font-medium">Logout</Text>
-          </Pressable>
+          <View className="flex-row items-center gap-3">
+            <SupportLogButton />
+
+            <Pressable
+              onPress={handleLogout}
+              className="border border-red-500 bg-red-50 px-2 py-2 rounded-xl active:bg-red-100"
+            >
+              <Text className="text-red-600 font-semibold">Logout</Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* Subtitle + Action Row */}

@@ -80,6 +80,68 @@ export const HealthStep = React.memo(function HealthStep({
 }: Props) {
   const isFemale = form.gender === "F";
 
+  // For Vaccination
+  const clientAgeNumber =
+    form.clientAge !== null &&
+    form.clientAge !== undefined &&
+    form.clientAge !== ""
+      ? Number(form.clientAge)
+      : null;
+
+  const isVaccinationAge =
+    clientAgeNumber !== null &&
+    Number.isFinite(clientAgeNumber) &&
+    clientAgeNumber >= 0 &&
+    clientAgeNumber <= 5;
+
+  const hasSelectedHealthCondition = React.useMemo(() => {
+    return (
+      form.healthConditionsDia ||
+      form.healthConditionsHyp ||
+      form.healthConditionsCar ||
+      form.healthConditionsChr ||
+      form.healthConditionsOth ||
+      Boolean(form.healthConditionsOthers?.trim())
+    );
+  }, [
+    form.healthConditionsDia,
+    form.healthConditionsHyp,
+    form.healthConditionsCar,
+    form.healthConditionsChr,
+    form.healthConditionsOth,
+    form.healthConditionsOthers,
+  ]);
+
+  const clearHealthConditions = React.useCallback(() => {
+    updateField("healthConditionsDia", false);
+    updateField("healthConditionsHyp", false);
+    updateField("healthConditionsCar", false);
+    updateField("healthConditionsChr", false);
+    updateField("healthConditionsOth", false);
+    updateField("healthConditionsOthers", "");
+  }, [updateField]);
+
+  const handleHasHealthConditionChange = React.useCallback(
+    (value: "Y" | "N") => {
+      updateField("hasHealthCondition", value);
+
+      if (value === "N") {
+        clearHealthConditions();
+      }
+    },
+    [updateField, clearHealthConditions],
+  );
+
+  React.useEffect(() => {
+    if (form.hasHealthCondition === "N" && hasSelectedHealthCondition) {
+      clearHealthConditions();
+    }
+  }, [
+    form.hasHealthCondition,
+    hasSelectedHealthCondition,
+    clearHealthConditions,
+  ]);
+
   const hasFunctionalDifficulty = React.useMemo(() => {
     const functionalDifficultyValues = [
       form.seeing,
@@ -151,91 +213,134 @@ export const HealthStep = React.memo(function HealthStep({
     <View className="space-y-5">
       {/* Health Conditions */}
       <View>
-        <Text className="text-lg font-semibold">Health Conditions</Text>
-
-        <Text className="text-gray-500 mb-2">स्वास्थ्य समस्या</Text>
-
-        <Text className="text-gray-400 text-sm mb-2">
-          Select all that apply
-        </Text>
-
-        <View className="space-y-3">
-          <CheckboxCard
-            labelEn="Diabetes"
-            labelNp="मधुमेह"
-            checked={form.healthConditionsDia}
-            onPress={() =>
-              updateField("healthConditionsDia", !form.healthConditionsDia)
-            }
+        <View ref={registerField("hasHealthCondition")} collapsable={false}>
+          <FormDropdown
+            label="Does this member have any health condition? (के यो सदस्यलाई कुनै स्वास्थ्य समस्या छ?) *"
+            value={form.hasHealthCondition}
+            options={yesNoOptions}
+            onChange={(val) => handleHasHealthConditionChange(val as "Y" | "N")}
           />
 
-          <CheckboxCard
-            labelEn="Hypertension"
-            labelNp="उच्च रक्तचाप"
-            checked={form.healthConditionsHyp}
-            onPress={() =>
-              updateField("healthConditionsHyp", !form.healthConditionsHyp)
-            }
-          />
+          {errors?.hasHealthCondition && (
+            <Text className="text-red-500 text-sm mt-1">
+              {errors.hasHealthCondition}
+            </Text>
+          )}
+        </View>
 
-          <CheckboxCard
-            labelEn="Cardiovascular Disease"
-            labelNp="मुटु सम्बन्धी रोग"
-            checked={form.healthConditionsCar}
-            onPress={() =>
-              updateField("healthConditionsCar", !form.healthConditionsCar)
-            }
-          />
+        {form.hasHealthCondition === "N" && (
+          <View className="border border-green-300 bg-green-50 rounded-lg px-3 py-3 mt-3">
+            <Text className="text-green-700 font-medium">
+              Health condition questions skipped.
+            </Text>
 
-          <CheckboxCard
-            labelEn="Chronic Lung Disease"
-            labelNp="फोक्सो सम्बन्धी पुरानो रोग"
-            checked={form.healthConditionsChr}
-            onPress={() =>
-              updateField("healthConditionsChr", !form.healthConditionsChr)
-            }
-          />
+            <Text className="text-green-600 text-xs mt-1">
+              This member has no reported health condition.
+            </Text>
+          </View>
+        )}
 
-          <CheckboxCard
-            labelEn="Other"
-            labelNp="अन्य"
-            checked={form.healthConditionsOth}
-            onPress={() =>
-              updateField("healthConditionsOth", !form.healthConditionsOth)
-            }
-          />
+        {form.hasHealthCondition === "Y" && (
+          <View className="mt-4">
+            <Text className="text-lg font-semibold">Health Conditions</Text>
 
-          {form.healthConditionsOth && (
-            <View
-              className="mt-2"
-              ref={registerField("healthConditionsOthers")}
-              collapsable={false}
-            >
-              <Text className="text-sm text-gray-500 mb-1">
-                Specify other condition
-              </Text>
+            <Text className="text-gray-500 mb-2">स्वास्थ्य समस्या</Text>
 
-              <TextInput
-                className={`border rounded-lg px-3 py-4 ${
-                  errors?.healthConditionsOthers
-                    ? "border-red-500"
-                    : "border-gray-300"
-                }`}
-                placeholder="Enter condition"
-                value={form.healthConditionsOthers ?? ""}
-                onChangeText={(text) =>
-                  updateField("healthConditionsOthers", text)
+            <Text className="text-gray-400 text-sm mb-2">
+              Select all that apply
+            </Text>
+
+            <View className="space-y-3">
+              <CheckboxCard
+                labelEn="Diabetes"
+                labelNp="मधुमेह"
+                checked={form.healthConditionsDia}
+                onPress={() =>
+                  updateField("healthConditionsDia", !form.healthConditionsDia)
                 }
               />
 
-              {errors?.healthConditionsOthers && (
+              <CheckboxCard
+                labelEn="Hypertension"
+                labelNp="उच्च रक्तचाप"
+                checked={form.healthConditionsHyp}
+                onPress={() =>
+                  updateField("healthConditionsHyp", !form.healthConditionsHyp)
+                }
+              />
+
+              <CheckboxCard
+                labelEn="Cardiovascular Disease"
+                labelNp="मुटु सम्बन्धी रोग"
+                checked={form.healthConditionsCar}
+                onPress={() =>
+                  updateField("healthConditionsCar", !form.healthConditionsCar)
+                }
+              />
+
+              <CheckboxCard
+                labelEn="Chronic Lung Disease"
+                labelNp="फोक्सो सम्बन्धी पुरानो रोग"
+                checked={form.healthConditionsChr}
+                onPress={() =>
+                  updateField("healthConditionsChr", !form.healthConditionsChr)
+                }
+              />
+
+              <CheckboxCard
+                labelEn="Other"
+                labelNp="अन्य"
+                checked={form.healthConditionsOth}
+                onPress={() => {
+                  const nextValue = !form.healthConditionsOth;
+
+                  updateField("healthConditionsOth", nextValue);
+
+                  if (!nextValue) {
+                    updateField("healthConditionsOthers", "");
+                  }
+                }}
+              />
+
+              {errors?.hasHealthCondition && (
                 <Text className="text-red-500 text-sm mt-1">
-                  {errors.healthConditionsOthers}
+                  {errors.hasHealthCondition}
                 </Text>
               )}
+
+              {form.healthConditionsOth && (
+                <View
+                  className="mt-2"
+                  ref={registerField("healthConditionsOthers")}
+                  collapsable={false}
+                >
+                  <Text className="text-sm text-gray-500 mb-1">
+                    Specify other condition
+                  </Text>
+
+                  <TextInput
+                    className={`border rounded-lg px-3 py-4 ${
+                      errors?.healthConditionsOthers
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    placeholder="Enter condition"
+                    value={form.healthConditionsOthers ?? ""}
+                    onChangeText={(text) =>
+                      updateField("healthConditionsOthers", text)
+                    }
+                  />
+
+                  {errors?.healthConditionsOthers && (
+                    <Text className="text-red-500 text-sm mt-1">
+                      {errors.healthConditionsOthers}
+                    </Text>
+                  )}
+                </View>
+              )}
             </View>
-          )}
-        </View>
+          </View>
+        )}
       </View>
 
       {/* Functional Difficulties */}
@@ -371,7 +476,7 @@ export const HealthStep = React.memo(function HealthStep({
           {form.pregnancyStatus === "Y" && (
             <View ref={registerField("pregnancyDate")} collapsable={false}>
               <BSDateInput
-                label="Pregnancy Date (B.S.)"
+                label="Last Menstrual Period (LMP) / गर्भवती महिलाको अन्तिम महिनाबारी (LMP) - (B.S)"
                 adValue={form.pregnancyDate}
                 onChangeAD={(adIso) => updateField("pregnancyDate", adIso)}
               />
@@ -402,7 +507,7 @@ export const HealthStep = React.memo(function HealthStep({
           {form.motherofChild && (
             <View ref={registerField("childDob")} collapsable={false}>
               <BSDateInput
-                label="Last Menstrual Period (LMP) / गर्भवती महिलाको अन्तिम महिनाबारी (LMP) - (B.S)"
+                label="Child Date of Birth (बच्चाको जन्म मिति)"
                 adValue={form.childDob}
                 onChangeAD={(adIso) => updateField("childDob", adIso)}
               />
@@ -417,12 +522,12 @@ export const HealthStep = React.memo(function HealthStep({
         </View>
       )}
 
-      {/* Vaccination */}
-      {form.minorYn && (
+      {/* Vaccination - only for age <= 5 */}
+      {isVaccinationAge && (
         <View ref={registerField("vaccinationStatus")} collapsable={false}>
           <FormDropdown
             label="Vaccination Status (खोप स्थिति)"
-            value={form.vaccinationStatus ?? "N"}
+            value={form.vaccinationStatus}
             options={yesNoOptions}
             onChange={(val) => updateField("vaccinationStatus", val)}
           />

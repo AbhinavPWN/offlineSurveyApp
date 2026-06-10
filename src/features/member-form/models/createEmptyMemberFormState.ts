@@ -6,6 +6,11 @@ export function createEmptyMemberFormState(): MemberFormState {
     // Basic Info
 
     enrollDate: new Date().toISOString().split("T")[0],
+    // UI field only, not part of the actual form state
+    earnsIncome: null,
+    hasHealthCondition: null,
+
+    // Basic Info
     fName: "",
     gender: null,
     maritalStatus: null,

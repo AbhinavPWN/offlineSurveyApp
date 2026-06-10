@@ -87,4 +87,8 @@ export interface MemberFormState {
 
   clientBehaviour: string;
   imagePath: string | null;
+
+  // UI field only
+  earnsIncome: "Y" | "N" | null;
+  hasHealthCondition: "Y" | "N" | null;
 }

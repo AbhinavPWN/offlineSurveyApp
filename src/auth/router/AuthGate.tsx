@@ -3,6 +3,7 @@ import { View, Text, Pressable } from "react-native";
 import { useState } from "react";
 import { useAuth } from "../context/useAuth";
 import SupportPasswordModal from "@/src/components/support/SupportPasswordModal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const SUPPORT_PASSWORD = "9999"; // move to env later if needed
 
@@ -10,18 +11,17 @@ export default function AuthGate() {
   const { state, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-
   const inAuthGroup = segments[0] === "(auth)";
-
   const [tapCount, setTapCount] = useState(0);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const insets = useSafeAreaInsets();
 
-  // ⏳ Still determining auth state
+  //  Still determining auth state
   if (loading) {
     return null; // splash later
   }
 
-  // 🔐 LOGGED OUT → redirect to login
+  //  LOGGED OUT → redirect to login
   if (state === "LOGGED_OUT" && !inAuthGroup) {
     return <Redirect href="/login" />;
   }
@@ -30,12 +30,12 @@ export default function AuthGate() {
   if (state === "SESSION_EXPIRED") {
   }
 
-  // 🔐 LOCKED → redirect to unlock
+  //  LOCKED → redirect to unlock
   if (state === "LOCKED" && segments[1] !== "unlock") {
     return <Redirect href="/unlock" />;
   }
 
-  // 🕵️ Hidden support access (triple tap on version)
+  //  Hidden support access (triple tap on version)
   const handleVersionPress = () => {
     setTapCount((prev) => prev + 1);
 
@@ -59,21 +59,21 @@ export default function AuthGate() {
       />
 
       {/* GLOBAL FOOTER */}
+      {/* GLOBAL FOOTER */}
       <View
         style={{
-          // position: "absolute",
-          // bottom: 0,
           width: "100%",
           alignItems: "center",
-          paddingVertical: 4,
+          paddingTop: 4,
+          paddingBottom: Math.max(insets.bottom, 8),
           borderTopWidth: 1,
           borderColor: "#e5e7eb",
           backgroundColor: "white",
         }}
       >
-        <Pressable onPress={handleVersionPress}>
+        <Pressable onPress={handleVersionPress} hitSlop={12}>
           <Text style={{ fontSize: 12, color: "#9ca3af" }}>
-            Version 1.0.6.2{" "}
+            Version 1.0.6.3
           </Text>
         </Pressable>
       </View>

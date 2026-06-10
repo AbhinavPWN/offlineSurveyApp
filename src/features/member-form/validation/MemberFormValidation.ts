@@ -196,15 +196,31 @@ export function validateOccupationInfo(
 export function validateFinancialInfo(form: MemberFormState): ValidationResult {
   const errors: Partial<Record<keyof MemberFormState, string>> = {};
 
+  if (!form.earnsIncome) {
+    errors.earnsIncome = "Please select whether this member has income.";
+    return {
+      isValid: false,
+      errors,
+    };
+  }
+
+  // If member does not earn, skip financial validation
+  if (form.earnsIncome === "N") {
+    return {
+      isValid: true,
+      errors,
+    };
+  }
+
   if (!form.totalAsset || form.totalAsset < 0) {
-    errors.totalAsset = "Total asset is required.";
+    errors.totalAsset = "Monthly income is required.";
   }
 
   if (!form.totalLiabilities || form.totalLiabilities < 0) {
-    errors.totalLiabilities = "Total liabilities is required.";
+    errors.totalLiabilities = "Monthly expenses is required.";
   }
 
-  const hasIncome =
+  const hasIncomeSource =
     form.soiSalary ||
     form.soiBusIncome ||
     form.soiAgriculture ||
@@ -213,7 +229,7 @@ export function validateFinancialInfo(form: MemberFormState): ValidationResult {
     form.soiRemittance ||
     form.soiOthers;
 
-  if (!hasIncome) {
+  if (!hasIncomeSource) {
     errors.soiSalary = "At least one income source must be selected.";
   }
 
