@@ -5,10 +5,15 @@ const BASE_URL = "https://wecareapi.nirdhan.com.np:8085";
 
 export interface LoginResponse {
   success: boolean;
+  status?: number;
   message: string;
   data?: {
     access_token: string;
+    token_type?: string;
     expires_in: number;
+    userName?: string; // Gagan Ghimire from login API
+    resultCode?: string;
+    resultMesg?: string;
   };
 }
 

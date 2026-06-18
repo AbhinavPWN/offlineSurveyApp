@@ -5,7 +5,7 @@ export default ({ config }) => {
     expo: {
       name: isDev ? "Nirdhan Survey (Dev)" : "Nirdhan Survey",
       slug: "nirdhan-survey",
-      version: "1.0.6.3",
+      version: "1.0.6.4",
       orientation: "portrait",
 
       icon: "./assets/images/logo.png",

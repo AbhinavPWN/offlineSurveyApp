@@ -67,6 +67,7 @@ export interface HouseholdApiService {
   updateHousehold(payload: UpdateHouseholdPayload): Promise<void>;
 
   getHouseholdListing(chwId: string): Promise<Household[]>;
+  getHouseholdHeadName(householdId: string): Promise<string>;
 }
 
 // declare module "axios" {
@@ -74,6 +75,41 @@ export interface HouseholdApiService {
 //     metadata?: any;
 //   }
 // }
+
+// Helper function for online tab for household head name :
+function normalizeRemoteName(value: unknown): string {
+  return String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getHouseholdHeadNameFromRemoteMembers(members: any[]): string {
+  const head = members.find((m) => {
+    const relation = String(
+      m.relationshiP_TO_HEAD_HOUSEHOLD ??
+        m.relationtoHH ??
+        m.relationToHH ??
+        "",
+    ).toUpperCase();
+
+    const headFlag = String(
+      m.heaD_HOUSEHOLD ?? m.headHousehold ?? "",
+    ).toUpperCase();
+
+    return relation === "HHH" || headFlag === "Y";
+  });
+
+  if (!head) return "";
+
+  return normalizeRemoteName(
+    head.membeR_NAME ??
+      head.memberName ??
+      head.fname ??
+      head.fName ??
+      head.firstName ??
+      "",
+  );
+}
 
 // --------------------
 // Implementation
@@ -194,6 +230,38 @@ export class HouseholdApiServiceImpl implements HouseholdApiService {
         message: error?.message,
       });
       throw error;
+    }
+  }
+
+  // -----------------------------
+  // GET HOUSEHOLD HEAD NAME
+  // -----------------------------
+  async getHouseholdHeadName(householdId: string): Promise<string> {
+    try {
+      const response = await this.client.get(`/GetHHMemberList/${householdId}`);
+
+      const data = response.data;
+
+      if (data?.response_code && data.response_code !== "0") {
+        await AppLogger.log("WARN", "Household member listing API error", {
+          householdId,
+          code: data.response_code,
+          message: data.response_message,
+        });
+
+        return "";
+      }
+
+      const members = Array.isArray(data?.properties) ? data.properties : [];
+
+      return getHouseholdHeadNameFromRemoteMembers(members);
+    } catch (error: any) {
+      await AppLogger.log("WARN", "Failed to fetch household head name", {
+        householdId,
+        message: error?.message,
+      });
+
+      return "";
     }
   }
 }

@@ -52,8 +52,35 @@ export default function LoginScreen() {
       const offlinePin = "1234";
       const pinHash = await hashPin(offlinePin);
 
+      // const session: AuthSession = {
+      //   userName: username,
+      //   officeCode,
+      //   accessToken: response.data.access_token,
+      //   tokenExpireAt: Date.now() + response.data.expires_in * 1000,
+      //   offlinePinHash: pinHash,
+      //   lastOnlineLoginAt: Date.now(),
+      // };
+      const loginUserName = username.trim(); // wcadmin
+      const employeeName = response.data.userName?.trim() || loginUserName; // Gagan Ghimire
+
+      const rawUserId = String(
+        response.data.resultMesg ?? response.message ?? "",
+      ).trim();
+
+      const apiUserId = /^\d+$/.test(rawUserId) ? rawUserId : undefined;
+
       const session: AuthSession = {
-        userName: username,
+        userName: loginUserName, // wcadmin
+        employeeName, // Gagan Ghimire - display only
+
+        // This is the numeric user id from login API resultMesg.
+        // Household API userId will use this.
+        employeeId: apiUserId, // 1414
+
+        // Keep idofCHW as login username/current CHW code.
+        // Household API idofCHW will stay wcadmin.
+        idofCHW: loginUserName,
+
         officeCode,
         accessToken: response.data.access_token,
         tokenExpireAt: Date.now() + response.data.expires_in * 1000,

@@ -29,6 +29,24 @@ export const BasicInfoStep = React.memo(function BasicInfoStep({
 }: Props) {
   if (__DEV__) console.log("BasicInfoStep render");
 
+  const clientAgeNumber =
+    form.clientAge !== null &&
+    form.clientAge !== undefined &&
+    form.clientAge !== ""
+      ? Number(form.clientAge)
+      : null;
+
+  const shouldSkipOccupation =
+    clientAgeNumber !== null &&
+    Number.isFinite(clientAgeNumber) &&
+    clientAgeNumber < 16;
+
+  React.useEffect(() => {
+    if (shouldSkipOccupation && form.occupationCode) {
+      updateField("occupationCode", null);
+    }
+  }, [shouldSkipOccupation, form.occupationCode, updateField]);
+
   return (
     <View className="space-y-4">
       {/* Enroll Date */}
@@ -150,9 +168,21 @@ export const BasicInfoStep = React.memo(function BasicInfoStep({
           className="border rounded-lg px-3 py-2"
           keyboardType="number-pad"
           value={form.clientAge ?? ""}
-          onChangeText={(text) =>
-            updateField("clientAge", text.replace(/\D/g, "").slice(0, 3))
-          }
+          onChangeText={(text) => {
+            const cleanAge = text.replace(/\D/g, "").slice(0, 3);
+
+            updateField("clientAge", cleanAge);
+
+            const ageNumber = cleanAge ? Number(cleanAge) : null;
+
+            if (
+              ageNumber !== null &&
+              Number.isFinite(ageNumber) &&
+              ageNumber < 16
+            ) {
+              updateField("occupationCode", null);
+            }
+          }}
           placeholder="Enter age"
         />
       </View>

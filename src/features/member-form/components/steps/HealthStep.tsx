@@ -348,10 +348,9 @@ export const HealthStep = React.memo(function HealthStep({
         <Text className="font-medium mb-2">
           Functional Difficulties (कार्यात्मक कठिनाइ)
         </Text>
-
         <View ref={registerField("seeing")} collapsable={false}>
           <FormDropdown
-            label="Seeing"
+            label="Seeing (देख्न)"
             value={form.seeing}
             options={difficultyOptions}
             onChange={(val) => updateField("seeing", val)}
@@ -360,7 +359,7 @@ export const HealthStep = React.memo(function HealthStep({
 
         <View ref={registerField("hearing")} collapsable={false}>
           <FormDropdown
-            label="Hearing"
+            label="Hearing (सुन्न)"
             value={form.hearing}
             options={difficultyOptions}
             onChange={(val) => updateField("hearing", val)}
@@ -369,7 +368,7 @@ export const HealthStep = React.memo(function HealthStep({
 
         <View ref={registerField("walking")} collapsable={false}>
           <FormDropdown
-            label="Walking"
+            label="Walking or climbing steps (हिँड्न वा सिँढी चढ्न)"
             value={form.walking}
             options={difficultyOptions}
             onChange={(val) => updateField("walking", val)}
@@ -378,7 +377,7 @@ export const HealthStep = React.memo(function HealthStep({
 
         <View ref={registerField("remembering")} collapsable={false}>
           <FormDropdown
-            label="Remembering"
+            label="Remembering or concentrating (सम्झन वा ध्यान केन्द्रित गर्न)"
             value={form.remembering}
             options={difficultyOptions}
             onChange={(val) => updateField("remembering", val)}
@@ -387,7 +386,7 @@ export const HealthStep = React.memo(function HealthStep({
 
         <View ref={registerField("selfCare")} collapsable={false}>
           <FormDropdown
-            label="Self Care"
+            label="Self Care, such as washing or dressing (नुहाउने वा लुगा लगाउने जस्ता स्व-हेरचाह गर्न)"
             value={form.selfCare}
             options={difficultyOptions}
             onChange={(val) => updateField("selfCare", val)}
@@ -396,7 +395,7 @@ export const HealthStep = React.memo(function HealthStep({
 
         <View ref={registerField("communicating")} collapsable={false}>
           <FormDropdown
-            label="Communicating"
+            label="Communicating, understanding or being understood (कुरा गर्न, बुझ्न वा बुझाउन)"
             value={form.communicating}
             options={difficultyOptions}
             onChange={(val) => updateField("communicating", val)}

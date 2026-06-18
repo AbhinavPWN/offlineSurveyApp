@@ -28,6 +28,18 @@ export function OccupationStep({
 }: Props) {
   if (__DEV__) console.log("OccupationStep render");
 
+  const clientAgeNumber =
+    form.clientAge !== null &&
+    form.clientAge !== undefined &&
+    form.clientAge !== ""
+      ? Number(form.clientAge)
+      : null;
+
+  const shouldSkipOccupation =
+    clientAgeNumber !== null &&
+    Number.isFinite(clientAgeNumber) &&
+    clientAgeNumber < 16;
+
   return (
     <View className="space-y-4">
       {/* Caste */}
@@ -58,18 +70,36 @@ export function OccupationStep({
         <Text className="text-red-500 text-xs">{errors.religionCode}</Text>
       )}
 
-      {/* Occupation */}
-      <View ref={registerField("occupationCode")} collapsable={false}>
-        <FormDropdown
-          label="Occupation (पेशा) *"
-          value={form.occupationCode}
-          options={occupationOptions}
-          onChange={(val) => updateField("occupationCode", val)}
-        />
-      </View>
+      {/* Occupation - skipped for age less than 16 */}
+      {shouldSkipOccupation ? (
+        <View ref={registerField("occupationCode")} collapsable={false}>
+          <View className="border border-green-300 bg-green-50 rounded-lg px-3 py-3">
+            <Text className="text-green-700 font-medium">
+              Occupation skipped.
+            </Text>
 
-      {errors?.occupationCode && (
-        <Text className="text-red-500 text-xs">{errors.occupationCode}</Text>
+            <Text className="text-green-600 text-xs mt-1 ">
+              Client age is less than 16, so occupation is not required.
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <>
+          <View ref={registerField("occupationCode")} collapsable={false}>
+            <FormDropdown
+              label="Occupation (पेशा) *"
+              value={form.occupationCode}
+              options={occupationOptions}
+              onChange={(val) => updateField("occupationCode", val)}
+            />
+          </View>
+
+          {errors?.occupationCode && (
+            <Text className="text-red-500 text-xs">
+              {errors.occupationCode}
+            </Text>
+          )}
+        </>
       )}
 
       {/* Education */}

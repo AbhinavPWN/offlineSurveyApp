@@ -171,6 +171,18 @@ export function validateOccupationInfo(
 ): ValidationResult {
   const errors: Partial<Record<keyof MemberFormState, string>> = {};
 
+  const clientAgeNumber =
+    form.clientAge !== null &&
+    form.clientAge !== undefined &&
+    form.clientAge !== ""
+      ? Number(form.clientAge)
+      : null;
+
+  const shouldSkipOccupation =
+    clientAgeNumber !== null &&
+    Number.isFinite(clientAgeNumber) &&
+    clientAgeNumber < 16;
+
   if (!form.casteCode) {
     errors.casteCode = "Caste is required.";
   }
@@ -179,7 +191,8 @@ export function validateOccupationInfo(
     errors.religionCode = "Religion is required.";
   }
 
-  if (!form.occupationCode) {
+  // Occupation is required only if age is 16 or above
+  if (!shouldSkipOccupation && !form.occupationCode) {
     errors.occupationCode = "Occupation is required.";
   }
 

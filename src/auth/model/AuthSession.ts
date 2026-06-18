@@ -1,5 +1,6 @@
 export interface AuthSession {
-  userName: string;
+  userName: string; // wcadmin
+  employeeName?: string; // Gagan Ghimire
   officeCode: string;
 
   accessToken: string | null;

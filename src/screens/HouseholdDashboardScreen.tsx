@@ -62,6 +62,10 @@ type HouseholdWithAggregate = {
   headMobile?: string;
 };
 
+type OnlineHouseholdWithHead = Household & {
+  householdHeadName?: string;
+};
+
 function sortHouseholds(data: HouseholdLocal[]) {
   const priorityMap: Record<string, number> = {
     FAILED: 1,
@@ -277,6 +281,7 @@ function countSurveyStatuses(statuses: SurveyMemberDisplayStatus[]) {
     },
   );
 }
+
 export const HouseholdDashboardScreen: React.FC<Props> = ({
   householdRepo,
   createHouseholdUseCase,
@@ -289,7 +294,10 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
-  const [onlineHouseholds, setOnlineHouseholds] = useState<Household[]>([]);
+  // const [onlineHouseholds, setOnlineHouseholds] = useState<Household[]>([]);
+  const [onlineHouseholds, setOnlineHouseholds] = useState<
+    OnlineHouseholdWithHead[]
+  >([]);
   const [activeTab, setActiveTab] = useState<"LOCAL" | "ONLINE">("LOCAL");
   const [downloadedServerIds, setDownloadedServerIds] = useState<Set<string>>(
     new Set(),
@@ -373,7 +381,23 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         chwProfile.userName,
       );
 
-      setOnlineHouseholds(response);
+      const enriched = await Promise.all(
+        response.map(async (household) => {
+          const householdHeadName =
+            await householdApiService.getHouseholdHeadName(
+              household.householdId,
+            );
+
+          return {
+            ...household,
+            householdHeadName: householdHeadName || "Household head not found",
+          };
+        }),
+      );
+
+      setOnlineHouseholds(enriched);
+
+      // setOnlineHouseholds(enriched);
     } catch (error: any) {
       if (error?.response?.status === 401) {
         expireSession();
@@ -814,6 +838,11 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
           </Text>
 
           <Text className="text-sm text-gray-700 mt-1">
+            Household Head:{" "}
+            {online.householdHeadName || "Household head not found"}
+          </Text>
+
+          <Text className="text-sm text-gray-700 mt-1">
             Ward: {online.wardNo}
           </Text>
 
@@ -1054,7 +1083,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       )}
 
       {/* LIST */}
-      <FlatList<HouseholdWithAggregate | Household>
+      <FlatList<HouseholdWithAggregate | OnlineHouseholdWithHead>
         data={currentData}
         keyExtractor={(item, index) => {
           if (activeTab === "LOCAL") {

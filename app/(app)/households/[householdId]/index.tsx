@@ -276,8 +276,13 @@ export default function HouseholdDetailScreen() {
           : "",
       );
 
+      // if (chwProfile) {
+      //   setChwName(chwProfile.userName);
+      // }
       if (chwProfile) {
-        setChwName(chwProfile.userName);
+        setChwName(
+          chwProfile.employeeName?.trim() || chwProfile.userName?.trim() || "",
+        );
       }
 
       setIsHydrated(true);
@@ -734,7 +739,7 @@ export default function HouseholdDetailScreen() {
           <Text className="text-gray-700 mt-4 mb-1">{LABELS.chwName}</Text>
           <TextInput
             value={chwName}
-            editable={true}
+            editable={false}
             className="border p-3 rounded bg-gray-100"
           />
         </View>
@@ -881,11 +886,11 @@ export default function HouseholdDetailScreen() {
             options={[
               { label: "Select option", value: "" },
               {
-                label: "Yes - हो",
+                label: "Yes - छ",
                 value: "Y",
               },
               {
-                label: "No - होइन",
+                label: "No - छैन",
                 value: "N",
               },
             ]}
@@ -904,11 +909,11 @@ export default function HouseholdDetailScreen() {
             options={[
               { label: "Select option", value: "" },
               {
-                label: "Yes - हो",
+                label: "Yes - छ",
                 value: "Y",
               },
               {
-                label: "No - होइन",
+                label: "No - छैन",
                 value: "N",
               },
             ]}

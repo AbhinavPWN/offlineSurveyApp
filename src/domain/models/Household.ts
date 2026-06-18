@@ -17,6 +17,8 @@ export interface Household {
   chwId: string;
   chwName: string;
 
+  householdHeadName?: string;
+
   // Location
   provinceId: string;
   provinceName: string;

@@ -33,13 +33,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .trim()
             .toLowerCase();
 
+          // const normalizedSession: AuthSession = {
+          //   ...result.session,
+          //   userName: normalizedUserName,
+          // };
+          const displayName =
+            result.session.employeeName?.trim() ||
+            result.session.userName.trim();
+
+          const restoredEmployeeId = String(
+            result.session.employeeId ?? result.session.idofCHW ?? "",
+          ).trim();
+
           const normalizedSession: AuthSession = {
             ...result.session,
-            userName: normalizedUserName,
+            userName: normalizedUserName, // wcadmin
+            employeeName: displayName, // Gagan Ghimire
+            employeeId: /^\d+$/.test(restoredEmployeeId)
+              ? restoredEmployeeId
+              : result.session.employeeId,
           };
 
           if (!normalizedSession.idofCHW) {
-            normalizedSession.idofCHW = normalizedUserName;
+            normalizedSession.idofCHW = /^\d+$/.test(restoredEmployeeId)
+              ? restoredEmployeeId
+              : normalizedUserName;
 
             await AppLogger.log("AUTH", "SESSION_RESTORE_FIXED_CHW_ID", {
               userName: normalizedUserName,
@@ -56,8 +74,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
 
           setChwProfile({
-            userName: normalizedUserName,
-            idofCHW: normalizedSession.idofCHW,
+            userName: normalizedUserName, // wcadmin
+            employeeName: displayName, // Gagan Ghimire
+            idofCHW: normalizedSession.idofCHW, //1414
             officeCode: normalizedSession.officeCode,
             provinceCode: "",
             districtCode: "",
@@ -107,10 +126,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error("LOGIN_TOKEN_MISSING");
       }
 
+      // const normalizedUserName = result.session.userName.trim().toLowerCase();
+
+      // // CHW identity = login username
+      // const chwId = normalizedUserName;
       const normalizedUserName = result.session.userName.trim().toLowerCase();
 
+      const displayName =
+        result.session.employeeName?.trim() || result.session.userName.trim();
+
+      const sessionEmployeeId = String(
+        result.session.employeeId ?? result.session.idofCHW ?? "",
+      ).trim();
+
+      // CHW API id = numeric employee id from login resultMesg
+      const chwId = /^\d+$/.test(sessionEmployeeId)
+        ? sessionEmployeeId
+        : normalizedUserName;
+
       // CHW identity = login username
-      const chwId = normalizedUserName;
+      // const chwId = normalizedUserName;
 
       await AppLogger.log("AUTH", "CHW_ID_RESOLVED", {
         userName: normalizedUserName,
@@ -125,9 +160,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // };
       const normalizedSession: AuthSession = {
         ...result.session,
-        userName: normalizedUserName,
-        idofCHW: normalizedUserName, // CHW identity
-        employeeId: result.session.employeeId ?? undefined, // optional
+        userName: normalizedUserName, // wcadmin
+        employeeName: displayName, // Gagan Ghimire
+        employeeId: /^\d+$/.test(sessionEmployeeId)
+          ? sessionEmployeeId
+          : undefined,
+        idofCHW: chwId, // 1414
       };
 
       await authService.login(normalizedSession);
@@ -137,6 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setChwProfile({
         userName: normalizedUserName,
+        employeeName: displayName,
         idofCHW: chwId,
         officeCode: normalizedSession.officeCode,
         provinceCode: "",

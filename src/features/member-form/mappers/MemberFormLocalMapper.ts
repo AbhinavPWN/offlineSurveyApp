@@ -3,6 +3,20 @@ import { MemberFormState } from "../models/MemberFormState";
 
 export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
   const isHead = local.headHousehold === "Y";
+  const hasIncomeSource =
+    local.soiSalary === "Y" ||
+    local.soiBusIncome === "Y" ||
+    local.soiReturnfrmInvest === "Y" ||
+    local.soiInheritance === "Y" ||
+    local.soiRemittance === "Y" ||
+    local.soiOthers === "Y" ||
+    local.soiAgriculture === "Y";
+
+  const hasFinancialAmount =
+    Number(local.totalAsset ?? 0) > 0 ||
+    Number(local.totalLiabilities ?? 0) > 0 ||
+    Number(local.netWorth ?? 0) > 0;
+
   return {
     householdLocalId: local.householdLocalId,
     // Basic
@@ -87,6 +101,10 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     // Misc
     clientBehaviour: local.clientBehaviour ?? "",
     imagePath: local.imagePath ?? null,
+
+    earnsIncome: hasIncomeSource || hasFinancialAmount ? "Y" : "N",
+    // hasHealthCondition: local.healthConditionsYn === "Y",
+    hasHealthCondition: local.healthConditionsYn === "Y" ? "Y" : "N",
   };
 }
 

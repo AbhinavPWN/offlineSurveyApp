@@ -28,6 +28,18 @@ function getHouseholdLabel(household: HouseholdLocal): string {
   return "Household";
 }
 
+function resolveHouseholdUserId(
+  session: Awaited<ReturnType<typeof loadAuthSession>>,
+): string {
+  const userId = String(session?.employeeId ?? "").trim();
+
+  if (/^\d+$/.test(userId)) {
+    return userId;
+  }
+
+  return "";
+}
+
 export class SyncHouseholdUseCase {
   constructor(
     private readonly householdRepo: HouseholdLocalRepository,
@@ -143,6 +155,21 @@ export class SyncHouseholdUseCase {
 
     const session = await loadAuthSession();
 
+    const apiUserId = resolveHouseholdUserId(session);
+
+    if (!apiUserId) {
+      await AppLogger.log("ERROR", "[HOUSEHOLD][INSERT_ABORT_NO_USER_ID]", {
+        localId: household.localId,
+        sessionUserName: session?.userName,
+        sessionIdofCHW: session?.idofCHW,
+        sessionEmployeeId: session?.employeeId,
+      });
+
+      throw new Error(
+        "Household userId missing. Please logout, login again, and try sync.",
+      );
+    }
+
     const payload: InsertHouseholdPayload = {
       dateofListingAD: household.dateoflistingAD,
       idofCHW: household.idofCHW,
@@ -158,7 +185,8 @@ export class SyncHouseholdUseCase {
       accesstoSanitation: household.accesstoSanitation,
       activeFlag: household.activeFlag,
       hhClosedDateAD: "",
-      userId: session?.userName ?? "",
+      // userId: session?.userName ?? "",
+      userId: apiUserId,
       insertUpdate: "I",
     };
 
@@ -222,6 +250,22 @@ export class SyncHouseholdUseCase {
 
     const session = await loadAuthSession();
 
+    const apiUserId = resolveHouseholdUserId(session);
+
+    if (!apiUserId) {
+      await AppLogger.log("ERROR", "[HOUSEHOLD][UPDATE_ABORT_NO_USER_ID]", {
+        localId: household.localId,
+        householdId: household.householdId,
+        sessionUserName: session?.userName,
+        sessionIdofCHW: session?.idofCHW,
+        sessionEmployeeId: session?.employeeId,
+      });
+
+      throw new Error(
+        "Household userId missing. Please logout, login again, and try sync.",
+      );
+    }
+
     const payload: UpdateHouseholdPayload = {
       householdId: household.householdId,
       dateofListingAD: household.dateoflistingAD,
@@ -238,7 +282,8 @@ export class SyncHouseholdUseCase {
       accesstoSanitation: household.accesstoSanitation,
       activeFlag: household.activeFlag,
       hhClosedDateAD: "",
-      userId: session?.userName ?? "",
+      // userId: session?.userName ?? "",
+      userId: apiUserId,
       insertUpdate: "U",
     };
 
