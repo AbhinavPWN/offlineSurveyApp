@@ -5,7 +5,7 @@ export default ({ config }) => {
     expo: {
       name: isDev ? "Nirdhan Survey (Dev)" : "Nirdhan Survey",
       slug: "nirdhan-survey",
-      version: "1.0.6.4",
+      version: "1.0.6.5",
       orientation: "portrait",
 
       icon: "./assets/images/logo.png",
@@ -18,7 +18,7 @@ export default ({ config }) => {
 
       android: {
         package: isDev ? "np.com.nirdhan.survey.dev" : "np.com.nirdhan.survey",
-        versionCode: 7,
+        versionCode: 8,
         predictiveBackGestureEnabled: false,
         adaptiveIcon: {
           backgroundColor: "#E6F4FE",
