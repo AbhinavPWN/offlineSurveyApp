@@ -103,4 +103,5 @@ export const casteOptions: DropdownOption[] = [
   { value: "100", labelEn: "Panjabi/Shikh", labelNp: "पञ्जाबी/सिख" },
   { labelEn: "Pasi", labelNp: "पासी", value: "101" },
   { labelEn: "Godhiya", labelNp: "गोडिया", value: "102" },
+  { labelEn: "Bhujwa", labelNp: "भुजवा", value: "103" },
 ];
