@@ -4,6 +4,7 @@ import {
   InsertMemberPayload,
   UpdateMemberPayload,
 } from "../../MemberApiService";
+import { hasDisabilityIdentified } from "@/src/utils/memberDisability";
 
 function formatForApi(dateString?: string): string {
   if (!dateString) return "";
@@ -168,6 +169,15 @@ export function mapMemberToInsertPayload(
     ? ""
     : (member.mobileNo ?? "");
 
+  const disabilityIdentified = hasDisabilityIdentified({
+    seeing: member.seeing,
+    hearing: member.hearing,
+    walking: member.walking,
+    remembering: member.remembering,
+    selfCare: member.selfCare,
+    communicating: member.communicating,
+  });
+
   return {
     enrollDate: formatForApi(member.enrollDateAD),
     maritalStatus: member.maritalStatus,
@@ -185,7 +195,6 @@ export function mapMemberToInsertPayload(
     tranOfficeCode: "00",
     dob: formatForApi(member.dobAD),
     clientAge: member.clientAge ?? "",
-    // mobileNo: member.mobileNo ?? "",
     mobileNo,
     minorYn: member.minorYn ? "Y" : "N",
     address1Type: member.address1Type,
@@ -211,8 +220,11 @@ export function mapMemberToInsertPayload(
     relationtoHH: member.relationToHH ?? "",
     healthConditionsYn: member.healthConditionsYn ? "Y" : "N",
     healthConditions: member.healthConditions ?? "",
-    disabilityIdentYn: member.disabilityIdentYn ? "Y" : "N",
-    disabilityIdent: member.disabilityIdent ?? "",
+
+    disabilityIdentYn: disabilityIdentified ? "Y" : "N",
+
+    disabilityIdent: disabilityIdentified ? (member.disabilityIdent ?? "") : "",
+
     seeing: member.seeing,
     hearing: member.hearing,
     walking: member.walking,
@@ -220,6 +232,7 @@ export function mapMemberToInsertPayload(
     selfCare: member.selfCare,
     communicating: member.communicating,
     disabilityStatus: member.disabilityStatus,
+
     pregnancyStatus:
       member.gender === "F" ? (member.pregnancyStatus ?? "N") : "N",
 
@@ -246,6 +259,7 @@ export function mapMemberToInsertPayload(
     healthConditionsChr: member.healthConditionsChr ? "Y" : "N",
     healthConditionsOth: member.healthConditionsOth ? "Y" : "N",
     healthConditionsOthers: member.healthConditionsOthers ?? "",
+
     user,
     insertUpdate: "I",
   };

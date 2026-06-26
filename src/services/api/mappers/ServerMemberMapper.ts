@@ -1,5 +1,6 @@
 import { HouseholdMemberLocal } from "@/src/models/householdMember.model";
 import { convertApiDateToISO } from "@/src/utils/dateUtils";
+import { hasDisabilityIdentified } from "@/src/utils/memberDisability";
 
 /**
  * Strict Y/N normalizer
@@ -42,6 +43,23 @@ export function mapServerMemberToDb(
     clienT_AGE: m.clienT_AGE,
     client_age: m.client_age,
   });
+
+  const seeing = normalizeString(m.seeing) ?? "N";
+  const hearing = normalizeString(m.hearing) ?? "N";
+  const walking = normalizeString(m.walking) ?? "N";
+  const remembering = normalizeString(m.remembering) ?? "N";
+  const selfCare = normalizeString(m.selF_CARE) ?? "N";
+  const communicating = normalizeString(m.communicating) ?? "N";
+
+  const disabilityIdentified = hasDisabilityIdentified({
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    selfCare,
+    communicating,
+  });
+
   return {
     clientNo: normalizeString(m.clienT_NO),
     householdLocalId,
@@ -69,6 +87,8 @@ export function mapServerMemberToDb(
 
     dobAD: convertApiDateToISO(m.dob),
     dobBS: normalizeString(m.doB_BS),
+
+    // Keep existing age mapping unchanged.
     // clientAge: normalizeString(m.client_age),
     clientAge: normalizeString(m.clienT_AGE),
 
@@ -102,22 +122,18 @@ export function mapServerMemberToDb(
     healthConditionsYn: normalizeYN(m.healtH_CONDITIONS_YN),
     healthConditions: normalizeString(m.healtH_CONDITIONS),
 
-    // disabilityIdentYn: normalizeYN(m.disabilitY_IDENTIFICATION_YN),
-    disabilityIdentYn: m.disabilitY_IDENTIFICATION != null ? "Y" : "N",
-    disabilityIdent: normalizeString(m.disabilitY_IDENTIFICATION),
+    disabilityIdentYn: disabilityIdentified ? "Y" : "N",
 
-    // seeing: normalizeYN(m.seeing),
-    // hearing: normalizeYN(m.hearing),
-    // walking: normalizeYN(m.walking),
-    // remembering: normalizeYN(m.remembering),
-    // selfCare: normalizeYN(m.selF_CARE),
-    // communicating: normalizeYN(m.communicating),
-    seeing: normalizeString(m.seeing) ?? "N",
-    hearing: normalizeString(m.hearing) ?? "N",
-    walking: normalizeString(m.walking) ?? "N",
-    remembering: normalizeString(m.remembering) ?? "N",
-    selfCare: normalizeString(m.selF_CARE) ?? "N",
-    communicating: normalizeString(m.communicating) ?? "N",
+    disabilityIdent: disabilityIdentified
+      ? normalizeString(m.disabilitY_IDENTIFICATION)
+      : undefined,
+
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    selfCare,
+    communicating,
 
     disabilityStatus: normalizeYN(m.disabilitY_STATUS),
 
@@ -136,6 +152,7 @@ export function mapServerMemberToDb(
     // healthConditionsChr: normalizeYN(m.healtH_CONDITIONS_chr),
     // healthConditionsOth: normalizeYN(m.healtH_CONDITIONS_oth),
     // healthConditionsOthers: normalizeString(m.healtH_CONDITIONS_others),
+
     healthConditionsDia: normalizeYN(m.healtH_CONDITION_DIA),
     healthConditionsHyp: normalizeYN(m.healtH_CONDITION_HYP),
     healthConditionsCar: normalizeYN(m.healtH_CONDITION_CAR),

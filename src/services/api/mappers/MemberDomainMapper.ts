@@ -1,9 +1,26 @@
 import { HouseholdMemberLocal } from "@/src/models/householdMember.model";
 import { MemberLocal } from "@/src/services/api/mappers/MemberMapper";
+import { hasDisabilityIdentified } from "@/src/utils/memberDisability";
 
 const toBool = (val?: string | null) => val === "Y";
 
 export function mapDbToDomainMember(db: HouseholdMemberLocal): MemberLocal {
+  const seeing = db.seeing ?? "N";
+  const hearing = db.hearing ?? "N";
+  const walking = db.walking ?? "N";
+  const remembering = db.remembering ?? "N";
+  const selfCare = db.selfCare ?? "N";
+  const communicating = db.communicating ?? "N";
+
+  const disabilityIdentified = hasDisabilityIdentified({
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    selfCare,
+    communicating,
+  });
+
   return {
     localId: db.localId,
     clientNo: db.clientNo,
@@ -61,15 +78,16 @@ export function mapDbToDomainMember(db: HouseholdMemberLocal): MemberLocal {
     healthConditionsYn: toBool(db.healthConditionsYn),
     healthConditions: db.healthConditions ?? "",
 
-    disabilityIdentYn: toBool(db.disabilityIdentYn),
-    disabilityIdent: db.disabilityIdent ?? "",
+    disabilityIdentYn: disabilityIdentified,
 
-    seeing: db.seeing ?? "N",
-    hearing: db.hearing ?? "N",
-    walking: db.walking ?? "N",
-    remembering: db.remembering ?? "N",
-    selfCare: db.selfCare ?? "N",
-    communicating: db.communicating ?? "N",
+    disabilityIdent: disabilityIdentified ? (db.disabilityIdent ?? "") : "",
+
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    selfCare,
+    communicating,
 
     disabilityStatus: db.disabilityStatus ?? "N",
 

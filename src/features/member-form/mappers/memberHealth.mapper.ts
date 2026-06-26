@@ -1,4 +1,5 @@
 import { MemberFormState } from "../models/MemberFormState";
+import { hasDisabilityIdentified } from "@/src/utils/memberDisability";
 
 export interface HealthApiPayload {
   healthConditionsYn: string;
@@ -19,14 +20,23 @@ export interface HealthApiPayload {
 }
 
 export function mapHealthToApi(state: MemberFormState): HealthApiPayload {
+  const disabilityIdentified = hasDisabilityIdentified({
+    seeing: state.seeing,
+    hearing: state.hearing,
+    walking: state.walking,
+    remembering: state.remembering,
+    selfCare: state.selfCare,
+    communicating: state.communicating,
+  });
+
   return {
     healthConditionsYn: state.healthConditionsYn ? "Y" : "N",
     healthConditions: state.healthConditionsYn
       ? state.healthConditions || ""
       : "",
 
-    disabilityIdentYn: state.disabilityIdentYn ? "Y" : "N",
-    disabilityIdent: state.disabilityIdentYn ? state.disabilityIdent || "" : "",
+    disabilityIdentYn: disabilityIdentified ? "Y" : "N",
+    disabilityIdent: disabilityIdentified ? state.disabilityIdent || "" : "",
 
     seeing: state.seeing || "N",
     hearing: state.hearing || "N",
@@ -80,19 +90,37 @@ function formatDateForApi(iso: string | null): string {
 }
 
 export function mapHealthFromApi(api: any): Partial<MemberFormState> {
+  const seeing = api.seeing || "N";
+  const hearing = api.hearing || "N";
+  const walking = api.walking || "N";
+  const remembering = api.remembering || "N";
+  const selfCare = api.selF_CARE || "N";
+  const communicating = api.communicating || "N";
+
+  const disabilityIdentified = hasDisabilityIdentified({
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    selfCare,
+    communicating,
+  });
+
   return {
     healthConditionsYn: api.healtH_CONDITIONS ? true : false,
     healthConditions: api.healtH_CONDITIONS || "",
 
-    disabilityIdentYn: api.disabilitY_IDENTIFICATION ? true : false,
-    disabilityIdent: api.disabilitY_IDENTIFICATION || "",
+    disabilityIdentYn: disabilityIdentified,
+    disabilityIdent: disabilityIdentified
+      ? api.disabilitY_IDENTIFICATION || ""
+      : "",
 
-    seeing: api.seeing || "N",
-    hearing: api.hearing || "N",
-    walking: api.walking || "N",
-    remembering: api.remembering || "N",
-    selfCare: api.selF_CARE || "N",
-    communicating: api.communicating || "N",
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    selfCare,
+    communicating,
 
     disabilityStatus: api.disabilitY_STATUS || "N",
 

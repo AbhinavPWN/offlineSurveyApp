@@ -1,5 +1,6 @@
 import { HouseholdMemberLocal } from "@/src/models/householdMember.model";
 import { MemberFormState } from "../models/MemberFormState";
+import { hasDisabilityIdentified } from "@/src/utils/memberDisability";
 
 function shouldClearMobileNoForAge(clientAge?: string | null): boolean {
   const normalizedAge = clientAge?.trim() ?? "";
@@ -13,6 +14,7 @@ function shouldClearMobileNoForAge(clientAge?: string | null): boolean {
 
 export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
   const isHead = local.headHousehold === "Y";
+
   const hasIncomeSource =
     local.soiSalary === "Y" ||
     local.soiBusIncome === "Y" ||
@@ -27,8 +29,18 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     Number(local.totalLiabilities ?? 0) > 0 ||
     Number(local.netWorth ?? 0) > 0;
 
+  const disabilityIdentified = hasDisabilityIdentified({
+    seeing: local.seeing,
+    hearing: local.hearing,
+    walking: local.walking,
+    remembering: local.remembering,
+    selfCare: local.selfCare,
+    communicating: local.communicating,
+  });
+
   return {
     householdLocalId: local.householdLocalId,
+
     // Basic
     enrollDate: local.enrollDateAD ?? new Date().toISOString().split("T")[0],
     fName: local.firstName ?? "",
@@ -36,16 +48,16 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     maritalStatus: local.maritalStatus ?? null,
     relationtoHH: isHead ? "HHH" : (local.relationToHH ?? null),
     headHousehold: isHead,
-    // mobileNo: local.mobileNo ?? "",
+
+    // Keep the completed age/mobile behaviour unchanged.
     mobileNo: shouldClearMobileNoForAge(local.clientAge)
       ? ""
       : (local.mobileNo ?? ""),
+
     clientAge: local.clientAge ?? "",
 
     // Identity
-    // Identity
     idDocumentType: local.idDocumentType || "CITIZENSHIP",
-    // idDocumentNo: local.idDocumentNo || "NA",
     idDocumentNo: local.idDocumentNo?.trim() || "",
     idIssueDistrictCode: local.idIssueDistrictCode || "000",
     memIdIssueDate: local.idIssueDateAD ?? local.enrollDateAD ?? null,
@@ -83,8 +95,9 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     healthConditionsYn: local.healthConditionsYn === "Y",
     healthConditions: local.healthConditions ?? "",
 
-    disabilityIdentYn: local.disabilityIdentYn === "Y",
-    disabilityIdent: local.disabilityIdent ?? "",
+    disabilityIdentYn: disabilityIdentified,
+
+    disabilityIdent: disabilityIdentified ? (local.disabilityIdent ?? "") : "",
 
     seeing: local.seeing ?? "N",
     hearing: local.hearing ?? "N",
@@ -116,7 +129,7 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     imagePath: local.imagePath ?? null,
 
     earnsIncome: hasIncomeSource || hasFinancialAmount ? "Y" : "N",
-    // hasHealthCondition: local.healthConditionsYn === "Y",
+
     hasHealthCondition: local.healthConditionsYn === "Y" ? "Y" : "N",
   };
 }
@@ -124,19 +137,30 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
 export function mapFormToLocalPatch(
   form: MemberFormState,
 ): Partial<HouseholdMemberLocal> {
+  const disabilityIdentified = hasDisabilityIdentified({
+    seeing: form.seeing,
+    hearing: form.hearing,
+    walking: form.walking,
+    remembering: form.remembering,
+    selfCare: form.selfCare,
+    communicating: form.communicating,
+  });
+
   return {
     enrollDateAD: form.enrollDate ?? null,
     firstName: form.fName,
     gender: form.gender ?? null,
     maritalStatus: form.maritalStatus ?? null,
     relationToHH: form.headHousehold ? "HHH" : (form.relationtoHH ?? null),
+
     headHousehold: form.headHousehold ? "Y" : "N",
-    // mobileNo: form.mobileNo,
+
+    // Keep the completed age/mobile behaviour unchanged.
     mobileNo: shouldClearMobileNoForAge(form.clientAge) ? "" : form.mobileNo,
+
     clientAge: form.clientAge,
 
     idDocumentType: form.idDocumentType || "CITIZENSHIP",
-    // idDocumentNo: form.idDocumentNo || "NA",
     idDocumentNo: form.idDocumentNo?.trim() || "",
     idIssueDistrictCode: form.idIssueDistrictCode || "000",
     idIssueDateAD: form.memIdIssueDate || form.enrollDate || null,
@@ -157,6 +181,7 @@ export function mapFormToLocalPatch(
 
     totalAsset: String(form.totalAsset),
     totalLiabilities: String(form.totalLiabilities),
+
     netWorth: String(
       Number(form.totalAsset || 0) - Number(form.totalLiabilities || 0),
     ),
@@ -169,15 +194,14 @@ export function mapFormToLocalPatch(
     soiOthers: form.soiOthers ? "Y" : "N",
     soiAgriculture: form.soiAgriculture ? "Y" : "N",
 
-    // -------------------------
-    // HEALTH (Cleaned Safely)
-    // -------------------------
-
+    // Health
     healthConditionsYn: form.healthConditionsYn ? "Y" : "N",
+
     healthConditions: form.healthConditionsYn ? form.healthConditions : null,
 
-    disabilityIdentYn: form.disabilityIdentYn ? "Y" : "N",
-    disabilityIdent: form.disabilityIdentYn ? form.disabilityIdent : null,
+    disabilityIdentYn: disabilityIdentified ? "Y" : "N",
+
+    disabilityIdent: disabilityIdentified ? form.disabilityIdent : null,
 
     seeing: form.seeing ?? "N",
     hearing: form.hearing ?? "N",

@@ -7,7 +7,8 @@ import {
   yesNoOptions,
   difficultyOptions,
 } from "../../master/memberHealthMasterData";
-import { DifficultyLevel, DisabilityType } from "../../master/health.enum";
+import { DisabilityType } from "../../master/health.enum";
+import { hasDisabilityIdentified } from "@/src/utils/memberDisability";
 
 interface Props {
   form: MemberFormState;
@@ -142,42 +143,36 @@ export const HealthStep = React.memo(function HealthStep({
     clearHealthConditions,
   ]);
 
-  const hasFunctionalDifficulty = React.useMemo(() => {
-    const functionalDifficultyValues = [
+  const disabilityIdentified = React.useMemo(
+    () =>
+      hasDisabilityIdentified({
+        seeing: form.seeing,
+        hearing: form.hearing,
+        walking: form.walking,
+        remembering: form.remembering,
+        selfCare: form.selfCare,
+        communicating: form.communicating,
+      }),
+    [
       form.seeing,
       form.hearing,
       form.walking,
       form.remembering,
       form.selfCare,
       form.communicating,
-    ];
-
-    return functionalDifficultyValues.some(
-      (value) =>
-        value !== null &&
-        value !== undefined &&
-        value !== "" &&
-        value !== DifficultyLevel.NO_DIFFICULTY,
-    );
-  }, [
-    form.seeing,
-    form.hearing,
-    form.walking,
-    form.remembering,
-    form.selfCare,
-    form.communicating,
-  ]);
+    ],
+  );
 
   React.useEffect(() => {
-    if (form.disabilityIdentYn !== hasFunctionalDifficulty) {
-      updateField("disabilityIdentYn", hasFunctionalDifficulty);
+    if (form.disabilityIdentYn !== disabilityIdentified) {
+      updateField("disabilityIdentYn", disabilityIdentified);
     }
 
-    if (!hasFunctionalDifficulty && form.disabilityIdent) {
+    if (!disabilityIdentified && form.disabilityIdent) {
       updateField("disabilityIdent", "");
     }
   }, [
-    hasFunctionalDifficulty,
+    disabilityIdentified,
     form.disabilityIdentYn,
     form.disabilityIdent,
     updateField,
@@ -348,6 +343,7 @@ export const HealthStep = React.memo(function HealthStep({
         <Text className="font-medium mb-2">
           Functional Difficulties (कार्यात्मक कठिनाइ)
         </Text>
+
         <View ref={registerField("seeing")} collapsable={false}>
           <FormDropdown
             label="Seeing (देख्न)"
@@ -415,17 +411,17 @@ export const HealthStep = React.memo(function HealthStep({
 
         <View
           className={`border rounded-lg px-3 py-4 ${
-            form.disabilityIdentYn
+            disabilityIdentified
               ? "border-green-500 bg-green-50"
               : "border-gray-300 bg-gray-50"
           }`}
         >
           <Text
             className={`font-semibold ${
-              form.disabilityIdentYn ? "text-green-700" : "text-gray-700"
+              disabilityIdentified ? "text-green-700" : "text-gray-700"
             }`}
           >
-            {form.disabilityIdentYn ? "Yes" : "No"}
+            {disabilityIdentified ? "Yes" : "No"}
           </Text>
 
           <Text className="text-xs text-gray-500 mt-1">
@@ -441,7 +437,7 @@ export const HealthStep = React.memo(function HealthStep({
       </View>
 
       {/* Disability Type */}
-      {form.disabilityIdentYn && (
+      {disabilityIdentified && (
         <View
           className="mt-6"
           ref={registerField("disabilityIdent")}

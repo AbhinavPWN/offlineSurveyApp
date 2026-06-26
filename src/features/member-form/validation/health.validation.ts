@@ -1,3 +1,4 @@
+import { hasDisabilityIdentified } from "@/src/utils/memberDisability";
 import { MemberFormState } from "../models/MemberFormState";
 
 export interface HealthValidationErrors {
@@ -32,8 +33,8 @@ export function validateHealthStep(
     errors.hasHealthCondition = "Please select at least one health condition.";
   }
 
-  //  Health conditions Not mandatory. Only validate if "Other" is selected.
-
+  // Health conditions are not mandatory.
+  // Only validate the description when "Other" is selected.
   if (
     state.hasHealthCondition === "Y" &&
     state.healthConditionsOth &&
@@ -44,8 +45,21 @@ export function validateHealthStep(
 
   /**
    * Disability identification
+   *
+   * Examine all six functional-difficulty fields.
+   * Only A (A lot of difficulty) or C (Cannot do at all)
+   * identifies disability.
    */
-  if (state.disabilityIdentYn && !state.disabilityIdent) {
+  const disabilityIdentified = hasDisabilityIdentified({
+    seeing: state.seeing,
+    hearing: state.hearing,
+    walking: state.walking,
+    remembering: state.remembering,
+    selfCare: state.selfCare,
+    communicating: state.communicating,
+  });
+
+  if (disabilityIdentified && !state.disabilityIdent) {
     errors.disabilityIdent = "Please select disability type";
   }
 
@@ -84,8 +98,8 @@ export function validateHealthStep(
     }
   }
 
-  // Vaccination rule for children aged 5 or below.Uses clientAge, not DOB.
-
+  // Vaccination rule for children aged 5 or below.
+  // Uses clientAge, not DOB.
   const clientAge =
     state.clientAge !== null &&
     state.clientAge !== undefined &&
