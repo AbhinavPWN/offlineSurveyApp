@@ -1,6 +1,16 @@
 import { HouseholdMemberLocal } from "@/src/models/householdMember.model";
 import { MemberFormState } from "../models/MemberFormState";
 
+function shouldClearMobileNoForAge(clientAge?: string | null): boolean {
+  const normalizedAge = clientAge?.trim() ?? "";
+
+  if (!normalizedAge) return false;
+
+  const age = Number(normalizedAge);
+
+  return Number.isInteger(age) && age >= 0 && age <= 16;
+}
+
 export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
   const isHead = local.headHousehold === "Y";
   const hasIncomeSource =
@@ -26,7 +36,10 @@ export function mapLocalToForm(local: HouseholdMemberLocal): MemberFormState {
     maritalStatus: local.maritalStatus ?? null,
     relationtoHH: isHead ? "HHH" : (local.relationToHH ?? null),
     headHousehold: isHead,
-    mobileNo: local.mobileNo ?? "",
+    // mobileNo: local.mobileNo ?? "",
+    mobileNo: shouldClearMobileNoForAge(local.clientAge)
+      ? ""
+      : (local.mobileNo ?? ""),
     clientAge: local.clientAge ?? "",
 
     // Identity
@@ -118,7 +131,8 @@ export function mapFormToLocalPatch(
     maritalStatus: form.maritalStatus ?? null,
     relationToHH: form.headHousehold ? "HHH" : (form.relationtoHH ?? null),
     headHousehold: form.headHousehold ? "Y" : "N",
-    mobileNo: form.mobileNo,
+    // mobileNo: form.mobileNo,
+    mobileNo: shouldClearMobileNoForAge(form.clientAge) ? "" : form.mobileNo,
     clientAge: form.clientAge,
 
     idDocumentType: form.idDocumentType || "CITIZENSHIP",

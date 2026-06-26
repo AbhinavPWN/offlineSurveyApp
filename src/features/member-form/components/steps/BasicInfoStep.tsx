@@ -36,6 +36,19 @@ export const BasicInfoStep = React.memo(function BasicInfoStep({
       ? Number(form.clientAge)
       : null;
 
+  // For validating mobile no showing or not .
+  const hasValidClientAge =
+    clientAgeNumber !== null &&
+    Number.isInteger(clientAgeNumber) &&
+    clientAgeNumber >= 0 &&
+    clientAgeNumber <= 120;
+
+  const isMobileEnabled =
+    hasValidClientAge && clientAgeNumber !== null && clientAgeNumber > 16;
+
+  const shouldClearMobile =
+    hasValidClientAge && clientAgeNumber !== null && clientAgeNumber <= 16;
+
   const shouldSkipOccupation =
     clientAgeNumber !== null &&
     Number.isFinite(clientAgeNumber) &&
@@ -92,24 +105,101 @@ export const BasicInfoStep = React.memo(function BasicInfoStep({
         <Text className="text-red-500 text-xs mt-1">{errors.gender}</Text>
       )}
 
-      {/* Mobile Number */}
-      <View ref={registerField("mobileNo")} collapsable={false}>
-        <Text className="mb-1 font-medium">Mobile Number / मोबाइल नम्बर *</Text>
-
-        <TextInput
-          className="border rounded-lg px-3 py-2"
-          keyboardType="phone-pad"
-          value={form.mobileNo}
-          onChangeText={(text) =>
-            updateField("mobileNo", text.replace(/\D/g, "").slice(0, 10))
-          }
-          placeholder="98XXXXXXXX"
+      {/* Date of Birth */}
+      <View ref={registerField("dob")} collapsable={false}>
+        <BSDateInput
+          label="Date of Birth (B.S.) / जन्म मिति (वि.सं.)"
+          adValue={form.dob}
+          onChangeAD={(adIso) => {
+            updateField("dob", adIso);
+          }}
         />
       </View>
 
-      {errors?.mobileNo && (
+      {errors?.dob && (
+        <Text className="text-red-500 text-xs mt-1">{errors.dob}</Text>
+      )}
+
+      {/* Client Age */}
+      <View ref={registerField("clientAge")} collapsable={false}>
+        <Text className="mb-1 font-medium">Client Age (पूरा भएको उमेर)</Text>
+
+        <TextInput
+          className="border rounded-lg px-3 py-2"
+          keyboardType="number-pad"
+          value={form.clientAge ?? ""}
+          onChangeText={(text) => {
+            const cleanAge = text.replace(/\D/g, "").slice(0, 3);
+
+            updateField("clientAge", cleanAge);
+
+            const ageNumber = cleanAge ? Number(cleanAge) : null;
+
+            if (
+              ageNumber !== null &&
+              Number.isInteger(ageNumber) &&
+              ageNumber >= 0 &&
+              ageNumber <= 120
+            ) {
+              // Preserve the existing occupation rule.
+              if (ageNumber < 16) {
+                updateField("occupationCode", null);
+              }
+
+              // New mobile-number rule.
+              if (ageNumber <= 16) {
+                updateField("mobileNo", "");
+              }
+            }
+          }}
+          placeholder="Enter age"
+        />
+      </View>
+
+      {errors?.clientAge && (
+        <Text className="text-red-500 text-xs mt-1">{errors.clientAge}</Text>
+      )}
+
+      {/* Mobile Number */}
+      <View ref={registerField("mobileNo")} collapsable={false}>
+        <Text className="mb-1 font-medium">
+          Mobile Number / मोबाइल नम्बर
+          {isMobileEnabled ? " *" : ""}
+        </Text>
+
+        <TextInput
+          className={`border rounded-lg px-3 py-2 ${
+            isMobileEnabled
+              ? "bg-white"
+              : "bg-gray-100 text-gray-500 border-gray-300"
+          }`}
+          keyboardType="phone-pad"
+          value={form.mobileNo}
+          editable={isMobileEnabled}
+          onChangeText={(text) =>
+            updateField("mobileNo", text.replace(/\D/g, "").slice(0, 10))
+          }
+          placeholder={
+            isMobileEnabled ? "98XXXXXXXX" : "Available only for age above 16"
+          }
+        />
+
+        {!isMobileEnabled && (
+          <Text className="text-gray-500 text-xs mt-1">
+            {shouldClearMobile
+              ? "Mobile number is not required for members aged 16 or below."
+              : "Enter a valid client age above 16 to enable mobile number."}
+          </Text>
+        )}
+      </View>
+
+      {isMobileEnabled && errors?.mobileNo && (
         <Text className="text-red-500 text-xs mt-1">{errors.mobileNo}</Text>
       )}
+
+      {/* {errors?.mobileNo && (
+        <Text className="text-red-500 text-xs mt-1">{errors.mobileNo}</Text>
+      )} */}
 
       {/* Marital Status */}
       <View ref={registerField("maritalStatus")} collapsable={false}>
@@ -143,52 +233,6 @@ export const BasicInfoStep = React.memo(function BasicInfoStep({
 
       {errors?.relationtoHH && (
         <Text className="text-red-500 text-xs mt-1">{errors.relationtoHH}</Text>
-      )}
-
-      {/* Date of Birth */}
-      <View ref={registerField("dob")} collapsable={false}>
-        <BSDateInput
-          label="Date of Birth (B.S.) / जन्म मिति (वि.सं.)"
-          adValue={form.dob}
-          onChangeAD={(adIso) => {
-            updateField("dob", adIso);
-          }}
-        />
-      </View>
-
-      {errors?.dob && (
-        <Text className="text-red-500 text-xs mt-1">{errors.dob}</Text>
-      )}
-
-      {/* Client Age */}
-      <View ref={registerField("clientAge")} collapsable={false}>
-        <Text className="mb-1 font-medium">Client Age (पूरा भएको उमेर)</Text>
-
-        <TextInput
-          className="border rounded-lg px-3 py-2"
-          keyboardType="number-pad"
-          value={form.clientAge ?? ""}
-          onChangeText={(text) => {
-            const cleanAge = text.replace(/\D/g, "").slice(0, 3);
-
-            updateField("clientAge", cleanAge);
-
-            const ageNumber = cleanAge ? Number(cleanAge) : null;
-
-            if (
-              ageNumber !== null &&
-              Number.isFinite(ageNumber) &&
-              ageNumber < 16
-            ) {
-              updateField("occupationCode", null);
-            }
-          }}
-          placeholder="Enter age"
-        />
-      </View>
-
-      {errors?.clientAge && (
-        <Text className="text-red-500 text-xs mt-1">{errors.clientAge}</Text>
       )}
     </View>
   );

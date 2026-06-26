@@ -35,6 +35,16 @@ function formatForApi(dateString?: string): string {
   return `${day}-${month}-${year}`;
 }
 
+function shouldClearMobileNoForAge(clientAge?: string | null): boolean {
+  const normalizedAge = clientAge?.trim() ?? "";
+
+  if (!normalizedAge) return false;
+
+  const age = Number(normalizedAge);
+
+  return Number.isInteger(age) && age >= 0 && age <= 16;
+}
+
 /**
  * Determine correct employeeId safely
  * Priority:
@@ -154,6 +164,10 @@ export function mapMemberToInsertPayload(
 ): InsertMemberPayload {
   const resolvedEmployeeId = resolveEmployeeId(member, sessionEmployeeId);
 
+  const mobileNo = shouldClearMobileNoForAge(member.clientAge)
+    ? ""
+    : (member.mobileNo ?? "");
+
   return {
     enrollDate: formatForApi(member.enrollDateAD),
     maritalStatus: member.maritalStatus,
@@ -171,7 +185,8 @@ export function mapMemberToInsertPayload(
     tranOfficeCode: "00",
     dob: formatForApi(member.dobAD),
     clientAge: member.clientAge ?? "",
-    mobileNo: member.mobileNo ?? "",
+    // mobileNo: member.mobileNo ?? "",
+    mobileNo,
     minorYn: member.minorYn ? "Y" : "N",
     address1Type: member.address1Type,
     address: member.address ?? "",
