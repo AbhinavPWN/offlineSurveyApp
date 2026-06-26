@@ -27,12 +27,38 @@ export function validateBasicInfo(form: MemberFormState): ValidationResult {
     errors.gender = "Gender is required.";
   }
 
-  // Mobile (Nepali format: starts with 9 and 10 digits)
-  if (!form.mobileNo) {
-    errors.mobileNo = "Mobile number is required.";
-  } else if (!/^[9]\d{9}$/.test(form.mobileNo)) {
-    errors.mobileNo = "Enter valid 10-digit mobile number.";
+  // Client Age (required)
+  // Client Age
+  const normalizedAge = form.clientAge?.trim() ?? "";
+  let validClientAge: number | null = null;
+
+  if (!normalizedAge) {
+    errors.clientAge = "Age is required.";
+  } else {
+    const age = Number(normalizedAge);
+
+    if (!Number.isInteger(age) || age < 0 || age > 120) {
+      errors.clientAge = "Enter valid age.";
+    } else {
+      validClientAge = age;
+    }
   }
+
+  // Mobile number is applicable only when clientAge is above 16.
+  if (validClientAge !== null && validClientAge > 16) {
+    if (!form.mobileNo) {
+      errors.mobileNo = "Mobile number is required.";
+    } else if (!/^9\d{9}$/.test(form.mobileNo)) {
+      errors.mobileNo = "Enter valid 10-digit mobile number.";
+    }
+  }
+
+  // Mobile (Nepali format: starts with 9 and 10 digits)
+  // if (!form.mobileNo) {
+  //   errors.mobileNo = "Mobile number is required.";
+  // } else if (!/^[9]\d{9}$/.test(form.mobileNo)) {
+  //   errors.mobileNo = "Enter valid 10-digit mobile number.";
+  // }
 
   // Marital Status
   if (!form.maritalStatus) {
@@ -53,17 +79,6 @@ export function validateBasicInfo(form: MemberFormState): ValidationResult {
   if (form.enrollDate && form.dob) {
     if (form.enrollDate < form.dob) {
       errors.enrollDate = "Enroll date cannot be before date of birth.";
-    }
-  }
-
-  // Client Age (required)
-  if (!form.clientAge) {
-    errors.clientAge = "Age is required.";
-  } else {
-    const age = Number(form.clientAge);
-
-    if (isNaN(age) || age < 0 || age > 120) {
-      errors.clientAge = "Enter valid age.";
     }
   }
 
