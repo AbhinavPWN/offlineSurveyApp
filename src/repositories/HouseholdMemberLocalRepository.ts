@@ -28,6 +28,10 @@ export interface HouseholdMemberLocalRepository {
   softDelete(localId: string): Promise<void>;
 
   // Count sync
+  // WARNING:
+  // household_member_count stores the declared household size entered in
+  // the household form. It must not be recalculated from local member rows.
+  // Do not call this method for member insert/update/sync.
   recalculateMemberCount(householdLocalId: string): Promise<void>;
 
   //   helper method

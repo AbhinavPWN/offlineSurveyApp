@@ -112,65 +112,90 @@ export default function MembersListScreen() {
     }, [loadData]),
   );
 
+  // const handleAddMember = async () => {
+  //   if (!householdLocalId || creatingMember) return;
+
+  //   // Household must exist
+  //   if (!household) return;
+
+  //   // Rule 1: Lock if household pending
+  //   // if (household.syncStatus === "PENDING" && members.length > 0) {
+  //   //   Alert.alert(
+  //   //     "Household Locked",
+  //   //     "Members cannot be modified while this household is waiting for sync.",
+  //   //   );
+  //   //   return;
+  //   // }
+
+  //   // Rule 2: Prevent exceeding household size
+  //   // const allowedMembers = household.noofHHMembers ?? 0;
+  //   // const currentMembers = members.length;
+
+  //   // if (currentMembers >= allowedMembers) {
+  //   //   Alert.alert(
+  //   //     "Member Limit Reached",
+  //   //     `This household is limited to ${allowedMembers} members.`,
+  //   //   );
+  //   //   return;
+  //   // }
+  //   const rawAllowedMembers = household.noofHHMembers;
+
+  //   const allowedMembers =
+  //     typeof rawAllowedMembers === "number"
+  //       ? rawAllowedMembers
+  //       : Number(rawAllowedMembers);
+
+  //   const currentMembers = members.length;
+
+  //   console.log("[ADD_MEMBER_LIMIT_DEBUG]", {
+  //     householdLocalId,
+  //     householdId: household.householdId,
+  //     rawAllowedMembers,
+  //     allowedMembers,
+  //     currentMembers,
+  //     householdSyncStatus: household.syncStatus,
+  //   });
+
+  //   // Only apply limit if household member count is valid
+  //   if (Number.isFinite(allowedMembers) && allowedMembers > 0) {
+  //     if (currentMembers >= allowedMembers) {
+  //       Alert.alert(
+  //         "Member Limit Reached",
+  //         `This household is limited to ${allowedMembers} members.`,
+  //       );
+  //       return;
+  //     }
+  //   } else {
+  //     console.warn("[ADD_MEMBER_LIMIT_INVALID]", {
+  //       householdLocalId,
+  //       rawAllowedMembers,
+  //       allowedMembers,
+  //     });
+  //   }
+
+  //   try {
+  //     setCreatingMember(true);
+
+  //     const draft =
+  //       await householdMemberLocalRepository.createDraftMember(
+  //         householdLocalId,
+  //       );
+
+  //     router.push(`/households/${householdLocalId}/members/${draft.localId}`);
+  //   } finally {
+  //     setCreatingMember(false);
+  //   }
+  // };
   const handleAddMember = async () => {
     if (!householdLocalId || creatingMember) return;
 
-    // Household must exist
-    if (!household) return;
-
-    // Rule 1: Lock if household pending
-    // if (household.syncStatus === "PENDING" && members.length > 0) {
-    //   Alert.alert(
-    //     "Household Locked",
-    //     "Members cannot be modified while this household is waiting for sync.",
-    //   );
-    //   return;
-    // }
-
-    // Rule 2: Prevent exceeding household size
-    // const allowedMembers = household.noofHHMembers ?? 0;
-    // const currentMembers = members.length;
-
-    // if (currentMembers >= allowedMembers) {
-    //   Alert.alert(
-    //     "Member Limit Reached",
-    //     `This household is limited to ${allowedMembers} members.`,
-    //   );
-    //   return;
-    // }
-    const rawAllowedMembers = household.noofHHMembers;
-
-    const allowedMembers =
-      typeof rawAllowedMembers === "number"
-        ? rawAllowedMembers
-        : Number(rawAllowedMembers);
-
-    const currentMembers = members.length;
-
-    console.log("[ADD_MEMBER_LIMIT_DEBUG]", {
-      householdLocalId,
-      householdId: household.householdId,
-      rawAllowedMembers,
-      allowedMembers,
-      currentMembers,
-      householdSyncStatus: household.syncStatus,
-    });
-
-    // Only apply limit if household member count is valid
-    if (Number.isFinite(allowedMembers) && allowedMembers > 0) {
-      if (currentMembers >= allowedMembers) {
-        Alert.alert(
-          "Member Limit Reached",
-          `This household is limited to ${allowedMembers} members.`,
-        );
-        return;
-      }
-    } else {
-      console.warn("[ADD_MEMBER_LIMIT_INVALID]", {
-        householdLocalId,
-        rawAllowedMembers,
-        allowedMembers,
-      });
+    // Household record must exist locally
+    if (!household) {
+      Alert.alert(
+        "Household Not Found",
+        "The household information could not be loaded.",
+      );
+      return;
     }
 
     try {
@@ -182,6 +207,13 @@ export default function MembersListScreen() {
         );
 
       router.push(`/households/${householdLocalId}/members/${draft.localId}`);
+    } catch (error) {
+      console.error("[ADD_MEMBER_FAILED]", error);
+
+      Alert.alert(
+        "Unable to Add Member",
+        "The member could not be created. Please try again.",
+      );
     } finally {
       setCreatingMember(false);
     }
@@ -236,6 +268,16 @@ export default function MembersListScreen() {
 
   const totalMembers = members.length;
   const syncedMembers = members.filter((m) => m.syncStatus === "SYNCED").length;
+
+  // const rawAllowedMembers = household?.noofHHMembers;
+  // const allowedMembers = Number(rawAllowedMembers);
+
+  // const hasValidMemberLimit =
+  //   Number.isFinite(allowedMembers) && allowedMembers > 0;
+
+  // const canAddMember =
+  //   !!household && (!hasValidMemberLimit || totalMembers < allowedMembers);
+  const canAddMember = !!household;
 
   return (
     <>
@@ -415,13 +457,27 @@ export default function MembersListScreen() {
           }}
         />
 
-        {household?.syncStatus !== "SYNCED" && (
+        {/* {household?.syncStatus !== "SYNCED" && (
           <Pressable
             onPress={handleAddMember}
             className="bg-blue-600 p-4 rounded-xl mt-4"
           >
             <Text className="text-white text-center font-semibold">
               + Add Member
+            </Text>
+          </Pressable>
+        )} */}
+
+        {canAddMember && (
+          <Pressable
+            onPress={handleAddMember}
+            disabled={creatingMember}
+            className={`p-4 rounded-xl mt-4 ${
+              creatingMember ? "bg-blue-300" : "bg-blue-600"
+            }`}
+          >
+            <Text className="text-white text-center font-semibold">
+              {creatingMember ? "Creating Member..." : "+ Add Member"}
             </Text>
           </Pressable>
         )}

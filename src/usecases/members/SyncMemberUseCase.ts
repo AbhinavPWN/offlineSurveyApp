@@ -368,7 +368,7 @@ export class SyncMembersUseCase {
     }
 
     await this.memberRepo.markSynced(dbMember.localId, result.client_id);
-    await this.memberRepo.recalculateMemberCount(dbMember.householdLocalId);
+    // await this.memberRepo.recalculateMemberCount(dbMember.householdLocalId);
 
     await AppLogger.log("SYNC", "[MEMBER][INSERT][SUCCESS]", {
       localId: member.localId,
@@ -428,7 +428,7 @@ export class SyncMembersUseCase {
     }
 
     await this.memberRepo.markSynced(member.localId, member.clientNo);
-    await this.memberRepo.recalculateMemberCount(dbMember.householdLocalId);
+    // await this.memberRepo.recalculateMemberCount(dbMember.householdLocalId);
 
     await AppLogger.log("SYNC", "[MEMBER][UPDATE][SUCCESS]", {
       localId: member.localId,
