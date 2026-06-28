@@ -36,4 +36,8 @@ export interface HouseholdListingDTO {
 
   hH_CLOSED_DATE: string | null;
   hH_CLOSED_DATE_BS: string | null;
+
+  // Added by the household-listing API
+  modifieD_DATE?: string | null;
+  householD_HEAD_NAME?: string | null;
 }

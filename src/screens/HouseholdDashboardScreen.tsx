@@ -1,7 +1,14 @@
 // src\screens\HouseholdDashboardScreen.tsx
 
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, Pressable, Alert } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { useRouter } from "expo-router";
 
 import { HouseholdLocal } from "../models/household.model";
@@ -62,9 +69,27 @@ type HouseholdWithAggregate = {
   headMobile?: string;
 };
 
-type OnlineHouseholdWithHead = Household & {
-  householdHeadName?: string;
-};
+function formatServerModifiedDate(value?: string | null): string {
+  if (!value?.trim()) return "";
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return value;
+  }
+
+  try {
+    return parsed.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return parsed.toLocaleString();
+  }
+}
 
 function sortHouseholds(data: HouseholdLocal[]) {
   const priorityMap: Record<string, number> = {
@@ -294,10 +319,9 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
-  // const [onlineHouseholds, setOnlineHouseholds] = useState<Household[]>([]);
-  const [onlineHouseholds, setOnlineHouseholds] = useState<
-    OnlineHouseholdWithHead[]
-  >([]);
+  const [onlineHouseholds, setOnlineHouseholds] = useState<Household[]>([]);
+  const [onlineLoading, setOnlineLoading] = useState(false);
+  const [onlineError, setOnlineError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"LOCAL" | "ONLINE">("LOCAL");
   const [downloadedServerIds, setDownloadedServerIds] = useState<Set<string>>(
     new Set(),
@@ -373,35 +397,59 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
   // Fetch Online List separately
   const fetchOnlineHouseholds = async () => {
-    if (!chwProfile) return;
-    if (!isOnline) return;
+    if (!chwProfile || !isOnline || onlineLoading) {
+      return;
+    }
 
     try {
+      setOnlineLoading(true);
+      setOnlineError(null);
+
+      console.log("ONLINE HOUSEHOLD REQUEST", {
+        userName: chwProfile.userName,
+      });
+
       const response = await householdApiService.getHouseholdListing(
         chwProfile.userName,
       );
 
-      const enriched = await Promise.all(
-        response.map(async (household) => {
-          const householdHeadName =
-            await householdApiService.getHouseholdHeadName(
-              household.householdId,
-            );
+      console.log("ONLINE HOUSEHOLD SUCCESS", {
+        count: response.length,
+        firstHousehold: response[0] ?? null,
+      });
 
-          return {
-            ...household,
-            householdHeadName: householdHeadName || "Household head not found",
-          };
-        }),
-      );
-
-      setOnlineHouseholds(enriched);
-
-      // setOnlineHouseholds(enriched);
+      setOnlineHouseholds(response);
     } catch (error: any) {
+      console.error("ONLINE HOUSEHOLD FAILED", {
+        code: error?.code,
+        message: error?.message,
+        status: error?.response?.status,
+        response: error?.response?.data,
+      });
+
       if (error?.response?.status === 401) {
         expireSession();
+        return;
       }
+
+      const isTimeout =
+        error?.code === "ECONNABORTED" ||
+        error?.code === "ETIMEDOUT" ||
+        String(error?.message ?? "")
+          .toLowerCase()
+          .includes("timeout");
+
+      const message = isTimeout
+        ? "The server took too long to return the household list. Please try again."
+        : error?.response?.data?.response_message ||
+          error?.message ||
+          "Unable to load online households.";
+
+      setOnlineError(message);
+
+      Alert.alert("Unable to load households", message);
+    } finally {
+      setOnlineLoading(false);
     }
   };
 
@@ -831,40 +879,99 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       const online = item as Household;
       if (!online.householdId) return null;
 
+      const hasServerUpdate = Boolean(online.modifiedDate?.trim());
+      const isDownloaded = downloadedServerIds.has(online.householdId);
+      const modifiedDateLabel = formatServerModifiedDate(online.modifiedDate);
+
       return (
-        <View className="bg-white mx-4 mt-3 p-4 rounded-xl shadow-sm">
-          <Text className="text-base font-semibold">
-            Household ID: {online.householdId}
+        <View
+          className={`bg-white mx-4 mt-3 p-4 rounded-xl shadow-sm border ${
+            hasServerUpdate ? "border-green-200" : "border-amber-200"
+          }`}
+        >
+          <View className="flex-row justify-between items-start">
+            <View className="flex-1 pr-3">
+              <Text className="text-base font-semibold text-gray-900">
+                {online.householdHeadName || "Household head not found"}
+              </Text>
+
+              <Text className="text-xs text-gray-500 mt-1">
+                Household ID: {online.householdId}
+              </Text>
+            </View>
+
+            <View
+              className={`px-2 py-1 rounded-full ${
+                hasServerUpdate ? "bg-green-100" : "bg-amber-100"
+              }`}
+            >
+              <Text
+                className={`text-xs font-semibold ${
+                  hasServerUpdate ? "text-green-700" : "text-amber-700"
+                }`}
+              >
+                {hasServerUpdate ? "Updated" : "Not updated"}
+              </Text>
+            </View>
+          </View>
+
+          <Text className="text-sm text-gray-700 mt-3">
+            {online.municipalityName || "Municipality"} · Ward {online.wardNo}
           </Text>
 
-          <Text className="text-sm text-gray-700 mt-1">
-            Household Head:{" "}
-            {online.householdHeadName || "Household head not found"}
+          <Text className="text-sm text-gray-600 mt-1">
+            {online.address || "Address not specified"}
           </Text>
 
-          <Text className="text-sm text-gray-700 mt-1">
-            Ward: {online.wardNo}
+          <Text className="text-sm text-gray-500 mt-1">
+            {online.memberCount}{" "}
+            {online.memberCount === 1
+              ? "household member"
+              : "household members"}
           </Text>
 
-          <Text className="text-gray-600 mt-2">
-            Address: {online.address || "Address not specified"}
-          </Text>
-
-          <Text className="text-gray-500 text-sm mt-1">
-            {online.memberCount} Members
-          </Text>
-
-          {downloadedServerIds.has(online.householdId) ? (
-            <Text className="text-green-600 mt-3 font-medium">
-              Already Downloaded
+          <View
+            className={`mt-3 rounded-lg px-3 py-2 ${
+              hasServerUpdate ? "bg-green-50" : "bg-amber-50"
+            }`}
+          >
+            <Text
+              className={`text-sm font-semibold ${
+                hasServerUpdate ? "text-green-700" : "text-amber-700"
+              }`}
+            >
+              {hasServerUpdate
+                ? "✓ Household updated on server"
+                : "No synced update yet"}
             </Text>
+
+            <Text
+              className={`text-xs mt-1 ${
+                hasServerUpdate ? "text-green-600" : "text-amber-600"
+              }`}
+            >
+              {hasServerUpdate
+                ? `Last updated: ${modifiedDateLabel}`
+                : "Only the original household listing is available."}
+            </Text>
+          </View>
+
+          {isDownloaded ? (
+            <View className="mt-3 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
+              <Text className="text-blue-700 font-medium">
+                ✓ Downloaded on this device
+              </Text>
+              <Text className="text-xs text-blue-600 mt-1">
+                Open it from the Downloaded tab.
+              </Text>
+            </View>
           ) : (
             <Pressable
               onPress={() => handleDownload(online)}
               className="mt-3 bg-blue-600 px-4 py-2 rounded-lg"
             >
               <Text className="text-white text-center font-medium">
-                Download
+                Download household
               </Text>
             </Pressable>
           )}
@@ -1033,9 +1140,12 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       )}
 
       {/* SUMMARY */}
-      <View className="px-4 mt-4">
-        <SummaryBar households={households.map((h) => h.household)} />
-      </View>
+      {/* DOWNLOADED HOUSEHOLD SYNC SUMMARY */}
+      {activeTab === "LOCAL" && (
+        <View className="px-4 mt-4">
+          <SummaryBar households={households.map((h) => h.household)} />
+        </View>
+      )}
 
       {/* TAB SWITCH UI */}
       <View className="flex-row mx-4 mt-4 bg-gray-200 rounded-lg overflow-hidden">
@@ -1046,7 +1156,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
           <Text className="text-center font-medium">Downloaded</Text>
         </Pressable>
 
-        <Pressable
+        {/* <Pressable
           onPress={async () => {
             if (!isOnline) {
               alert(
@@ -1061,8 +1171,75 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
           className={`flex-1 py-2 ${activeTab === "ONLINE" ? "bg-white" : ""}`}
         >
           <Text className="text-center font-medium">Online</Text>
+        </Pressable>  */}
+        <Pressable
+          disabled={onlineLoading}
+          onPress={async () => {
+            if (!isOnline) {
+              Alert.alert(
+                "No Internet Connection",
+                "Connect to the internet to view online households.",
+              );
+              return;
+            }
+
+            setActiveTab("ONLINE");
+
+            if (onlineHouseholds.length === 0) {
+              await fetchOnlineHouseholds();
+            }
+          }}
+          className={`flex-1 py-2 ${
+            activeTab === "ONLINE" ? "bg-white" : ""
+          } ${onlineLoading ? "opacity-60" : ""}`}
+        >
+          <Text className="text-center font-medium">
+            {onlineLoading ? "Loading..." : "Online"}
+          </Text>
         </Pressable>
       </View>
+
+      {/* Online Refresh button */}
+      {/* ONLINE LIST CONTROLS */}
+      {activeTab === "ONLINE" && (
+        <View className="mx-4 mt-3 flex-row items-center justify-between">
+          <Text className="text-sm text-gray-600">
+            {onlineLoading
+              ? "Loading online households..."
+              : `${onlineHouseholds.length} online ${
+                  onlineHouseholds.length === 1 ? "household" : "households"
+                }`}
+          </Text>
+
+          <Pressable
+            onPress={fetchOnlineHouseholds}
+            disabled={onlineLoading || !isOnline}
+            className={`px-4 py-2 rounded-lg ${
+              onlineLoading || !isOnline
+                ? "bg-gray-200"
+                : "bg-blue-100 active:bg-blue-200"
+            }`}
+          >
+            <View className="flex-row items-center">
+              {onlineLoading && (
+                <ActivityIndicator
+                  size="small"
+                  color="#6B7280"
+                  style={{ marginRight: 6 }}
+                />
+              )}
+
+              <Text
+                className={`text-sm font-semibold ${
+                  onlineLoading || !isOnline ? "text-gray-500" : "text-blue-700"
+                }`}
+              >
+                {onlineLoading ? "Refreshing..." : "Refresh"}
+              </Text>
+            </View>
+          </Pressable>
+        </View>
+      )}
 
       {syncing && (
         <View className="mx-4 mt-3 bg-white p-3 rounded-lg shadow-sm">
@@ -1083,7 +1260,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       )}
 
       {/* LIST */}
-      <FlatList<HouseholdWithAggregate | OnlineHouseholdWithHead>
+      <FlatList<HouseholdWithAggregate | Household>
         data={currentData}
         keyExtractor={(item, index) => {
           if (activeTab === "LOCAL") {
@@ -1099,7 +1276,20 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
           paddingTop: currentData.length === 0 ? 80 : 12,
         }}
         ListEmptyComponent={
-          activeTab === "ONLINE" && !isOnline ? (
+          activeTab === "ONLINE" && onlineLoading ? (
+            <View className="items-center px-6">
+              <ActivityIndicator size="large" />
+
+              <Text className="text-lg font-semibold text-gray-700 mt-4">
+                Loading online households
+              </Text>
+
+              <Text className="text-gray-500 text-center mt-2">
+                The server has many household records. This may take one or two
+                minutes.
+              </Text>
+            </View>
+          ) : activeTab === "ONLINE" && !isOnline ? (
             <View className="items-center px-6">
               <Text className="text-5xl mb-4">📡</Text>
 
@@ -1110,6 +1300,23 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
               <Text className="text-gray-500 text-center">
                 Connect to the internet to view and download online households.
               </Text>
+            </View>
+          ) : activeTab === "ONLINE" && onlineError ? (
+            <View className="items-center px-6">
+              <Text className="text-5xl mb-4">⚠️</Text>
+
+              <Text className="text-lg font-semibold text-red-700 mb-2">
+                Unable to load households
+              </Text>
+
+              <Text className="text-gray-500 text-center">{onlineError}</Text>
+
+              <Pressable
+                onPress={fetchOnlineHouseholds}
+                className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
+              >
+                <Text className="text-white font-medium">Try Again</Text>
+              </Pressable>
             </View>
           ) : (
             <View className="items-center px-6">

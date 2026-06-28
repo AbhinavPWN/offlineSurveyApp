@@ -48,5 +48,6 @@ export interface Household {
 
   // Audit
   createdOn: string;
+  modifiedDate?: string | null; // last server-side update after sync
   employeeId?: string;
 }

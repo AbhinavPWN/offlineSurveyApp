@@ -16,6 +16,7 @@ export function mapListingDtoToHousehold(dto: HouseholdListingDTO): Household {
 
     chwId: dto.namE_OF_CHW_ID,
     chwName: dto.namE_OF_CHW,
+    householdHeadName: dto.householD_HEAD_NAME?.trim() || undefined,
 
     provinceId: dto.province,
     provinceName: dto.provincE_NAME,
@@ -42,6 +43,7 @@ export function mapListingDtoToHousehold(dto: HouseholdListingDTO): Household {
     closedDateBS: dto.hH_CLOSED_DATE_BS,
 
     createdOn: dto.createD_ON,
+    modifiedDate: dto.modifieD_DATE ?? null,
     employeeId: dto.namE_OF_CHW_ID, // required for member insert/update API
   };
 }

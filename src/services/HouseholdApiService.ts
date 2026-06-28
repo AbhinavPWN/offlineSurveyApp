@@ -195,8 +195,14 @@ export class HouseholdApiServiceImpl implements HouseholdApiService {
     try {
       await AppLogger.log("INFO", "Fetching household listing", { chwId });
 
+      // const response = await this.client.get<GetHHDataListResponse>(
+      //   `/GetHHDataList/${chwId}`,
+      // );
       const response = await this.client.get<GetHHDataListResponse>(
-        `/GetHHDataList/${chwId}`,
+        `/GetHHDataList/${encodeURIComponent(chwId)}`,
+        {
+          timeout: 180000, // 3 minutes for this unusually large response
+        },
       );
 
       const data = response.data;
@@ -227,8 +233,12 @@ export class HouseholdApiServiceImpl implements HouseholdApiService {
       return households;
     } catch (error: any) {
       await AppLogger.log("ERROR", "Failed to fetch household listing", {
+        code: error?.code,
         message: error?.message,
+        status: error?.response?.status,
+        response: error?.response?.data,
       });
+
       throw error;
     }
   }
