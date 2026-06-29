@@ -72,23 +72,9 @@ type HouseholdWithAggregate = {
 function formatServerModifiedDate(value?: string | null): string {
   if (!value?.trim()) return "";
 
-  const parsed = new Date(value);
-
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-
-  try {
-    return parsed.toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return parsed.toLocaleString();
-  }
+  // Backend already returns a BS date in YYYY-MM-DD format.
+  // Do not parse it as a JavaScript/Gregorian date.
+  return value.trim().split("T")[0].split(" ")[0];
 }
 
 function sortHouseholds(data: HouseholdLocal[]) {
@@ -951,7 +937,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
               }`}
             >
               {hasServerUpdate
-                ? `Last updated: ${modifiedDateLabel}`
+                ? `Last updated (BS): ${modifiedDateLabel}`
                 : "Only the original household listing is available."}
             </Text>
           </View>
