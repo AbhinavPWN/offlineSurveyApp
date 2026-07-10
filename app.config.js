@@ -6,7 +6,7 @@ export default ({ config }) => {
 
     name: isDev ? "Nirdhan Survey (Dev)" : "Nirdhan Survey",
     slug: "nirdhan-survey",
-    version: isDev ? "1.0.6.8-dev" : "1.0.6.8",
+    version: isDev ? "1.0.6.9-dev" : "1.0.6.9",
     orientation: "portrait",
 
     icon: "./assets/images/logo.png",
