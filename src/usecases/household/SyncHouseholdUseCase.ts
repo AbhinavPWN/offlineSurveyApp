@@ -53,27 +53,43 @@ export class SyncHouseholdUseCase {
   async execute(chwUsername: string): Promise<SyncEntitySummary> {
     await AppLogger.log("SYNC", "[HOUSEHOLD][START]", { chwUsername });
 
-    const pendingHouseholds = await this.householdRepo.listBySyncStatus(
-      chwUsername,
-      "PENDING",
-    );
+    const [pendingHouseholds, failedHouseholds] = await Promise.all([
+      this.householdRepo.listBySyncStatus(chwUsername, "PENDING"),
+      this.householdRepo.listBySyncStatus(chwUsername, "FAILED"),
+    ]);
+
+    const householdsToSync = [...pendingHouseholds, ...failedHouseholds];
 
     const summary = createEmptySyncSummary();
-    summary.total = pendingHouseholds.length;
+    summary.total = householdsToSync.length;
 
+    // if (__DEV__) {
+    //   console.log("[SYNC][HOUSEHOLD][PENDING]", {
+    //     count: pendingHouseholds.length,
+    //     pendingHouseholds,
+    //   });
+    // }
     if (__DEV__) {
-      console.log("[SYNC][HOUSEHOLD][PENDING]", {
-        count: pendingHouseholds.length,
-        pendingHouseholds,
+      console.log("[SYNC][HOUSEHOLD][READY]", {
+        pendingCount: pendingHouseholds.length,
+        failedRetryCount: failedHouseholds.length,
+        total: householdsToSync.length,
+        householdsToSync,
       });
     }
 
+    // await AppLogger.log("SYNC", "[HOUSEHOLD][PENDING_FOUND]", {
+    //   count: pendingHouseholds.length,
+    //   chwUsername,
+    // });
     await AppLogger.log("SYNC", "[HOUSEHOLD][PENDING_FOUND]", {
-      count: pendingHouseholds.length,
+      pendingCount: pendingHouseholds.length,
+      failedRetryCount: failedHouseholds.length,
+      count: householdsToSync.length,
       chwUsername,
     });
 
-    for (const household of pendingHouseholds) {
+    for (const household of householdsToSync) {
       const label = getHouseholdLabel(household);
 
       await AppLogger.log("SYNC", "[HOUSEHOLD][PROCESSING]", {
@@ -116,12 +132,15 @@ export class SyncHouseholdUseCase {
           localId: household.localId,
           householdId: household.householdId,
           action: household.syncAction,
+          address: household.address,
           message: error?.message,
+          code: error?.code,
           status: error?.response?.status,
+          response: error?.response?.data,
           reason,
         });
 
-        await this.householdRepo.markFailed(household.localId);
+        await this.householdRepo.markFailed(household.localId, reason);
 
         summary.failed += 1;
         summary.items.push({

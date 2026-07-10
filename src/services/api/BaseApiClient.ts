@@ -36,10 +36,15 @@ export class BaseApiClient {
     client.interceptors.request.use(async (config) => {
       config.metadata = { startTime: Date.now() };
 
+      // await AppLogger.log("INFO", "API_REQUEST", {
+      //   method: config.method?.toUpperCase(),
+      //   url: `${config.baseURL ?? ""}${config.url ?? ""}`,
+      //   body: config.data ?? null,
+      // });
       await AppLogger.log("INFO", "API_REQUEST", {
         method: config.method?.toUpperCase(),
         url: `${config.baseURL ?? ""}${config.url ?? ""}`,
-        body: config.data ?? null,
+        hasBody: config.data != null,
       });
 
       try {
@@ -73,13 +78,24 @@ export class BaseApiClient {
       },
       async (error) => {
         const config = error.config || {};
-        const duration = Date.now() - (config.metadata?.startTime ?? 0);
+        const duration = config.metadata?.startTime
+          ? Date.now() - config.metadata.startTime
+          : undefined;
+
+        const responseData = error.response?.data;
 
         await AppLogger.log("ERROR", "API_ERROR", {
           method: config.method?.toUpperCase(),
-          url: config.baseURL + config.url,
+          url: `${config.baseURL ?? ""}${config.url ?? ""}`,
           status: error.response?.status ?? "NO_RESPONSE",
+          code: error.code,
           message: error.message,
+          response: responseData ?? null,
+          backendMessage:
+            responseData?.response_message ??
+            responseData?.message ??
+            responseData?.error ??
+            null,
           durationMs: duration,
         });
 

@@ -46,37 +46,37 @@ export function getStepStatus(summary: SyncEntitySummary): SyncStepStatus {
 }
 
 export function getSafeSyncReason(error: any): string {
-  const raw =
-    error?.response?.data?.message ||
-    error?.response?.data?.response_message ||
+  const responseData = error?.response?.data;
+
+  const rawValue =
+    responseData?.message ||
+    responseData?.response_message ||
+    responseData?.error ||
+    (typeof responseData === "string" ? responseData : "") ||
     error?.message ||
     "";
+
+  const raw = String(rawValue).trim();
 
   if (!raw) {
     return "Could not sync. Please review and try again.";
   }
 
-  if (raw === "Offline" || raw === "OFFLINE") {
+  const normalized = raw.toLowerCase();
+
+  if (normalized === "offline") {
     return "No internet connection.";
   }
 
-  if (raw.includes("Network")) {
+  if (normalized.includes("network")) {
     return "Network problem. Please try again.";
   }
 
-  if (raw.includes("timeout")) {
+  if (normalized.includes("timeout")) {
     return "Connection timed out. Please try again.";
   }
 
-  if (raw.includes("400")) {
-    return "Some information may be incomplete or invalid.";
-  }
-
-  if (raw.includes("500")) {
-    return "Server problem. Please try again later.";
-  }
-
-  if (raw.includes("SESSION_EXPIRED")) {
+  if (normalized.includes("session_expired")) {
     return "Session expired. Please login again.";
   }
 

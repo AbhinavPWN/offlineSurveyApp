@@ -319,15 +319,16 @@ export class SQLiteHouseholdLocalRepository implements HouseholdLocalRepository 
   async markFailed(localId: string, errorMessage?: string): Promise<void> {
     await db.runAsync(
       `
-      UPDATE households
-      SET status = ?, updated_at = ?
-      WHERE id = ?
-      `,
+    UPDATE households
+    SET status = ?, updated_at = ?
+    WHERE id = ?
+    `,
       ["FAILED", new Date().toISOString(), localId],
     );
 
     await AppLogger.log("ERROR", "Household marked FAILED", {
       localId,
+      reason: errorMessage ?? "Unknown household sync failure.",
     });
   }
 
