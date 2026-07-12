@@ -17,8 +17,7 @@ type Option = {
   value: string;
 };
 
-// Updated this for proper validation handling in surveyValidation.ts
-type VisibleIf = {
+export type VisibleIf = {
   dependsOn: string;
   operator?: "equals" | "notEquals" | "includes" | "notEmpty";
   value?: string;
@@ -43,7 +42,16 @@ export type QuestionConfig = {
   required?: boolean;
   inputFormat?: "bs-date";
   options?: Option[];
+
+  // Single visibility condition
   visibleIf?: VisibleIf;
+
+  // Show when at least one condition matches
+  visibleIfAny?: VisibleIf[];
+
+  // Show only when every condition matches
+  visibleIfAll?: VisibleIf[];
+
   keyboardType?: "default" | "numeric" | "number-pad";
   readonly?: boolean;
   placeholder?: string;
@@ -54,25 +62,22 @@ type Props = {
   question: QuestionConfig;
   value: string | string[] | null;
   error: string | null;
-
   dispatch: (action: any) => void;
-
-  // visibleValue?: string | null;
   answers: Record<string, any>;
   savingStatus?: "saving" | "saved" | "error";
 };
 
 // ---------- HELPERS ----------
 
-// Helper for Date format BS :
-
 function formatBSDate(value: string): string {
   const digits = value.replace(/\D/g, "");
 
   if (digits.length <= 4) return digits;
+
   if (digits.length <= 6) {
     return `${digits.slice(0, 4)}-${digits.slice(4)}`;
   }
+
   return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
 }
 
@@ -83,7 +88,6 @@ const QuestionRendererComponent = ({
   value,
   error,
   dispatch,
-  // visibleValue,
   answers,
   savingStatus,
 }: Props) => {
@@ -96,7 +100,7 @@ const QuestionRendererComponent = ({
     (newValue: string | string[] | null) => {
       let finalValue = newValue;
 
-      //  Apply BS date formatting
+      // Apply BS date formatting
       if (
         question.type === "text" &&
         question.inputFormat === "bs-date" &&
@@ -183,7 +187,7 @@ const QuestionRendererComponent = ({
       );
       break;
 
-    case "checkbox":
+    case "checkbox": {
       let safeValue: string[] = [];
 
       if (Array.isArray(value)) {
@@ -191,6 +195,7 @@ const QuestionRendererComponent = ({
       } else if (typeof value === "string") {
         try {
           const parsed = JSON.parse(value);
+
           if (Array.isArray(parsed)) {
             safeValue = parsed;
           }
@@ -198,6 +203,7 @@ const QuestionRendererComponent = ({
           safeValue = [];
         }
       }
+
       field = (
         <CheckboxGroupField
           label={displayLabel}
@@ -210,6 +216,7 @@ const QuestionRendererComponent = ({
         />
       );
       break;
+    }
 
     default:
       return null;
@@ -218,13 +225,12 @@ const QuestionRendererComponent = ({
   return <View className="mb-5">{field}</View>;
 };
 
-// ---------- MEMO (CRITICAL) ----------
+// ---------- MEMO ----------
 
 const areEqual = (prev: Props, next: Props) => {
   return (
     prev.value === next.value &&
     prev.error === next.error &&
-    // prev.visibleValue === next.visibleValue &&
     prev.answers === next.answers &&
     prev.question === next.question &&
     prev.savingStatus === next.savingStatus

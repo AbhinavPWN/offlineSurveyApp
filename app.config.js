@@ -6,7 +6,7 @@ export default ({ config }) => {
 
     name: isDev ? "Nirdhan Survey (Dev)" : "Nirdhan Survey",
     slug: "nirdhan-survey",
-    version: isDev ? "1.0.6.9-dev" : "1.0.6.9",
+    version: isDev ? "1.0.7.1-dev" : "1.0.7.1",
     orientation: "portrait",
 
     icon: "./assets/images/logo.png",
@@ -20,7 +20,7 @@ export default ({ config }) => {
     android: {
       package: isDev ? "np.com.nirdhan.survey.dev" : "np.com.nirdhan.survey",
 
-      versionCode: 9,
+      versionCode: 10,
       predictiveBackGestureEnabled: false,
 
       adaptiveIcon: {
