@@ -3,6 +3,7 @@ import { SurveyAnswers } from "../state/surveyReducer";
 
 function isValidBSDate(value: string): boolean {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+
   if (!match) return false;
 
   const year = Number(match[1]);
@@ -18,19 +19,22 @@ function isValidBSDate(value: string): boolean {
 }
 
 // ---------- HELPER: NORMALIZE VALUE ----------
-function normalizeValue(value: unknown): unknown {
-  // Handle undefined / null directly
-  if (value === undefined || value === null) return null;
 
-  // Try parsing stringified arrays (e.g. "[]", '["1","2"]')
+function normalizeValue(value: unknown): unknown {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  // Parse stringified checkbox arrays such as '["1","2"]'
   if (typeof value === "string") {
     try {
       const parsed = JSON.parse(value);
+
       if (Array.isArray(parsed)) {
         return parsed;
       }
     } catch {
-      // ignore parse error
+      // Keep the original string when it is not JSON
     }
   }
 
@@ -38,8 +42,11 @@ function normalizeValue(value: unknown): unknown {
 }
 
 // ---------- HELPER: EMPTY CHECK ----------
+
 function isEmptyValue(value: unknown): boolean {
-  if (value === null || value === undefined) return true;
+  if (value === null || value === undefined) {
+    return true;
+  }
 
   if (typeof value === "string") {
     return value.trim() === "";
@@ -52,9 +59,8 @@ function isEmptyValue(value: unknown): boolean {
   return false;
 }
 
-// ---------- VISIBILITY ----------
-
 // ---------- VALIDATION ----------
+
 export function validateSection(
   questions: QuestionConfig[],
   answers: SurveyAnswers,
@@ -62,9 +68,10 @@ export function validateSection(
   const errors: Record<string, string> = {};
 
   for (const question of questions) {
-    if (!isQuestionVisible(question, answers)) continue;
-
-    // if (!question.validation) continue;
+    // Do not validate questions skipped by business logic
+    if (!isQuestionVisible(question, answers)) {
+      continue;
+    }
 
     const rawValue = answers[question.key];
     const value = normalizeValue(rawValue);
@@ -76,7 +83,7 @@ export function validateSection(
     }
 
     for (const rule of question.validation ?? []) {
-      // REQUIRED
+      // ---------- REQUIRED ----------
       if (rule.type === "required") {
         if (isEmptyValue(value)) {
           errors[question.key] = rule.message;
@@ -84,10 +91,9 @@ export function validateSection(
         }
       }
 
-      // PATTERN
+      // ---------- PATTERN ----------
       if (rule.type === "pattern") {
         if (typeof value === "string" && value) {
-          //  Special handling for BS date
           if (question.inputFormat === "bs-date") {
             if (!isValidBSDate(value)) {
               errors[question.key] = rule.message;
@@ -100,6 +106,7 @@ export function validateSection(
         }
       }
 
+      // ---------- MINIMUM SELECTIONS ----------
       if (rule.type === "minSelections") {
         if (Array.isArray(value) && value.length < (rule.value ?? 1)) {
           errors[question.key] = rule.message;
@@ -107,10 +114,11 @@ export function validateSection(
         }
       }
 
+      // ---------- CONDITIONALLY REQUIRED ----------
       if (rule.type === "requiredIf") {
-        const dependent = normalizeValue(answers[rule.dependsOn]);
+        const dependentValue = normalizeValue(answers[rule.dependsOn]);
 
-        if (dependent === rule.value && isEmptyValue(value)) {
+        if (dependentValue === rule.value && isEmptyValue(value)) {
           errors[question.key] = rule.message;
           break;
         }
@@ -121,29 +129,28 @@ export function validateSection(
   return errors;
 }
 
-// ---------- COMPLETION ----------
+// ---------- SECTION COMPLETION ----------
+
 export function isSectionComplete(
   questions: QuestionConfig[],
   answers: SurveyAnswers,
 ): boolean {
   for (const question of questions) {
-    if (!isQuestionVisible(question, answers)) continue;
-
-    // if (!question.validation) continue;
+    // Hidden questions do not affect completion
+    if (!isQuestionVisible(question, answers)) {
+      continue;
+    }
 
     const rawValue = answers[question.key];
     const value = normalizeValue(rawValue);
 
-    // ---------- SIMPLE REQUIRED ----------
     if (question.required && isEmptyValue(value)) {
       return false;
     }
 
     for (const rule of question.validation ?? []) {
-      if (rule.type === "required") {
-        if (isEmptyValue(value)) {
-          return false;
-        }
+      if (rule.type === "required" && isEmptyValue(value)) {
+        return false;
       }
     }
   }
@@ -151,32 +158,58 @@ export function isSectionComplete(
   return true;
 }
 
+// ---------- QUESTION VISIBILITY ----------
+
 export function isQuestionVisible(
   question: QuestionConfig,
   answers: SurveyAnswers,
 ): boolean {
-  if (!question.visibleIf) return true;
+  const matchesCondition = (
+    condition: NonNullable<QuestionConfig["visibleIf"]>,
+  ): boolean => {
+    const { dependsOn, operator = "equals", value } = condition;
+    const actualValue = normalizeValue(answers[dependsOn]);
 
-  const { dependsOn, operator = "equals", value } = question.visibleIf;
+    switch (operator) {
+      case "equals":
+        return actualValue === value;
 
-  const actual = normalizeValue(answers[dependsOn]);
+      case "notEquals":
+        return actualValue !== value;
 
-  switch (operator) {
-    case "equals":
-      return actual === value;
+      case "includes":
+        return (
+          Array.isArray(actualValue) &&
+          value !== undefined &&
+          actualValue.includes(value)
+        );
 
-    case "notEquals":
-      return actual !== value;
+      case "notEmpty":
+        return Array.isArray(actualValue)
+          ? actualValue.length > 0
+          : actualValue !== null &&
+              actualValue !== undefined &&
+              actualValue !== "";
 
-    case "includes":
-      return Array.isArray(actual) && actual.includes(value);
+      default:
+        return false;
+    }
+  };
 
-    case "notEmpty":
-      return Array.isArray(actual)
-        ? actual.length > 0
-        : actual !== null && actual !== undefined && actual !== "";
-
-    default:
-      return false;
+  // A normal single visibility condition
+  if (question.visibleIf && !matchesCondition(question.visibleIf)) {
+    return false;
   }
+
+  // Every condition must match
+  if (question.visibleIfAll && !question.visibleIfAll.every(matchesCondition)) {
+    return false;
+  }
+
+  // At least one condition must match
+  if (question.visibleIfAny && !question.visibleIfAny.some(matchesCondition)) {
+    return false;
+  }
+
+  return true;
 }

@@ -4,8 +4,8 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
   // ---------- LMP ----------
   {
     key: "pregnantWomanQ1",
-    label: "Date of last menstruation (LMP)",
-    labelNp: "अन्तिम महिनावारी मिति",
+    label: "Date of your last menstruation (LMP)",
+    labelNp: "तपाईंको अन्तिम पटक महिनावारी भएको मिति (LMP)",
     type: "text",
     inputFormat: "bs-date",
     keyboardType: "number-pad",
@@ -23,11 +23,11 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
     ],
   },
 
-  // ---------- EDD (AUTO CALCULATED → NOT REQUIRED) ----------
+  // ---------- EDD (AUTO CALCULATED) ----------
   {
     key: "pregnantWomanQ2",
     label: "Expected Date of Delivery (EDD)",
-    labelNp: "बच्चा जन्मने अनुमानित मिति",
+    labelNp: "बच्चा जन्मने अनुमानित मिति (EDD)",
     type: "text",
     inputFormat: "bs-date",
     readonly: true,
@@ -39,10 +39,14 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
   {
     key: "pregnantWomanQ3",
     label: "Is this your first pregnancy?",
-    labelNp: "के यो पहिलो गर्भ हो?",
+    labelNp: "के यो तपाईंको पहिलो गर्भ हो?",
     type: "select",
     options: [
-      { label: "Yes", labelNp: "हो", value: "Y" },
+      {
+        label: "Yes",
+        labelNp: "हो",
+        value: "Y",
+      },
       { label: "No", labelNp: "छैन", value: "N" },
     ],
     validation: [
@@ -53,11 +57,12 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
     ],
   },
 
-  // ---------- PREVIOUS CONDITIONS (ONLY if NOT first pregnancy) ----------
+  // ---------- PREVIOUS PREGNANCY CONDITIONS ----------
   {
     key: "pregnantWomanQ4",
     label: "Have you had following conditions in your previous pregnancies?",
-    labelNp: "अघिल्लो गर्भका समस्याहरू",
+    labelNp:
+      "के तपाईंलाई अघिल्लो गर्भको समयमा तलका मध्ये कुनै समस्या भएको थियो? (बक्समा चिन्ह लगाउनुहोस्)",
     type: "checkbox",
     visibleIf: {
       dependsOn: "pregnantWomanQ3",
@@ -66,12 +71,36 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
     },
     options: [
       { label: "Abortion", labelNp: "गर्भपतन", value: "A" },
-      { label: "Still birth", labelNp: "मृत बच्चा जन्मिएको", value: "S" },
-      { label: "C-section", labelNp: "अप्रेसन", value: "C" },
-      { label: "Eclampsia", labelNp: "काप्ने समस्या", value: "E" },
-      { label: "Haemorrhage", labelNp: "धेरै रगत बगेको", value: "AP" },
-      { label: "High BP", labelNp: "उच्च रक्तचाप", value: "H" },
-      { label: "Diabetes", labelNp: "मधुमेह", value: "D" },
+      {
+        label: "Still birth",
+        labelNp: "मृत बच्चा जन्मिएको",
+        value: "S",
+      },
+      {
+        label: "C-Section",
+        labelNp: "शल्यक्रिया (अप्रेसन) गरेर बच्चा जन्माएको",
+        value: "C",
+      },
+      {
+        label: "Eclampsia/convulsion",
+        labelNp: "गर्भावस्थामा बेहोस हुने वा काप्ने समस्या (Eclampsia)",
+        value: "E",
+      },
+      {
+        label: "Ante or post-partum haemorrhage",
+        labelNp: "सुत्केरी हुनु अघि वा पछि धेरै रगत बगेको",
+        value: "AP",
+      },
+      {
+        label: "High blood pressure",
+        labelNp: "उच्च रक्तचाप (High BP)",
+        value: "H",
+      },
+      {
+        label: "Diabetes",
+        labelNp: "मधुमेह (चिनी रोग)",
+        value: "D",
+      },
       { label: "Others", labelNp: "अन्य", value: "O" },
     ],
   },
@@ -97,12 +126,21 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
   // ---------- ANC ----------
   {
     key: "pregnantWomanQ5",
-    label: "Visited for ANC?",
-    labelNp: "गर्भ जाँच गराउनुभयो?",
+    label: "Have you visited a health provider or health facility for ANC?",
+    labelNp:
+      "के तपाईंले गर्भ जाँच (ANC) को लागि स्वास्थ्यकर्मी वा स्वास्थ्य संस्थामा देखाउनुभयो?",
     type: "select",
+    visibleIf: {
+      dependsOn: "pregnantWomanQ3",
+      value: "N",
+    },
     options: [
       { label: "Yes", labelNp: "देखाएँ", value: "Y" },
-      { label: "No", labelNp: "देखाएको छैन", value: "N" },
+      {
+        label: "No",
+        labelNp: "देखाएको छैन",
+        value: "N",
+      },
     ],
     validation: [
       {
@@ -120,10 +158,10 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
     inputFormat: "bs-date",
     keyboardType: "number-pad",
     placeholder: "YYYY-MM-DD",
-    visibleIf: {
-      dependsOn: "pregnantWomanQ5",
-      value: "Y",
-    },
+    visibleIfAll: [
+      { dependsOn: "pregnantWomanQ3", value: "N" },
+      { dependsOn: "pregnantWomanQ5", value: "Y" },
+    ],
     validation: [
       {
         type: "required",
@@ -137,18 +175,18 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
     ],
   },
 
-  // ---------- TABLETS ----------
+  // ---------- IRON-FOLATE ----------
   {
     key: "pregnantWomanQ7",
     label: "How many iron-folate tablets have you taken in last one month?",
-    labelNp: "आइरन चक्की संख्या",
+    labelNp: "पछिल्लो एक महिनामा तपाईंले कतिवटा आइरन-फोलेट चक्की खानुभयो?",
     type: "text",
     keyboardType: "number-pad",
     placeholder: "e.g. 30",
-    visibleIf: {
-      dependsOn: "pregnantWomanQ5",
-      value: "Y",
-    },
+    visibleIfAny: [
+      { dependsOn: "pregnantWomanQ3", value: "Y" },
+      { dependsOn: "pregnantWomanQ5", value: "Y" },
+    ],
     validation: [
       {
         type: "required",
@@ -157,10 +195,11 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
     ],
   },
 
+  // ---------- CALCIUM ----------
   {
     key: "pregnantWomanQ8",
     label: "How many calcium tablets have you taken in last one month?",
-    labelNp: "क्याल्सियम चक्की संख्या",
+    labelNp: "पछिल्लो एक महिनामा तपाईंले कतिवटा क्याल्सियम चक्की खानुभयो?",
     type: "text",
     keyboardType: "number-pad",
     placeholder: "e.g. 30",
@@ -175,12 +214,16 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
   // ---------- TT ----------
   {
     key: "pregnantWomanQ9",
-    label: "Have you taken TT vaccination",
-    labelNp: "टिटी सुई लगाउनुभयो?",
+    label: "Have you taken TT vaccination?",
+    labelNp: "के तपाईंले टिटी (TT/Td) को सुई लगाउनुभयो?",
     type: "select",
     options: [
       { label: "Yes", labelNp: "लगाएँ", value: "Y" },
-      { label: "No", labelNp: "लगाएको छैन", value: "N" },
+      {
+        label: "No",
+        labelNp: "लगाएको छैन",
+        value: "N",
+      },
     ],
     validation: [
       {
@@ -192,8 +235,8 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
 
   {
     key: "pregnantWomanQ10",
-    label: "Number of TT doses",
-    labelNp: "टिटी सुई संख्या",
+    label: "How many TT vaccinations have you received?",
+    labelNp: "तपाईंले कति पटक टिटी (TT/Td) सुई लगाउनुभयो?",
     type: "text",
     keyboardType: "number-pad",
     placeholder: "e.g. 2",
@@ -209,11 +252,13 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
     ],
   },
 
-  // ---------- BP ----------
+  // ---------- BLOOD PRESSURE ----------
   {
     key: "pregnantWomanQ11",
-    label: "Blood Pressure (mm of Hg)",
-    labelNp: "रक्तचाप",
+    label:
+      "Blood Pressure (mm of Hg) — If systolic is 140 or higher and/or diastolic is 90 or higher, refer to a health facility",
+    labelNp:
+      "रक्तचाप (ब्लड प्रेसर) — माथिल्लो १४० वा सोभन्दा बढी र/वा तल्लो ९० वा सोभन्दा बढी भएमा स्वास्थ्य संस्थामा पठाउने",
     type: "text",
     keyboardType: "number-pad",
     placeholder: "e.g. 120/80",
@@ -230,11 +275,13 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
     ],
   },
 
-  // ---------- GLUCOSE ----------
+  // ---------- BLOOD GLUCOSE ----------
   {
     key: "pregnantWomanQ12",
-    label: "Blood Glucose (mmol/L)",
-    labelNp: "रगतमा चिनी",
+    label:
+      "Blood Glucose (mmol/L) — If random blood sugar is above 11.1, refer to a health facility",
+    labelNp:
+      "रगतमा चिनीको मात्रा (सुगर) — सुगर ११.१ भन्दा बढी भएमा स्वास्थ्य संस्थामा पठाउने",
     type: "text",
     keyboardType: "number-pad",
     placeholder: "e.g. 5.6",
@@ -250,13 +297,17 @@ export const pregnantWomanQuestions: QuestionConfig[] = [
   {
     key: "pregnantWomanQ13",
     label:
-      " Have you made a birth plan? (which facility you will go for delivery, saved money, had blood grouping done and had a blood donor ready)",
+      "Have you made a birth plan? (Which facility you will go to for delivery, saved money, had blood grouping done and had a blood donor ready)",
     labelNp:
-      "के तपाईंले सुत्केरी हुने योजना (Birth Plan) बनाउनुभएको छ ? (कुन अस्पताल जाने, पैसाको जोहो, रगतको समूह जाँच र रगत दिने मान्छे तयार पार्ने) ",
+      "के तपाईंले सुत्केरी हुने योजना (Birth Plan) बनाउनुभएको छ? (कुन अस्पताल जाने, पैसाको जोहो, रगतको समूह जाँच र रगत दिने मान्छे तयार पार्ने)",
     type: "select",
     options: [
       { label: "Yes", labelNp: "छ", value: "Y" },
-      { label: "No", labelNp: "छैन", value: "N" },
+      {
+        label: "No → Advice to make a birth plan",
+        labelNp: "छैन → सुत्केरी योजना बनाउन सल्लाह दिने",
+        value: "N",
+      },
     ],
     validation: [
       {

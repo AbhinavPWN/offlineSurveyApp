@@ -34,7 +34,7 @@ function getSurveyStatusUI(status?: SurveyMemberDisplayStatus) {
         label: "In Progress",
         bg: "bg-blue-100",
         text: "text-blue-700",
-        button: "Continue Survey",
+        button: "Continue Household Visit",
       };
 
     case "READY_TO_SYNC":
@@ -42,7 +42,7 @@ function getSurveyStatusUI(status?: SurveyMemberDisplayStatus) {
         label: "Saved Locally",
         bg: "bg-yellow-100",
         text: "text-yellow-700",
-        button: "Review Survey",
+        button: "Review Household Visit",
       };
 
     case "SYNCED":
@@ -50,7 +50,7 @@ function getSurveyStatusUI(status?: SurveyMemberDisplayStatus) {
         label: "Synced",
         bg: "bg-green-100",
         text: "text-green-700",
-        button: "Review Survey",
+        button: "Review Household Visit",
       };
 
     default:
@@ -58,7 +58,7 @@ function getSurveyStatusUI(status?: SurveyMemberDisplayStatus) {
         label: "Not Started",
         bg: "bg-gray-100",
         text: "text-gray-600",
-        button: "Start Survey",
+        button: "Household Visit",
       };
   }
 }

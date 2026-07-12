@@ -3,21 +3,67 @@ import { QuestionConfig } from "../../components/QuestionRenderer";
 export const adultMfQuestions: QuestionConfig[] = [
   {
     key: "adultMfQ1",
-    label: "Do you have any of the following health problems?",
-    labelNp: "के तपाईंलाई तलका मध्ये कुनै स्वास्थ्य समस्या छ?",
+    label:
+      "Do you have any one of the following health problems? (Multiple choice)",
+    labelNp:
+      "के तपाईंलाई तलका मध्ये कुनै स्वास्थ्य समस्या छ? (धेरै रोज्न मिल्ने)",
     type: "checkbox",
     options: [
-      { label: "Hypertension", labelNp: "उच्च रक्तचाप", value: "H" },
-      { label: "Diabetes", labelNp: "मधुमेह", value: "D" },
-      { label: "Heart disease", labelNp: "मुटु रोग", value: "E" },
-      { label: "Asthma/chronic cough", labelNp: "दम वा खोकी", value: "A" },
-      { label: "Tuberculosis", labelNp: "क्षयरोग", value: "T" },
-      { label: "Cancer", labelNp: "क्यान्सर", value: "C" },
-      { label: "Stroke", labelNp: "स्ट्रोक", value: "S" },
-      { label: "Arthritis", labelNp: "बाथ", value: "U" },
-      { label: "Kidney disease", labelNp: "मिर्गौला रोग", value: "K" },
-      { label: "Liver disease", labelNp: "कलेजो रोग", value: "L" },
-      { label: "Others", labelNp: "अन्य", value: "O" },
+      {
+        label: "Hypertension",
+        labelNp: "उच्च रक्तचाप",
+        value: "H",
+      },
+      {
+        label: "Diabetes",
+        labelNp: "मधुमेह (चिनी रोग/Sugar)",
+        value: "D",
+      },
+      {
+        label: "Heart disease",
+        labelNp: "मुटु सम्बन्धी रोग",
+        value: "E",
+      },
+      {
+        label: "Asthma/chronic cough",
+        labelNp: "दम वा धेरै समयदेखिको खोकी",
+        value: "A",
+      },
+      {
+        label: "Tuberculosis",
+        labelNp: "क्षयरोग (T.B.)",
+        value: "T",
+      },
+      {
+        label: "Cancer",
+        labelNp: "क्यान्सर",
+        value: "C",
+      },
+      {
+        label: "Stroke",
+        labelNp: "मस्तिष्कघात (स्ट्रोक)",
+        value: "S",
+      },
+      {
+        label: "Arthritis",
+        labelNp: "बाथ रोग (जोर्नी दुख्ने)",
+        value: "U",
+      },
+      {
+        label: "Kidney disease",
+        labelNp: "मिर्गौला सम्बन्धी रोग",
+        value: "K",
+      },
+      {
+        label: "Liver disease",
+        labelNp: "कलेजो सम्बन्धी रोग",
+        value: "L",
+      },
+      {
+        label: "Others",
+        labelNp: "अन्य",
+        value: "O",
+      },
     ],
   },
 
@@ -41,8 +87,8 @@ export const adultMfQuestions: QuestionConfig[] = [
 
   {
     key: "adultMfQ2",
-    label: "Are you taking medication for these?",
-    labelNp: "के तपाईं यी रोगका लागि औषधि खाइरहनुभएको छ?",
+    label: "Are you taking any medication for those conditions?",
+    labelNp: "के तपाईंले माथि उल्लेखित रोगका लागि कुनै औषधि खाइरहनुभएको छ?",
     type: "select",
     visibleIf: {
       dependsOn: "adultMfQ1",
@@ -62,8 +108,10 @@ export const adultMfQuestions: QuestionConfig[] = [
 
   {
     key: "adultMfQ3",
-    label: "Blood Pressure (mm of Hg)",
-    labelNp: "रक्तचाप",
+    label:
+      "Blood Pressure (mm of Hg) — If systolic is 140 or higher and/or diastolic is 90 or higher, refer to a health facility",
+    labelNp:
+      "रक्तचाप (ब्लड प्रेसर) — माथिल्लो १४० वा सोभन्दा बढी र/वा तल्लो ९० वा सोभन्दा बढी भएमा स्वास्थ्य संस्थामा पठाउने",
     type: "text",
     keyboardType: "number-pad",
     placeholder: "e.g. 120/80",
@@ -82,8 +130,10 @@ export const adultMfQuestions: QuestionConfig[] = [
 
   {
     key: "adultMfQ4",
-    label: "Blood Glucose (mmol/L)",
-    labelNp: "रगतमा चिनी",
+    label:
+      "Blood Glucose (mmol/L) — If random blood sugar is above 11.1, refer to a health facility",
+    labelNp:
+      "रगतमा चिनीको मात्रा (सुगर) — सुगर ११.१ भन्दा बढी भएमा स्वास्थ्य संस्थामा पठाउने",
     type: "text",
     keyboardType: "number-pad",
     placeholder: "e.g. 5.6",
@@ -95,21 +145,32 @@ export const adultMfQuestions: QuestionConfig[] = [
     ],
   },
 
-  //  FIXED: checkbox instead of select
   {
     key: "adultMfQ5",
-    label: "Which healthy habits do you practice?",
-    labelNp: "तपाईं तलका स्वस्थ बानीहरू मध्ये कुन अपनाउनुहुन्छ?",
+    label: "Do you practice the following healthy habits?",
+    labelNp: "के तपाईंले तलका स्वस्थ बानीहरू अपनाउनुहुन्छ?",
     type: "checkbox",
     options: [
       {
         label: "Avoid smoking/tobacco",
-        labelNp: "धुम्रपान नगर्ने",
+        labelNp: "धुम्रपान वा सुर्तीजन्य पदार्थ नखानु वा छोड्नु",
         value: "S",
       },
-      { label: "Avoid extra salt", labelNp: "नुन कम खाने", value: "A" },
-      { label: "Balanced diet", labelNp: "सन्तुलित खाना", value: "E" },
-      { label: "Exercise", labelNp: "व्यायाम गर्ने", value: "D" },
+      {
+        label: "Avoid extra salt",
+        labelNp: "थप नुन (काँचो नुन) कम खानु",
+        value: "A",
+      },
+      {
+        label: "Eat balanced diet",
+        labelNp: "सन्तुलित र स्वस्थ खाना खानु",
+        value: "E",
+      },
+      {
+        label: "Do exercise/physical work",
+        labelNp: "व्यायाम वा शारीरिक श्रम गर्नु",
+        value: "D",
+      },
     ],
   },
 ];

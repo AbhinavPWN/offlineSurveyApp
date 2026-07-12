@@ -8,7 +8,11 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp: "के तपाईंलाई पछिल्लो ४५ दिन वा ६ हप्ताभित्र महिनावारी भएको छ?",
     type: "select",
     options: [
-      { label: "Yes", labelNp: "छ", value: "Y" },
+      {
+        label: "Yes",
+        labelNp: "छ",
+        value: "Y",
+      },
       { label: "No", labelNp: "छैन", value: "N" },
     ],
     validation: [
@@ -22,12 +26,16 @@ export const feReproductiveQuestions: QuestionConfig[] = [
   {
     key: "feReproductiveQ2",
     label: "Have you done pregnancy test?",
-    labelNp: "के तपाईंले गर्भ जाँच गर्नुभयो?",
+    labelNp: "के तपाईंले गर्भ जाँच (Pregnancy Test) गर्नुभयो?",
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ1", value: "N" },
     options: [
       { label: "Yes", labelNp: "गरें", value: "Y" },
-      { label: "No", labelNp: "गरेको छैन", value: "N" },
+      {
+        label: "No → Advice to do pregnancy test",
+        labelNp: "गरेको छैन → गर्भ जाँच गर्न सल्लाह दिने",
+        value: "N",
+      },
     ],
     validation: [
       {
@@ -44,7 +52,11 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ1", value: "N" },
     options: [
-      { label: "Yes", labelNp: "छु", value: "Y" },
+      {
+        label: "Yes",
+        labelNp: "छु",
+        value: "Y",
+      },
       { label: "No", labelNp: "छैन", value: "N" },
     ],
     validation: [
@@ -59,12 +71,19 @@ export const feReproductiveQuestions: QuestionConfig[] = [
   {
     key: "feReproductiveQ4",
     label: "What kind of menstrual product you use?",
-    labelNp: "महिनावारी हुँदा के प्रयोग गर्नुहुन्छ?",
+    labelNp: "महिनावारी हुँदा तपाईं के प्रयोग गर्नुहुन्छ?",
     type: "select",
-    visibleIf: { dependsOn: "feReproductiveQ1", value: "Y" },
     options: [
-      { label: "Disposable", labelNp: "डिस्पोजेबल प्याड", value: "D" },
-      { label: "Reusable", labelNp: "कपडाको प्याड", value: "R" },
+      {
+        label: "Disposable sanitary napkin",
+        labelNp: "एकपटक प्रयोग गरिने प्याड (डिस्पोजेबल)",
+        value: "D",
+      },
+      {
+        label: "Reusable sanitary napkin",
+        labelNp: "धोएर फेरि प्रयोग गर्न मिल्ने कपडाको प्याड",
+        value: "R",
+      },
     ],
     validation: [
       {
@@ -78,13 +97,13 @@ export const feReproductiveQuestions: QuestionConfig[] = [
   {
     key: "feReproductiveQ5",
     label: "How do you dispose sanitary napkin?",
-    labelNp: "प्याड कसरी फाल्नुहुन्छ?",
+    labelNp: "प्रयोग गरेको प्याडलाई कसरी तह लगाउनुहुन्छ (फाल्नुहुन्छ)?",
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ4", value: "D" },
     options: [
-      { label: "Burn", labelNp: "जलाउने", value: "B" },
-      { label: "Bury", labelNp: "पुर्ने", value: "U" },
-      { label: "Garbage", labelNp: "फोहोरमा", value: "T" },
+      { label: "Burn it", labelNp: "जलाउने", value: "B" },
+      { label: "Bury it", labelNp: "पुर्ने", value: "U" },
+      { label: "Throw into garbage", labelNp: "फोहोरमा फाल्ने", value: "T" },
     ],
     validation: [
       {
@@ -98,12 +117,12 @@ export const feReproductiveQuestions: QuestionConfig[] = [
   {
     key: "feReproductiveQ6",
     label: "How do you wash it?",
-    labelNp: "कसरी धुनुहुन्छ?",
+    labelNp: "तपाईं यसलाई कसरी धुनुहुन्छ?",
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ4", value: "R" },
     options: [
-      { label: "Water only", labelNp: "पानी मात्र", value: "W" },
-      { label: "Soap and water", labelNp: "साबुन पानी", value: "S" },
+      { label: "With water only", labelNp: "पानीले मात्र", value: "W" },
+      { label: "With soap and water", labelNp: "साबुन र पानीले", value: "S" },
     ],
     validation: [
       {
@@ -116,12 +135,16 @@ export const feReproductiveQuestions: QuestionConfig[] = [
   {
     key: "feReproductiveQ7",
     label: "How do you dry it?",
-    labelNp: "कसरी सुकाउनुहुन्छ?",
+    labelNp: "तपाईं यसलाई कसरी सुकाउनुहुन्छ?",
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ4", value: "R" },
     options: [
-      { label: "Sun", labelNp: "घाममा", value: "S" },
-      { label: "Protected", labelNp: "छायाँमा", value: "A" },
+      { label: "In the sun", labelNp: "घाममा", value: "S" },
+      {
+        label: "In protected area away from sunlight",
+        labelNp: "घाम नलाग्ने सुरक्षित ठाउँमा",
+        value: "A",
+      },
     ],
     validation: [
       {
@@ -135,11 +158,16 @@ export const feReproductiveQuestions: QuestionConfig[] = [
   {
     key: "feReproductiveQ8",
     label: "Are you or your partner using any contraceptive method?",
-    labelNp: "परिवार नियोजन प्रयोग गर्नुहुन्छ?",
+    labelNp:
+      "के तपाईं वा तपाईंको श्रीमानले परिवार नियोजनको साधन प्रयोग गर्नुहुन्छ?",
     type: "select",
     options: [
       { label: "Yes", labelNp: "गर्छौं", value: "Y" },
-      { label: "No", labelNp: "गर्दैनौं", value: "N" },
+      {
+        label: "No",
+        labelNp: "गर्दैनौं",
+        value: "N",
+      },
     ],
     validation: [
       {
@@ -151,8 +179,8 @@ export const feReproductiveQuestions: QuestionConfig[] = [
 
   {
     key: "feReproductiveQ9",
-    label: "Which method?",
-    labelNp: "कुन साधन?",
+    label: "What kind of method is it?",
+    labelNp: "कुन प्रकारको साधन प्रयोग गर्नुहुन्छ?",
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ8", value: "Y" },
     options: [
@@ -160,7 +188,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
       { label: "Condom", labelNp: "कण्डम", value: "C" },
       { label: "Implant", labelNp: "इम्पलान्ट", value: "M" },
       { label: "IUD", labelNp: "आईयूडी", value: "U" },
-      { label: "Injection", labelNp: "सुई", value: "I" },
+      { label: "Injection", labelNp: "सुई (डिपो)", value: "I" },
       { label: "Others", labelNp: "अन्य", value: "O" },
     ],
     validation: [
@@ -188,27 +216,39 @@ export const feReproductiveQuestions: QuestionConfig[] = [
   // ---------- SYMPTOMS ----------
   {
     key: "feReproductiveQ10",
-    label: "Any of the following problems?",
-    labelNp: "तलका मध्ये कुनै समस्या छ?",
+    label: "Are you or your partner suffering from any of the following?",
+    labelNp: "के तपाईं वा तपाईंको श्रीमानलाई तलका मध्ये कुनै समस्या छ?",
     type: "checkbox",
     options: [
       { label: "Burning urine", labelNp: "पिसाब पोल्ने", value: "1" },
-      { label: "Discharge", labelNp: "पानी बग्ने", value: "2" },
-      { label: "Sore", labelNp: "घाउ", value: "3" },
-      { label: "Growth", labelNp: "मासु", value: "4" },
-      { label: "Pain", labelNp: "दुख्ने", value: "5" },
+      {
+        label: "Genital discharge (curdy/foul smelling/itchy)",
+        labelNp: "यौनाङ्गबाट पानी वा पीप बग्ने (गन्हाउने/चिलाउने)",
+        value: "2",
+      },
+      {
+        label: "Genital sore/ulcer",
+        labelNp: "यौनाङ्गमा घाउ वा खटिरा",
+        value: "3",
+      },
+      {
+        label: "Abnormal growth in genital area",
+        labelNp: "यौनाङ्गमा अस्वाभाविक मासु पलाएको वा डल्लो",
+        value: "4",
+      },
+      {
+        label: "Lower abdominal pain",
+        labelNp: "पेटको तल्लो भाग दुख्ने",
+        value: "5",
+      },
     ],
   },
 
   {
     key: "feReproductiveQ11",
-    label: "Visited health facility?",
-    labelNp: "स्वास्थ्य संस्था जानुभयो?",
+    label: "Have you or your partner visited a health facility?",
+    labelNp: "के तपाईं वा तपाईंको श्रीमान स्वास्थ्य संस्थामा जचाउन जानुभयो?",
     type: "select",
-    visibleIf: {
-      dependsOn: "feReproductiveQ10",
-      operator: "notEmpty",
-    },
     options: [
       { label: "Yes", labelNp: "गयौं", value: "Y" },
       { label: "No", labelNp: "गएनौं", value: "N" },
@@ -224,28 +264,45 @@ export const feReproductiveQuestions: QuestionConfig[] = [
   {
     key: "feReproductiveQ12",
     label: "Do you have following symptom/ complication?",
-    labelNp: "तलका मध्ये कुनै समस्या छ?",
+    labelNp: "के तपाईंलाई तलका मध्ये कुनै समस्या छ?",
     type: "checkbox",
     options: [
-      { label: "Fistula", labelNp: "पिसाब चुहिने", value: "1" },
-      { label: "Prolapse", labelNp: "आङ खस्ने", value: "2" },
-      { label: "Bleeding", labelNp: "धेरै रगत", value: "3" },
-      { label: "Breast lump", labelNp: "स्तनमा गिर्खा", value: "4" },
+      {
+        label: "Leaking of urine or stool (Fistula)",
+        labelNp: "पिसाब वा दिसा चुहिएर नरोकिने (फिस्टुला)",
+        value: "1",
+      },
+      {
+        label: "Something coming out from vagina (Prolapse)",
+        labelNp: "पाठेघर खस्ने वा आङ खस्ने समस्या (प्रोल्याप्स)",
+        value: "2",
+      },
+      {
+        label: "Excessive vaginal bleeding",
+        labelNp: "धेरै रगत बग्ने समस्या",
+        value: "3",
+      },
+      {
+        label: "Breast lump/cancer",
+        labelNp: "स्तनमा गिर्खा वा क्यान्सर",
+        value: "4",
+      },
     ],
   },
 
   {
     key: "feReproductiveQ13",
-    label: "Have you visited any health provider or facility?    ",
-    labelNp: "स्वास्थ्यकर्मी भेट्नुभयो?",
+    label: "Have you visited any health provider or facility?",
+    labelNp:
+      "के तपाईंले स्वास्थ्यकर्मीलाई भेट्नुभयो वा स्वास्थ्य संस्था जानुभयो?",
     type: "select",
-    visibleIf: {
-      dependsOn: "feReproductiveQ12",
-      operator: "notEmpty",
-    },
     options: [
       { label: "Yes", labelNp: "गएँ", value: "Y" },
-      { label: "No", labelNp: "गएको छैन", value: "N" },
+      {
+        label: "No → Refer to a health facility",
+        labelNp: "गएको छैन → स्वास्थ्य संस्थामा जान सल्लाह दिने",
+        value: "N",
+      },
     ],
     validation: [
       {
@@ -257,14 +314,14 @@ export const feReproductiveQuestions: QuestionConfig[] = [
 
   {
     key: "feReproductiveQ13Details",
-    label: "Details",
-    labelNp: "विवरण लेख्नुहोस्",
+    label: "Name of the facility for referral",
+    labelNp: "जान सल्लाह दिइएको स्वास्थ्य संस्थाको नाम",
     type: "text",
-    visibleIf: { dependsOn: "feReproductiveQ13", value: "Y" },
+    visibleIf: { dependsOn: "feReproductiveQ13", value: "N" },
     validation: [
       {
         type: "required",
-        message: "Please provide details",
+        message: "Please enter the name of the referral facility",
       },
     ],
   },
