@@ -8,6 +8,7 @@ import {
   Pressable,
   Alert,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -75,6 +76,15 @@ function formatServerModifiedDate(value?: string | null): string {
   // Backend already returns a BS date in YYYY-MM-DD format.
   // Do not parse it as a JavaScript/Gregorian date.
   return value.trim().split("T")[0].split(" ")[0];
+}
+
+// For search
+function normalizeSearchValue(value: unknown): string {
+  return String(value ?? "")
+    .normalize("NFC")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
 }
 
 function sortHouseholds(data: HouseholdLocal[]) {
@@ -306,6 +316,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const [syncing, setSyncing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [onlineHouseholds, setOnlineHouseholds] = useState<Household[]>([]);
+  const [onlineSearchQuery, setOnlineSearchQuery] = useState("");
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [onlineError, setOnlineError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"LOCAL" | "ONLINE">("LOCAL");
@@ -730,9 +741,39 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
     [handleRemoveLocal],
   );
 
+  // const currentData = React.useMemo(
+  //   () => (activeTab === "LOCAL" ? households : onlineHouseholds),
+  //   [activeTab, households, onlineHouseholds],
+  // );
+  const normalizedOnlineSearchQuery = React.useMemo(
+    () => normalizeSearchValue(onlineSearchQuery),
+    [onlineSearchQuery],
+  );
+
+  const filteredOnlineHouseholds = React.useMemo(() => {
+    if (!normalizedOnlineSearchQuery) {
+      return onlineHouseholds;
+    }
+
+    const compactIdQuery = normalizedOnlineSearchQuery.replace(/[\s-]+/g, "");
+
+    return onlineHouseholds.filter((household) => {
+      const headName = normalizeSearchValue(household.householdHeadName);
+      const householdId = normalizeSearchValue(household.householdId);
+      const compactHouseholdId = householdId.replace(/[\s-]+/g, "");
+
+      return (
+        headName.includes(normalizedOnlineSearchQuery) ||
+        householdId.includes(normalizedOnlineSearchQuery) ||
+        (compactIdQuery.length > 0 &&
+          compactHouseholdId.includes(compactIdQuery))
+      );
+    });
+  }, [normalizedOnlineSearchQuery, onlineHouseholds]);
+
   const currentData = React.useMemo(
-    () => (activeTab === "LOCAL" ? households : onlineHouseholds),
-    [activeTab, households, onlineHouseholds],
+    () => (activeTab === "LOCAL" ? households : filteredOnlineHouseholds),
+    [activeTab, filteredOnlineHouseholds, households],
   );
 
   // Memoize renderItem
@@ -1185,45 +1226,79 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         </Pressable>
       </View>
 
-      {/* Online Refresh button */}
-      {/* ONLINE LIST CONTROLS */}
+      {/* ONLINE LIST CONTROLS - Search and refresh*/}
       {activeTab === "ONLINE" && (
-        <View className="mx-4 mt-3 flex-row items-center justify-between">
-          <Text className="text-sm text-gray-600">
-            {onlineLoading
-              ? "Loading online households..."
-              : `${onlineHouseholds.length} online ${
-                  onlineHouseholds.length === 1 ? "household" : "households"
-                }`}
-          </Text>
+        <View className="mx-4 mt-3">
+          <View className="flex-row items-center justify-between">
+            <Text className="text-sm text-gray-600 flex-1 pr-3">
+              {onlineLoading
+                ? "Loading online households..."
+                : normalizedOnlineSearchQuery
+                  ? `${filteredOnlineHouseholds.length} of ${onlineHouseholds.length} households`
+                  : `${onlineHouseholds.length} online ${
+                      onlineHouseholds.length === 1 ? "household" : "households"
+                    }`}
+            </Text>
 
-          <Pressable
-            onPress={fetchOnlineHouseholds}
-            disabled={onlineLoading || !isOnline}
-            className={`px-4 py-2 rounded-lg ${
-              onlineLoading || !isOnline
-                ? "bg-gray-200"
-                : "bg-blue-100 active:bg-blue-200"
-            }`}
-          >
-            <View className="flex-row items-center">
-              {onlineLoading && (
-                <ActivityIndicator
-                  size="small"
-                  color="#6B7280"
-                  style={{ marginRight: 6 }}
-                />
-              )}
+            <Pressable
+              onPress={fetchOnlineHouseholds}
+              disabled={onlineLoading || !isOnline}
+              className={`px-4 py-2 rounded-lg ${
+                onlineLoading || !isOnline
+                  ? "bg-gray-200"
+                  : "bg-blue-100 active:bg-blue-200"
+              }`}
+            >
+              <View className="flex-row items-center">
+                {onlineLoading && (
+                  <ActivityIndicator
+                    size="small"
+                    color="#6B7280"
+                    style={{ marginRight: 6 }}
+                  />
+                )}
 
-              <Text
-                className={`text-sm font-semibold ${
-                  onlineLoading || !isOnline ? "text-gray-500" : "text-blue-700"
-                }`}
+                <Text
+                  className={`text-sm font-semibold ${
+                    onlineLoading || !isOnline
+                      ? "text-gray-500"
+                      : "text-blue-700"
+                  }`}
+                >
+                  {onlineLoading ? "Refreshing..." : "Refresh"}
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+
+          <View className="mt-3 flex-row items-center bg-white border border-gray-300 rounded-xl px-3">
+            <Text className="text-gray-400 text-lg mr-2">⌕</Text>
+
+            <TextInput
+              value={onlineSearchQuery}
+              onChangeText={setOnlineSearchQuery}
+              placeholder="Search by head name or household ID"
+              placeholderTextColor="#9CA3AF"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+              accessibilityLabel="Search online households"
+              className="flex-1 py-3 text-base text-gray-900"
+            />
+
+            {onlineSearchQuery.length > 0 && (
+              <Pressable
+                onPress={() => setOnlineSearchQuery("")}
+                accessibilityRole="button"
+                accessibilityLabel="Clear household search"
+                className="ml-2 px-2 py-2"
               >
-                {onlineLoading ? "Refreshing..." : "Refresh"}
-              </Text>
-            </View>
-          </Pressable>
+                <Text className="text-blue-700 text-sm font-semibold">
+                  Clear
+                </Text>
+              </Pressable>
+            )}
+          </View>
         </View>
       )}
 
@@ -1304,6 +1379,27 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
                 <Text className="text-white font-medium">Try Again</Text>
               </Pressable>
             </View>
+          ) : activeTab === "ONLINE" &&
+            normalizedOnlineSearchQuery &&
+            onlineHouseholds.length > 0 ? (
+            <View className="items-center px-6">
+              <Text className="text-5xl mb-4">🔎</Text>
+
+              <Text className="text-lg font-semibold text-gray-700 mb-2">
+                No matching household found
+              </Text>
+
+              <Text className="text-gray-500 text-center">
+                Try another household-head name or household ID.
+              </Text>
+
+              <Pressable
+                onPress={() => setOnlineSearchQuery("")}
+                className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
+              >
+                <Text className="text-white font-medium">Clear Search</Text>
+              </Pressable>
+            </View>
           ) : (
             <View className="items-center px-6">
               <Text className="text-5xl mb-4">🏠</Text>
@@ -1325,6 +1421,8 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         maxToRenderPerBatch={10}
         windowSize={5}
         removeClippedSubviews={true}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
       />
 
       {/* FLOATING ADD BUTTON */}

@@ -797,7 +797,7 @@ export default function HouseholdDetailScreen() {
             value={vdcnpCode}
             onChange={(value) => setVdcnpCode(String(value))}
             options={[
-              { label: "Select Municipality / पालिका छान्नुहोस्", value: "" },
+              { label: "Local Government - स्थानीय सरकार", value: "" },
               ...municipalityOptions.map((m) => ({
                 label: `${m.name_en} (${m.name_np})`,
                 value: String(m.id),

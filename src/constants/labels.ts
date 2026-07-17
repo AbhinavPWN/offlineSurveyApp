@@ -10,7 +10,7 @@ export const LABELS = {
 
   province: "Province (प्रदेश)",
   district: "District (जिल्ला)",
-  municipality: "Municipality / VDC (नगरपालिका / गाउँपालिका)",
+  municipality: "Local Government - स्थानीय सरकार",
   wardNo: "Ward No (वडा नं.)",
   address: "Address (ठेगाना)",
 

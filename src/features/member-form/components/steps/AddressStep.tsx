@@ -29,14 +29,14 @@ export const AddressStep = React.memo(function AddressStep({
     municipality: "",
   });
 
-  // ✅ Set address type once (NO LOOP)
+  //  Set address type once (NO LOOP)
   useEffect(() => {
     if (form.address1Type !== "P") {
       updateField("address1Type", "P");
     }
   }, [form.address1Type, updateField]);
 
-  // ✅ Load household (ONLY ONCE)
+  //  Load household (ONLY ONCE)
   useEffect(() => {
     let mounted = true;
 
@@ -55,7 +55,7 @@ export const AddressStep = React.memo(function AddressStep({
     };
   }, [householdLocalId]);
 
-  // ✅ Load labels (ONLY when household ready)
+  //  Load labels (ONLY when household ready)
   useEffect(() => {
     let mounted = true;
 
@@ -127,7 +127,7 @@ export const AddressStep = React.memo(function AddressStep({
         {/* Municipality */}
         <View className="mb-3">
           <Text className="text-xs text-gray-500">
-            Municipality / Rural Municipality
+            Local Government - स्थानीय सरकार
           </Text>
           <Text className="text-base mt-1">{labels.municipality}</Text>
         </View>
