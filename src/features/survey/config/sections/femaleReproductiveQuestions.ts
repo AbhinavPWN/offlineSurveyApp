@@ -1,5 +1,11 @@
 import { QuestionConfig } from "../../components/QuestionRenderer";
 
+const SHOW_UNLESS_PREGNANT: NonNullable<QuestionConfig["visibleIf"]> = {
+  dependsOn: "feReproductiveQ3",
+  operator: "notEquals",
+  value: "Y",
+};
+
 export const feReproductiveQuestions: QuestionConfig[] = [
   // ---------- MENSTRUATION ----------
   {
@@ -73,6 +79,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     label: "What kind of menstrual product you use?",
     labelNp: "महिनावारी हुँदा तपाईं के प्रयोग गर्नुहुन्छ?",
     type: "select",
+    visibleIf: SHOW_UNLESS_PREGNANT,
     options: [
       {
         label: "Disposable sanitary napkin",
@@ -100,6 +107,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp: "प्रयोग गरेको प्याडलाई कसरी तह लगाउनुहुन्छ (फाल्नुहुन्छ)?",
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ4", value: "D" },
+    visibleIfAll: [SHOW_UNLESS_PREGNANT],
     options: [
       { label: "Burn it", labelNp: "जलाउने", value: "B" },
       { label: "Bury it", labelNp: "पुर्ने", value: "U" },
@@ -120,6 +128,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp: "तपाईं यसलाई कसरी धुनुहुन्छ?",
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ4", value: "R" },
+    visibleIfAll: [SHOW_UNLESS_PREGNANT],
     options: [
       { label: "With water only", labelNp: "पानीले मात्र", value: "W" },
       { label: "With soap and water", labelNp: "साबुन र पानीले", value: "S" },
@@ -138,6 +147,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp: "तपाईं यसलाई कसरी सुकाउनुहुन्छ?",
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ4", value: "R" },
+    visibleIfAll: [SHOW_UNLESS_PREGNANT],
     options: [
       { label: "In the sun", labelNp: "घाममा", value: "S" },
       {
@@ -161,6 +171,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp:
       "के तपाईं वा तपाईंको श्रीमानले परिवार नियोजनको साधन प्रयोग गर्नुहुन्छ?",
     type: "select",
+    visibleIf: SHOW_UNLESS_PREGNANT,
     options: [
       { label: "Yes", labelNp: "गर्छौं", value: "Y" },
       {
@@ -183,6 +194,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp: "कुन प्रकारको साधन प्रयोग गर्नुहुन्छ?",
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ8", value: "Y" },
+
     options: [
       { label: "Pill", labelNp: "पिल्स", value: "P" },
       { label: "Condom", labelNp: "कण्डम", value: "C" },
@@ -205,6 +217,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp: "अन्य (लेख्नुहोस्)",
     type: "text",
     visibleIf: { dependsOn: "feReproductiveQ9", value: "O" },
+    visibleIfAll: [SHOW_UNLESS_PREGNANT],
     validation: [
       {
         type: "required",
@@ -219,6 +232,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     label: "Are you or your partner suffering from any of the following?",
     labelNp: "के तपाईं वा तपाईंको श्रीमानलाई तलका मध्ये कुनै समस्या छ?",
     type: "checkbox",
+    visibleIf: SHOW_UNLESS_PREGNANT,
     options: [
       { label: "Burning urine", labelNp: "पिसाब पोल्ने", value: "1" },
       {
@@ -249,6 +263,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     label: "Have you or your partner visited a health facility?",
     labelNp: "के तपाईं वा तपाईंको श्रीमान स्वास्थ्य संस्थामा जचाउन जानुभयो?",
     type: "select",
+    visibleIf: SHOW_UNLESS_PREGNANT,
     options: [
       { label: "Yes", labelNp: "गयौं", value: "Y" },
       { label: "No", labelNp: "गएनौं", value: "N" },
@@ -266,6 +281,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     label: "Do you have following symptom/ complication?",
     labelNp: "के तपाईंलाई तलका मध्ये कुनै समस्या छ?",
     type: "checkbox",
+    visibleIf: SHOW_UNLESS_PREGNANT,
     options: [
       {
         label: "Leaking of urine or stool (Fistula)",
@@ -296,6 +312,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp:
       "के तपाईंले स्वास्थ्यकर्मीलाई भेट्नुभयो वा स्वास्थ्य संस्था जानुभयो?",
     type: "select",
+    visibleIf: SHOW_UNLESS_PREGNANT,
     options: [
       { label: "Yes", labelNp: "गएँ", value: "Y" },
       {
@@ -318,6 +335,7 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp: "जान सल्लाह दिइएको स्वास्थ्य संस्थाको नाम",
     type: "text",
     visibleIf: { dependsOn: "feReproductiveQ13", value: "N" },
+    visibleIfAll: [SHOW_UNLESS_PREGNANT],
     validation: [
       {
         type: "required",
