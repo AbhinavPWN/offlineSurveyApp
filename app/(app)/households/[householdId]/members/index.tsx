@@ -63,6 +63,15 @@ function getSurveyStatusUI(status?: SurveyMemberDisplayStatus) {
   }
 }
 
+// Pregnancy helper
+function isPregnantMember(value: unknown): boolean {
+  return (
+    String(value ?? "")
+      .trim()
+      .toUpperCase() === "Y"
+  );
+}
+
 export default function MembersListScreen() {
   const router = useRouter();
   const { householdId } = useLocalSearchParams();
@@ -268,6 +277,10 @@ export default function MembersListScreen() {
 
   const totalMembers = members.length;
   const syncedMembers = members.filter((m) => m.syncStatus === "SYNCED").length;
+  // Finding household pregnancy total
+  const pregnantWomenCount = members.filter((member) =>
+    isPregnantMember(member.pregnancyStatus),
+  ).length;
 
   // const rawAllowedMembers = household?.noofHHMembers;
   // const allowedMembers = Number(rawAllowedMembers);
@@ -306,6 +319,17 @@ export default function MembersListScreen() {
               >
                 {syncedMembers} / {totalMembers} Members Synced
               </Text>
+              {pregnantWomenCount > 0 && (
+                <View className="mt-3 flex-row items-center justify-between rounded-lg border border-pink-200 bg-pink-50 px-3 py-2">
+                  <Text className="text-sm font-medium text-pink-700">
+                    Pregnant women / गर्भवती महिला
+                  </Text>
+
+                  <Text className="text-base font-bold text-pink-700">
+                    {pregnantWomenCount}
+                  </Text>
+                </View>
+              )}
             </>
           )}
         </View>
@@ -320,6 +344,7 @@ export default function MembersListScreen() {
             const surveyStatus = surveyStatuses[item.localId];
 
             const surveyUI = getSurveyStatusUI(surveyStatus);
+            const isPregnant = isPregnantMember(item.pregnancyStatus);
 
             return (
               <View className="bg-white p-4 rounded-xl mb-3 shadow-sm">
@@ -341,6 +366,14 @@ export default function MembersListScreen() {
                         <Text className="text-green-600 text-sm">
                           Head of Household
                         </Text>
+                      )}
+
+                      {isPregnant && (
+                        <View className="self-start mt-1 rounded-full border border-pink-200 bg-pink-50 px-3 py-1">
+                          <Text className="text-xs font-semibold text-pink-500">
+                            Pregnant / गर्भवती
+                          </Text>
+                        </View>
                       )}
 
                       <View

@@ -9,6 +9,7 @@ import {
   Alert,
   ActivityIndicator,
   TextInput,
+  Keyboard,
 } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -68,6 +69,8 @@ type HouseholdWithAggregate = {
 
   headName?: string;
   headMobile?: string;
+  memberSearchNames: string[];
+  pregnantWomenCount: number;
 };
 
 function formatServerModifiedDate(value?: string | null): string {
@@ -85,6 +88,23 @@ function normalizeSearchValue(value: unknown): string {
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
+}
+
+// Search functionality
+function matchesSearchTerms(value: unknown, normalizedQuery: string): boolean {
+  const normalizedValue = normalizeSearchValue(value);
+  const queryTerms = normalizedQuery.split(" ").filter(Boolean);
+
+  return queryTerms.every((term) => normalizedValue.includes(term));
+}
+
+// Pregnancy count/display functionality
+function isPregnantMember(value: unknown): boolean {
+  return (
+    String(value ?? "")
+      .trim()
+      .toUpperCase() === "Y"
+  );
 }
 
 function sortHouseholds(data: HouseholdLocal[]) {
@@ -316,8 +336,10 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const [syncing, setSyncing] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [onlineHouseholds, setOnlineHouseholds] = useState<Household[]>([]);
+  const [localSearchQuery, setLocalSearchQuery] = useState("");
   const [onlineSearchQuery, setOnlineSearchQuery] = useState("");
   const [onlineLoading, setOnlineLoading] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [onlineError, setOnlineError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"LOCAL" | "ONLINE">("LOCAL");
   const [downloadedServerIds, setDownloadedServerIds] = useState<Set<string>>(
@@ -329,6 +351,21 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const [syncSteps, setSyncSteps] = useState<
     { step: string; status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" }[]
   >([]);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", () =>
+      setIsKeyboardVisible(true),
+    );
+
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", () =>
+      setIsKeyboardVisible(false),
+    );
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(
@@ -472,12 +509,24 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
           const headMobile = head?.mobileNo ?? "No mobile";
 
+          const memberSearchNames = members
+            .map((member) =>
+              [member.firstName, member.middleName, member.lastName]
+                .filter(Boolean)
+                .join(" "),
+            )
+            .filter((name) => name.length > 0);
+
           // const aggregateStatus = resolveHouseholdAggregateStatus(h, members);
           const baseStatus = resolveHouseholdAggregateStatus(h, members);
 
           let aggregateStatus = baseStatus;
 
           const totalMembers = members.length;
+
+          const pregnantWomenCount = members.filter((member) =>
+            isPregnantMember(member.pregnancyStatus),
+          ).length;
 
           const syncedMembers = members.filter(
             (m) => m.syncStatus === "SYNCED",
@@ -524,6 +573,8 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
             surveyCounts,
             headName,
             headMobile,
+            memberSearchNames,
+            pregnantWomenCount,
             // surveyStatus,
           };
         }),
@@ -745,6 +796,35 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   //   () => (activeTab === "LOCAL" ? households : onlineHouseholds),
   //   [activeTab, households, onlineHouseholds],
   // );
+  // Search mechanism
+  const normalizedLocalSearchQuery = React.useMemo(
+    () => normalizeSearchValue(localSearchQuery),
+    [localSearchQuery],
+  );
+
+  const filteredLocalHouseholds = React.useMemo(() => {
+    if (!normalizedLocalSearchQuery) {
+      return households;
+    }
+
+    const compactIdQuery = normalizedLocalSearchQuery.replace(/[\s-]+/g, "");
+
+    return households.filter((item) => {
+      const householdId = normalizeSearchValue(item.household.householdId);
+      const compactHouseholdId = householdId.replace(/[\s-]+/g, "");
+
+      return (
+        matchesSearchTerms(item.headName, normalizedLocalSearchQuery) ||
+        item.memberSearchNames.some((name) =>
+          matchesSearchTerms(name, normalizedLocalSearchQuery),
+        ) ||
+        householdId.includes(normalizedLocalSearchQuery) ||
+        (compactIdQuery.length > 0 &&
+          compactHouseholdId.includes(compactIdQuery))
+      );
+    });
+  }, [households, normalizedLocalSearchQuery]);
+
   const normalizedOnlineSearchQuery = React.useMemo(
     () => normalizeSearchValue(onlineSearchQuery),
     [onlineSearchQuery],
@@ -758,12 +838,14 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
     const compactIdQuery = normalizedOnlineSearchQuery.replace(/[\s-]+/g, "");
 
     return onlineHouseholds.filter((household) => {
-      const headName = normalizeSearchValue(household.householdHeadName);
       const householdId = normalizeSearchValue(household.householdId);
       const compactHouseholdId = householdId.replace(/[\s-]+/g, "");
 
       return (
-        headName.includes(normalizedOnlineSearchQuery) ||
+        matchesSearchTerms(
+          household.householdHeadName,
+          normalizedOnlineSearchQuery,
+        ) ||
         householdId.includes(normalizedOnlineSearchQuery) ||
         (compactIdQuery.length > 0 &&
           compactHouseholdId.includes(compactIdQuery))
@@ -772,8 +854,11 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   }, [normalizedOnlineSearchQuery, onlineHouseholds]);
 
   const currentData = React.useMemo(
-    () => (activeTab === "LOCAL" ? households : filteredOnlineHouseholds),
-    [activeTab, filteredOnlineHouseholds, households],
+    () =>
+      activeTab === "LOCAL"
+        ? filteredLocalHouseholds
+        : filteredOnlineHouseholds,
+    [activeTab, filteredLocalHouseholds, filteredOnlineHouseholds],
   );
 
   // Memoize renderItem
@@ -791,6 +876,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
           surveyCounts,
           headName,
           headMobile,
+          pregnantWomenCount,
         } = item as HouseholdWithAggregate;
 
         if (!local.localId) return null;
@@ -858,6 +944,19 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
                 )}
               </View>
             </View>
+
+            {/* Pregnant count display */}
+            {pregnantWomenCount > 0 && (
+              <View className="mt-3 flex-row items-center justify-between rounded-lg border border-pink-300 bg-pink-50 px-3 py-2">
+                <Text className="text-sm font-medium text-pink-500 ">
+                  Pregnant women / गर्भवती महिला
+                </Text>
+
+                <Text className="text-base font-bold text-pink-700">
+                  {pregnantWomenCount}
+                </Text>
+              </View>
+            )}
 
             <Text className="text-gray-600 mt-2">
               Address: {local.address || "Address not specified"}
@@ -1105,60 +1204,63 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   return (
     <View className="flex-1 bg-gray-50">
       {/* HEADER */}
-      <View className="px-4 pt-6 pb-4 bg-white shadow-sm">
-        {/* Title Row */}
-        {/* Title + Logout Row */}
-        <View className="flex-row justify-between items-center">
-          <Text className="text-2xl font-bold text-gray-900">Households</Text>
+      {!isKeyboardVisible && (
+        <View className="px-4 pt-6 pb-4 bg-white shadow-sm">
+          {/* Title Row */}
+          {/* Title + Logout Row */}
+          <View className="flex-row justify-between items-center">
+            <Text className="text-2xl font-bold text-gray-900">Households</Text>
 
-          <View className="flex-row items-center gap-3">
-            <SupportLogButton />
+            <View className="flex-row items-center gap-3">
+              <SupportLogButton />
 
-            <Pressable
-              onPress={handleLogout}
-              className="border border-red-500 bg-red-50 px-2 py-2 rounded-xl active:bg-red-100"
-            >
-              <Text className="text-red-600 font-semibold">Logout</Text>
-            </Pressable>
+              <Pressable
+                onPress={handleLogout}
+                className="border border-red-500 bg-red-50 px-2 py-2 rounded-xl active:bg-red-100"
+              >
+                <Text className="text-red-600 font-semibold">Logout</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Subtitle + Action Row */}
+          <View className="flex-row justify-between items-center mt-4">
+            <Text className="text-sm text-gray-500 flex-1 pr-2">
+              Manage and update households in your assigned ward
+            </Text>
+
+            {!isOnline ? (
+              <View className="px-3 py-1 rounded-full bg-gray-200">
+                <Text className="text-gray-600 text-xs font-medium">
+                  Offline
+                </Text>
+              </View>
+            ) : state === "UNLOCKED" ? (
+              <Pressable
+                onPress={handleManualSync}
+                disabled={syncing}
+                className={`px-4 py-2 rounded-full ${
+                  syncing ? "bg-gray-300" : "bg-blue-600"
+                }`}
+              >
+                <Text className="text-white text-sm font-medium">
+                  {syncing ? "Syncing..." : "Sync"}
+                </Text>
+              </Pressable>
+            ) : state === "SESSION_EXPIRED" ? (
+              <Pressable
+                onPress={() => router.replace("/login")}
+                className="px-4 py-2 rounded-full bg-orange-500"
+              >
+                <Text className="text-white text-sm font-medium">Login</Text>
+              </Pressable>
+            ) : null}
           </View>
         </View>
-
-        {/* Subtitle + Action Row */}
-        <View className="flex-row justify-between items-center mt-4">
-          <Text className="text-sm text-gray-500 flex-1 pr-2">
-            Manage and update households in your assigned ward
-          </Text>
-
-          {!isOnline ? (
-            <View className="px-3 py-1 rounded-full bg-gray-200">
-              <Text className="text-gray-600 text-xs font-medium">Offline</Text>
-            </View>
-          ) : state === "UNLOCKED" ? (
-            <Pressable
-              onPress={handleManualSync}
-              disabled={syncing}
-              className={`px-4 py-2 rounded-full ${
-                syncing ? "bg-gray-300" : "bg-blue-600"
-              }`}
-            >
-              <Text className="text-white text-sm font-medium">
-                {syncing ? "Syncing..." : "Sync"}
-              </Text>
-            </Pressable>
-          ) : state === "SESSION_EXPIRED" ? (
-            <Pressable
-              onPress={() => router.replace("/login")}
-              className="px-4 py-2 rounded-full bg-orange-500"
-            >
-              <Text className="text-white text-sm font-medium">Login</Text>
-            </Pressable>
-          ) : null}
-        </View>
-      </View>
-
+      )}
       {/* OFFLINE indicator  */}
 
-      {!isOnline && (
+      {!isKeyboardVisible && !isOnline && (
         <View className="bg-red-100 border border-red-300 p-2 rounded mx-4 mt-2">
           <Text className="text-red-700 text-sm text-center">
             You are offline. Sync disabled.
@@ -1168,7 +1270,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
       {/* SUMMARY */}
       {/* DOWNLOADED HOUSEHOLD SYNC SUMMARY */}
-      {activeTab === "LOCAL" && (
+      {!isKeyboardVisible && activeTab === "LOCAL" && (
         <View className="px-4 mt-4">
           <SummaryBar households={households.map((h) => h.household)} />
         </View>
@@ -1225,6 +1327,49 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
           </Text>
         </Pressable>
       </View>
+
+      {/* DOWNLOADED LIST CONTROLS - Search */}
+      {activeTab === "LOCAL" && (
+        <View className="mx-4 mt-3">
+          <Text className="text-sm text-gray-600">
+            {normalizedLocalSearchQuery
+              ? `${filteredLocalHouseholds.length} of ${households.length} downloaded households`
+              : `${households.length} downloaded ${
+                  households.length === 1 ? "household" : "households"
+                }`}
+          </Text>
+
+          <View className="mt-3 flex-row items-center bg-white border border-gray-300 rounded-xl px-3">
+            <Text className="text-gray-400 text-lg mr-2">⌕</Text>
+
+            <TextInput
+              value={localSearchQuery}
+              onChangeText={setLocalSearchQuery}
+              placeholder="Search by head, member name, or household ID"
+              placeholderTextColor="#9CA3AF"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+              accessibilityLabel="Search downloaded households"
+              className="flex-1 py-3 text-base text-gray-900"
+              onSubmitEditing={() => Keyboard.dismiss()}
+            />
+
+            {localSearchQuery.length > 0 && (
+              <Pressable
+                onPress={() => setLocalSearchQuery("")}
+                accessibilityRole="button"
+                accessibilityLabel="Clear downloaded household search"
+                className="ml-2 px-2 py-2"
+              >
+                <Text className="text-blue-700 text-sm font-semibold">
+                  Clear
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
+      )}
 
       {/* ONLINE LIST CONTROLS - Search and refresh*/}
       {activeTab === "ONLINE" && (
@@ -1284,6 +1429,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
               returnKeyType="search"
               accessibilityLabel="Search online households"
               className="flex-1 py-3 text-base text-gray-900"
+              onSubmitEditing={() => Keyboard.dismiss()}
             />
 
             {onlineSearchQuery.length > 0 && (
@@ -1302,7 +1448,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         </View>
       )}
 
-      {syncing && (
+      {syncing && !isKeyboardVisible && (
         <View className="mx-4 mt-3 bg-white p-3 rounded-lg shadow-sm">
           <Text className="font-semibold mb-2">Sync Progress</Text>
 
@@ -1333,7 +1479,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
           return online.householdId ?? `online-${index}`;
         }}
         contentContainerStyle={{
-          paddingBottom: 120,
+          paddingBottom: isKeyboardVisible ? 24 : 120,
           paddingTop: currentData.length === 0 ? 80 : 12,
         }}
         ListEmptyComponent={
@@ -1400,6 +1546,27 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
                 <Text className="text-white font-medium">Clear Search</Text>
               </Pressable>
             </View>
+          ) : activeTab === "LOCAL" &&
+            normalizedLocalSearchQuery &&
+            households.length > 0 ? (
+            <View className="items-center px-6">
+              <Text className="text-5xl mb-4">🔎</Text>
+
+              <Text className="text-lg font-semibold text-gray-700 mb-2">
+                No matching downloaded household found
+              </Text>
+
+              <Text className="text-gray-500 text-center">
+                Try another household-head name, member name, or household ID.
+              </Text>
+
+              <Pressable
+                onPress={() => setLocalSearchQuery("")}
+                className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
+              >
+                <Text className="text-white font-medium">Clear Search</Text>
+              </Pressable>
+            </View>
           ) : (
             <View className="items-center px-6">
               <Text className="text-5xl mb-4">🏠</Text>
@@ -1426,7 +1593,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       />
 
       {/* FLOATING ADD BUTTON */}
-      {activeTab === "LOCAL" && (
+      {activeTab === "LOCAL" && !isKeyboardVisible && (
         <Pressable
           onPress={handleAddNew}
           className="absolute bottom-8 right-6 w-16 h-16 rounded-full bg-blue-600 shadow-lg items-center justify-center"
