@@ -9,6 +9,9 @@ import { SQLiteHouseholdMemberLocalRepository } from "@/src/repositories/SQLiteH
 import { MemberApiServiceImpl } from "@/src/services/MemberApiService";
 import { SQLiteHouseholdInfoRepository } from "../repositories/SQLiteHouseholdInfoRepository";
 import { DownloadHouseholdWithMembersUseCase } from "../usecases/household/DownloadHouseholdWithMembersUseCase";
+import { CommunityApiServiceImpl } from "@/src/services/CommunityApiService";
+import { SQLiteCommunityMemberLocalRepository } from "@/src/repositories/SQLiteCommunityMemberLocalRepository";
+import { DownloadCommunityMembersUseCase } from "@/src/features/community/usecases/DownloadCommunityMembersUseCase";
 
 // ------------------------
 // Singletons
@@ -24,6 +27,7 @@ export const householdInfoRepository = new SQLiteHouseholdInfoRepository();
 export const householdApiService = new HouseholdApiServiceImpl();
 export const memberApi = new MemberApiServiceImpl();
 export const networkService = new NetworkServiceImpl();
+export const communityApiService = new CommunityApiServiceImpl();
 
 const syncGuard = new SyncContextGuard(networkService);
 
@@ -56,4 +60,13 @@ export const downloadHouseholdWithMembersUseCase =
     householdLocalRepository,
     householdMemberLocalRepository,
     memberApi,
+  );
+
+export const communityMemberLocalRepository =
+  new SQLiteCommunityMemberLocalRepository();
+
+export const downloadCommunityMembersUseCase =
+  new DownloadCommunityMembersUseCase(
+    communityApiService,
+    communityMemberLocalRepository,
   );

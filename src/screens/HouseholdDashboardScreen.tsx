@@ -42,6 +42,11 @@ import {
   buildGlobalSyncAlert,
   mapSyncStepStatusForUI,
 } from "@/src/usecases/sync/buildGlobalSyncAlert";
+import { CommunityTab } from "../features/community/components/CommunityTab";
+import {
+  HouseholdDashboardTab,
+  HouseholdDashboardTabs,
+} from "../features/household-dashboard/components/HouseholdDashboardTabs";
 
 interface Props {
   householdRepo: HouseholdLocalRepository;
@@ -341,7 +346,8 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   const [onlineLoading, setOnlineLoading] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [onlineError, setOnlineError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"LOCAL" | "ONLINE">("LOCAL");
+  // const [activeTab, setActiveTab] = useState<"LOCAL" | "ONLINE">("LOCAL");
+  const [activeTab, setActiveTab] = useState<HouseholdDashboardTab>("LOCAL");
   const [downloadedServerIds, setDownloadedServerIds] = useState<Set<string>>(
     new Set(),
   );
@@ -484,6 +490,29 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       Alert.alert("Unable to load households", message);
     } finally {
       setOnlineLoading(false);
+    }
+  };
+
+  const handleSelectTab = async (
+    selectedTab: HouseholdDashboardTab,
+  ): Promise<void> => {
+    if (selectedTab !== "ONLINE") {
+      setActiveTab(selectedTab);
+      return;
+    }
+
+    if (!isOnline) {
+      Alert.alert(
+        "No Internet Connection",
+        "Connect to the internet to view online households.",
+      );
+      return;
+    }
+
+    setActiveTab("ONLINE");
+
+    if (onlineHouseholds.length === 0) {
+      await fetchOnlineHouseholds();
     }
   };
 
@@ -853,13 +882,26 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
     });
   }, [normalizedOnlineSearchQuery, onlineHouseholds]);
 
-  const currentData = React.useMemo(
-    () =>
-      activeTab === "LOCAL"
-        ? filteredLocalHouseholds
-        : filteredOnlineHouseholds,
-    [activeTab, filteredLocalHouseholds, filteredOnlineHouseholds],
-  );
+  // const currentData = React.useMemo(
+  //   () =>
+  //     activeTab === "LOCAL"
+  //       ? filteredLocalHouseholds
+  //       : filteredOnlineHouseholds,
+  //   [activeTab, filteredLocalHouseholds, filteredOnlineHouseholds],
+  // );
+  const currentData = React.useMemo<
+    (HouseholdWithAggregate | Household)[]
+  >(() => {
+    if (activeTab === "LOCAL") {
+      return filteredLocalHouseholds;
+    }
+
+    if (activeTab === "ONLINE") {
+      return filteredOnlineHouseholds;
+    }
+
+    return [];
+  }, [activeTab, filteredLocalHouseholds, filteredOnlineHouseholds]);
 
   // Memoize renderItem
   const renderItem = React.useCallback(
@@ -1277,31 +1319,16 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       )}
 
       {/* TAB SWITCH UI */}
-      <View className="flex-row mx-4 mt-4 bg-gray-200 rounded-lg overflow-hidden">
+      {/* <View className="flex-row mx-4 mt-4 bg-gray-200 rounded-lg overflow-hidden">
         <Pressable
           onPress={() => setActiveTab("LOCAL")}
           className={`flex-1 py-2 ${activeTab === "LOCAL" ? "bg-white" : ""}`}
         >
           <Text className="text-center font-medium">Downloaded</Text>
-        </Pressable>
+        </Pressable> */}
 
-        {/* <Pressable
-          onPress={async () => {
-            if (!isOnline) {
-              alert(
-                "You are offline. Connect to internet to view online households.",
-              );
-              return;
-            }
-
-            setActiveTab("ONLINE");
-            await fetchOnlineHouseholds();
-          }}
-          className={`flex-1 py-2 ${activeTab === "ONLINE" ? "bg-white" : ""}`}
-        >
-          <Text className="text-center font-medium">Online</Text>
-        </Pressable>  */}
-        <Pressable
+      {/* Online */}
+      {/* <Pressable
           disabled={onlineLoading}
           onPress={async () => {
             if (!isOnline) {
@@ -1326,7 +1353,17 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
             {onlineLoading ? "Loading..." : "Online"}
           </Text>
         </Pressable>
-      </View>
+      </View> */}
+      {/* DASHBOARD TABS */}
+      <HouseholdDashboardTabs
+        activeTab={activeTab}
+        onlineLoading={onlineLoading}
+        onSelect={handleSelectTab}
+      />
+
+      {activeTab === "COMMUNITY" && (
+        <CommunityTab empId={chwProfile.userName} isOnline={isOnline} />
+      )}
 
       {/* DOWNLOADED LIST CONTROLS - Search */}
       {activeTab === "LOCAL" && (
@@ -1448,7 +1485,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         </View>
       )}
 
-      {syncing && !isKeyboardVisible && (
+      {activeTab !== "COMMUNITY" && syncing && !isKeyboardVisible && (
         <View className="mx-4 mt-3 bg-white p-3 rounded-lg shadow-sm">
           <Text className="font-semibold mb-2">Sync Progress</Text>
 
@@ -1467,130 +1504,134 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       )}
 
       {/* LIST */}
-      <FlatList<HouseholdWithAggregate | Household>
-        data={currentData}
-        keyExtractor={(item, index) => {
-          if (activeTab === "LOCAL") {
-            const local = (item as HouseholdWithAggregate).household;
-            return local.localId ?? `local-${index}`;
+      {/* HOUSEHOLD LIST */}
+      {activeTab !== "COMMUNITY" && (
+        <FlatList<HouseholdWithAggregate | Household>
+          data={currentData}
+          keyExtractor={(item, index) => {
+            if (activeTab === "LOCAL") {
+              const local = (item as HouseholdWithAggregate).household;
+              return local.localId ?? `local-${index}`;
+            }
+
+            const online = item as Household;
+            return online.householdId ?? `online-${index}`;
+          }}
+          contentContainerStyle={{
+            paddingBottom: isKeyboardVisible ? 24 : 120,
+            paddingTop: currentData.length === 0 ? 80 : 12,
+          }}
+          ListEmptyComponent={
+            activeTab === "ONLINE" && onlineLoading ? (
+              <View className="items-center px-6">
+                <ActivityIndicator size="large" />
+
+                <Text className="text-lg font-semibold text-gray-700 mt-4">
+                  Loading online households
+                </Text>
+
+                <Text className="text-gray-500 text-center mt-2">
+                  The server has many household records. This may take one or
+                  two minutes.
+                </Text>
+              </View>
+            ) : activeTab === "ONLINE" && !isOnline ? (
+              <View className="items-center px-6">
+                <Text className="text-5xl mb-4">📡</Text>
+
+                <Text className="text-lg font-semibold text-gray-700 mb-2">
+                  No Internet Connection
+                </Text>
+
+                <Text className="text-gray-500 text-center">
+                  Connect to the internet to view and download online
+                  households.
+                </Text>
+              </View>
+            ) : activeTab === "ONLINE" && onlineError ? (
+              <View className="items-center px-6">
+                <Text className="text-5xl mb-4">⚠️</Text>
+
+                <Text className="text-lg font-semibold text-red-700 mb-2">
+                  Unable to load households
+                </Text>
+
+                <Text className="text-gray-500 text-center">{onlineError}</Text>
+
+                <Pressable
+                  onPress={fetchOnlineHouseholds}
+                  className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
+                >
+                  <Text className="text-white font-medium">Try Again</Text>
+                </Pressable>
+              </View>
+            ) : activeTab === "ONLINE" &&
+              normalizedOnlineSearchQuery &&
+              onlineHouseholds.length > 0 ? (
+              <View className="items-center px-6">
+                <Text className="text-5xl mb-4">🔎</Text>
+
+                <Text className="text-lg font-semibold text-gray-700 mb-2">
+                  No matching household found
+                </Text>
+
+                <Text className="text-gray-500 text-center">
+                  Try another household-head name or household ID.
+                </Text>
+
+                <Pressable
+                  onPress={() => setOnlineSearchQuery("")}
+                  className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
+                >
+                  <Text className="text-white font-medium">Clear Search</Text>
+                </Pressable>
+              </View>
+            ) : activeTab === "LOCAL" &&
+              normalizedLocalSearchQuery &&
+              households.length > 0 ? (
+              <View className="items-center px-6">
+                <Text className="text-5xl mb-4">🔎</Text>
+
+                <Text className="text-lg font-semibold text-gray-700 mb-2">
+                  No matching downloaded household found
+                </Text>
+
+                <Text className="text-gray-500 text-center">
+                  Try another household-head name, member name, or household ID.
+                </Text>
+
+                <Pressable
+                  onPress={() => setLocalSearchQuery("")}
+                  className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
+                >
+                  <Text className="text-white font-medium">Clear Search</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <View className="items-center px-6">
+                <Text className="text-5xl mb-4">🏠</Text>
+
+                <Text className="text-lg font-semibold text-gray-700 mb-2">
+                  No households yet
+                </Text>
+
+                <Text className="text-gray-500 text-center">
+                  {activeTab === "LOCAL"
+                    ? "Tap the + button below to create your first household listing."
+                    : "No households available online."}
+                </Text>
+              </View>
+            )
           }
-
-          const online = item as Household;
-          return online.householdId ?? `online-${index}`;
-        }}
-        contentContainerStyle={{
-          paddingBottom: isKeyboardVisible ? 24 : 120,
-          paddingTop: currentData.length === 0 ? 80 : 12,
-        }}
-        ListEmptyComponent={
-          activeTab === "ONLINE" && onlineLoading ? (
-            <View className="items-center px-6">
-              <ActivityIndicator size="large" />
-
-              <Text className="text-lg font-semibold text-gray-700 mt-4">
-                Loading online households
-              </Text>
-
-              <Text className="text-gray-500 text-center mt-2">
-                The server has many household records. This may take one or two
-                minutes.
-              </Text>
-            </View>
-          ) : activeTab === "ONLINE" && !isOnline ? (
-            <View className="items-center px-6">
-              <Text className="text-5xl mb-4">📡</Text>
-
-              <Text className="text-lg font-semibold text-gray-700 mb-2">
-                No Internet Connection
-              </Text>
-
-              <Text className="text-gray-500 text-center">
-                Connect to the internet to view and download online households.
-              </Text>
-            </View>
-          ) : activeTab === "ONLINE" && onlineError ? (
-            <View className="items-center px-6">
-              <Text className="text-5xl mb-4">⚠️</Text>
-
-              <Text className="text-lg font-semibold text-red-700 mb-2">
-                Unable to load households
-              </Text>
-
-              <Text className="text-gray-500 text-center">{onlineError}</Text>
-
-              <Pressable
-                onPress={fetchOnlineHouseholds}
-                className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
-              >
-                <Text className="text-white font-medium">Try Again</Text>
-              </Pressable>
-            </View>
-          ) : activeTab === "ONLINE" &&
-            normalizedOnlineSearchQuery &&
-            onlineHouseholds.length > 0 ? (
-            <View className="items-center px-6">
-              <Text className="text-5xl mb-4">🔎</Text>
-
-              <Text className="text-lg font-semibold text-gray-700 mb-2">
-                No matching household found
-              </Text>
-
-              <Text className="text-gray-500 text-center">
-                Try another household-head name or household ID.
-              </Text>
-
-              <Pressable
-                onPress={() => setOnlineSearchQuery("")}
-                className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
-              >
-                <Text className="text-white font-medium">Clear Search</Text>
-              </Pressable>
-            </View>
-          ) : activeTab === "LOCAL" &&
-            normalizedLocalSearchQuery &&
-            households.length > 0 ? (
-            <View className="items-center px-6">
-              <Text className="text-5xl mb-4">🔎</Text>
-
-              <Text className="text-lg font-semibold text-gray-700 mb-2">
-                No matching downloaded household found
-              </Text>
-
-              <Text className="text-gray-500 text-center">
-                Try another household-head name, member name, or household ID.
-              </Text>
-
-              <Pressable
-                onPress={() => setLocalSearchQuery("")}
-                className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
-              >
-                <Text className="text-white font-medium">Clear Search</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <View className="items-center px-6">
-              <Text className="text-5xl mb-4">🏠</Text>
-
-              <Text className="text-lg font-semibold text-gray-700 mb-2">
-                No households yet
-              </Text>
-
-              <Text className="text-gray-500 text-center">
-                {activeTab === "LOCAL"
-                  ? "Tap the + button below to create your first household listing."
-                  : "No households available online."}
-              </Text>
-            </View>
-          )
-        }
-        renderItem={renderItem}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={5}
-        removeClippedSubviews={true}
-        keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="handled"
-      />
+          renderItem={renderItem}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
+          keyboardDismissMode="on-drag"
+          keyboardShouldPersistTaps="handled"
+        />
+      )}
 
       {/* FLOATING ADD BUTTON */}
       {activeTab === "LOCAL" && !isKeyboardVisible && (
