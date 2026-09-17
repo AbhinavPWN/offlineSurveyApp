@@ -1,3 +1,5 @@
+import { QueueCommunityVisitUseCase } from "@/src/features/community/usecases/QueueCommunityVisitUseCase";
+import { SyncCommunityVisitUseCase } from "@/src/features/community/usecases/SyncCommunityVisitUseCase";
 import { SQLiteHouseholdLocalRepository } from "../repositories/SQLiteHouseholdLocalRepository";
 import { HouseholdApiServiceImpl } from "../services/HouseholdApiService";
 import { NetworkServiceImpl } from "../utils/NetworkService";
@@ -12,6 +14,8 @@ import { DownloadHouseholdWithMembersUseCase } from "../usecases/household/Downl
 import { CommunityApiServiceImpl } from "@/src/services/CommunityApiService";
 import { SQLiteCommunityMemberLocalRepository } from "@/src/repositories/SQLiteCommunityMemberLocalRepository";
 import { DownloadCommunityMembersUseCase } from "@/src/features/community/usecases/DownloadCommunityMembersUseCase";
+import { SQLiteCommunityVisitLocalRepository } from "@/src/features/community/repositories/SQLiteCommunityVisitLocalRepository";
+import { SaveCommunityVisitDraftUseCase } from "@/src/features/community/usecases/SaveCommunityVisitDraftUseCase";
 
 // ------------------------
 // Singletons
@@ -70,3 +74,19 @@ export const downloadCommunityMembersUseCase =
     communityApiService,
     communityMemberLocalRepository,
   );
+
+// Community visit drafts (local storage only).
+export const communityVisitLocalRepository =
+  new SQLiteCommunityVisitLocalRepository();
+
+export const saveCommunityVisitDraftUseCase =
+  new SaveCommunityVisitDraftUseCase(communityVisitLocalRepository);
+
+export const queueCommunityVisitUseCase =
+  new QueueCommunityVisitUseCase(communityVisitLocalRepository);
+
+export const syncCommunityVisitUseCase = new SyncCommunityVisitUseCase(
+  communityVisitLocalRepository,
+  communityApiService,
+  networkService,
+);

@@ -15,6 +15,12 @@ import { v4 as uuidv4 } from "uuid";
  */
 
 export class HouseholdLocalRepositoryImpl implements HouseholdLocalRepository {
+  repairMissingIdOfChw(chwUsername: string, idofCHW: string): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  deleteLocal(localId: string): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
   async insertFromListing(h: Household): Promise<void> {
     const household: HouseholdLocal = {
       localId: uuidv4(),

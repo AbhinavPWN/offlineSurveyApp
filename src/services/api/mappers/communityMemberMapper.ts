@@ -26,14 +26,6 @@ function normalizeAge(value: unknown): number | null {
   return age;
 }
 
-/**
- * Current Community GET response does not contain wardNo.
- * The documented household ID format is:
- *
- * province-district-vdcnp-ward-household
- *
- * Example: 5-511-51106-13-3 -> ward 13
- */
 export function extractWardNoFromHouseholdId(
   householdId: unknown,
 ): string | null {

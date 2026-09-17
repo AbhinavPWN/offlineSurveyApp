@@ -7,8 +7,6 @@ import {
   FlatList,
   Pressable,
   Alert,
-  ActivityIndicator,
-  TextInput,
   Keyboard,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -24,20 +22,14 @@ import {
 } from "../di/container";
 import { useAuth } from "../auth/context/useAuth";
 import { SummaryBar } from "../components/SummaryBar";
-import { SyncBadge } from "../components/SyncBadge";
 import NetInfo from "@react-native-community/netinfo";
 import { useFocusEffect } from "@react-navigation/native";
 import { AppLogger } from "../utils/AppLogger";
 import { Household } from "../domain/models/Household";
 import { resolveHouseholdAggregateStatus } from "../utils/resolveHouseholdAggregateStatus";
-import { AggregateSyncStatus } from "../models/AggregateSyncStatus";
 import { getAllMunicipalities } from "../repositories/addressRepository";
 // import { getSurveyStatusForHousehold } from "../utils/getSurveyStatusForHousehold";
-import SupportLogButton from "@/src/components/support/SupportLogButton";
-import {
-  getSurveyStatusForMember,
-  SurveyMemberDisplayStatus,
-} from "../utils/getSurveyStatusForMember";
+import { getSurveyStatusForMember } from "../utils/getSurveyStatusForMember";
 import {
   buildGlobalSyncAlert,
   mapSyncStepStatusForUI,
@@ -47,285 +39,22 @@ import {
   HouseholdDashboardTab,
   HouseholdDashboardTabs,
 } from "../features/household-dashboard/components/HouseholdDashboardTabs";
+import { HouseholdDashboardListItem } from "../features/household-dashboard/components/HouseholdDashboardListItem";
+import { HouseholdDashboardListControls } from "../features/household-dashboard/components/HouseholdDashboardListControls";
+import { HouseholdDashboardHeader } from "../features/household-dashboard/components/HouseholdDashboardHeader";
+import { HouseholdDashboardEmptyState } from "../features/household-dashboard/components/HouseholdDashboardEmptyState";
+import {
+  countSurveyStatuses,
+  type HouseholdWithAggregate,
+  isPregnantMember,
+  matchesSearchTerms,
+  normalizeSearchValue,
+  sortHouseholds,
+} from "../features/household-dashboard/utils/householdDashboardUtils";
 
 interface Props {
   householdRepo: HouseholdLocalRepository;
   createHouseholdUseCase: CreateHouseholdUseCase;
-}
-
-type SurveyStatusCounts = {
-  notStarted: number;
-  inProgress: number;
-  readyToSync: number;
-  synced: number;
-};
-
-type HouseholdWithAggregate = {
-  household: HouseholdLocal;
-  aggregateStatus: AggregateSyncStatus;
-
-  totalMembers: number;
-  syncedMembers: number;
-  pendingMembers: number;
-  failedMembers: number;
-  draftMembers: number;
-
-  surveyCounts: SurveyStatusCounts;
-
-  headName?: string;
-  headMobile?: string;
-  memberSearchNames: string[];
-  pregnantWomenCount: number;
-};
-
-function formatServerModifiedDate(value?: string | null): string {
-  if (!value?.trim()) return "";
-
-  // Backend already returns a BS date in YYYY-MM-DD format.
-  // Do not parse it as a JavaScript/Gregorian date.
-  return value.trim().split("T")[0].split(" ")[0];
-}
-
-// For search
-function normalizeSearchValue(value: unknown): string {
-  return String(value ?? "")
-    .normalize("NFC")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-}
-
-// Search functionality
-function matchesSearchTerms(value: unknown, normalizedQuery: string): boolean {
-  const normalizedValue = normalizeSearchValue(value);
-  const queryTerms = normalizedQuery.split(" ").filter(Boolean);
-
-  return queryTerms.every((term) => normalizedValue.includes(term));
-}
-
-// Pregnancy count/display functionality
-function isPregnantMember(value: unknown): boolean {
-  return (
-    String(value ?? "")
-      .trim()
-      .toUpperCase() === "Y"
-  );
-}
-
-function sortHouseholds(data: HouseholdLocal[]) {
-  const priorityMap: Record<string, number> = {
-    FAILED: 1,
-    DRAFT: 2,
-    PENDING: 3,
-    SYNCED: 4,
-  };
-
-  return [...data].sort((a, b) => {
-    const p1 = priorityMap[a.syncStatus] ?? 5;
-    const p2 = priorityMap[b.syncStatus] ?? 5;
-
-    if (p1 !== p2) return p1 - p2;
-
-    const timeA = Number(a.lastModifiedAt) || 0;
-    const timeB = Number(b.lastModifiedAt) || 0;
-
-    return timeB - timeA;
-  });
-}
-
-// UI helper function :
-
-function getAggregateMainMessage(status: AggregateSyncStatus) {
-  switch (status) {
-    case "FULLY_SYNCED":
-      return {
-        text: "All data is synced",
-        className: "text-green-700 bg-green-100",
-      };
-
-    case "PENDING":
-      return {
-        text: "Household ready to sync",
-        className: "text-yellow-700 bg-yellow-100",
-      };
-
-    case "PARTIAL_PENDING":
-      return {
-        text: "Some data needs sync",
-        className: "text-yellow-700 bg-yellow-100",
-      };
-
-    case "FAILED":
-      return {
-        text: "Household needs attention",
-        className: "text-red-700 bg-red-100",
-      };
-
-    case "PARTIAL_FAILED":
-      return {
-        text: "Some records need attention",
-        className: "text-red-700 bg-red-100",
-      };
-
-    case "DRAFT":
-      return {
-        text: "Household not completed",
-        className: "text-orange-700 bg-orange-100",
-      };
-
-    default:
-      return {
-        text: "Status unknown",
-        className: "text-gray-700 bg-gray-100",
-      };
-  }
-}
-
-function getHouseholdDetailStatus(syncStatus: HouseholdLocal["syncStatus"]) {
-  switch (syncStatus) {
-    case "SYNCED":
-      return {
-        label: "✓ Synced",
-        className: "text-green-700",
-      };
-
-    case "PENDING":
-      return {
-        label: "↻ Ready to sync",
-        className: "text-yellow-700",
-      };
-
-    case "FAILED":
-      return {
-        label: "⚠ Needs attention",
-        className: "text-red-700",
-      };
-
-    case "DRAFT":
-      return {
-        label: "Not completed",
-        className: "text-orange-700",
-      };
-
-    default:
-      return {
-        label: "Unknown",
-        className: "text-gray-600",
-      };
-  }
-}
-
-function getMemberDetailStatus(params: {
-  totalMembers: number;
-  syncedMembers: number;
-  pendingMembers: number;
-  failedMembers: number;
-  draftMembers: number;
-}) {
-  const {
-    totalMembers,
-    syncedMembers,
-    pendingMembers,
-    failedMembers,
-    draftMembers,
-  } = params;
-
-  if (totalMembers === 0) {
-    return {
-      label: "No members added",
-      className: "text-gray-500",
-    };
-  }
-
-  if (failedMembers > 0) {
-    return {
-      label: `⚠ ${failedMembers} need attention`,
-      className: "text-red-700",
-    };
-  }
-
-  if (pendingMembers > 0) {
-    return {
-      label: `↻ ${pendingMembers} ready to sync`,
-      className: "text-yellow-700",
-    };
-  }
-
-  if (draftMembers > 0) {
-    return {
-      label: `${draftMembers} not completed`,
-      className: "text-orange-700",
-    };
-  }
-
-  if (syncedMembers === totalMembers) {
-    return {
-      label: `✓ ${syncedMembers}/${totalMembers} synced`,
-      className: "text-green-700",
-    };
-  }
-
-  return {
-    label: `${syncedMembers}/${totalMembers} synced`,
-    className: "text-yellow-700",
-  };
-}
-
-function getSurveyDetailStatus(
-  counts: SurveyStatusCounts,
-  totalMembers: number,
-) {
-  if (totalMembers === 0) {
-    return {
-      label: "Add members first",
-      className: "text-gray-500",
-    };
-  }
-
-  if (counts.readyToSync > 0) {
-    return {
-      label: `↻ ${counts.readyToSync} ready to sync`,
-      className: "text-yellow-700",
-    };
-  }
-
-  if (counts.inProgress > 0) {
-    return {
-      label: `${counts.inProgress} in progress`,
-      className: "text-orange-700",
-    };
-  }
-
-  if (counts.synced > 0) {
-    return {
-      label: `✓ ${counts.synced} synced`,
-      className: "text-green-700",
-    };
-  }
-
-  return {
-    label: "Not started",
-    className: "text-gray-500",
-  };
-}
-
-function countSurveyStatuses(statuses: SurveyMemberDisplayStatus[]) {
-  return statuses.reduce<SurveyStatusCounts>(
-    (acc, status) => {
-      if (status === "NOT_STARTED") acc.notStarted += 1;
-      if (status === "IN_PROGRESS") acc.inProgress += 1;
-      if (status === "READY_TO_SYNC") acc.readyToSync += 1;
-      if (status === "SYNCED") acc.synced += 1;
-
-      return acc;
-    },
-    {
-      notStarted: 0,
-      inProgress: 0,
-      readyToSync: 0,
-      synced: 0,
-    },
-  );
 }
 
 export const HouseholdDashboardScreen: React.FC<Props> = ({
@@ -905,247 +634,17 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
   // Memoize renderItem
   const renderItem = React.useCallback(
-    ({ item }: { item: HouseholdWithAggregate | Household }) => {
-      if (activeTab === "LOCAL") {
-        const {
-          household: local,
-          aggregateStatus,
-          totalMembers,
-          syncedMembers,
-          pendingMembers,
-          failedMembers,
-          draftMembers,
-          surveyCounts,
-          headName,
-          headMobile,
-          pregnantWomenCount,
-        } = item as HouseholdWithAggregate;
-
-        if (!local.localId) return null;
-        const aggregateMessage = getAggregateMainMessage(aggregateStatus);
-
-        const householdDetail = getHouseholdDetailStatus(local.syncStatus);
-
-        const memberDetail = getMemberDetailStatus({
-          totalMembers,
-          syncedMembers,
-          pendingMembers,
-          failedMembers,
-          draftMembers,
-        });
-
-        const surveyDetail = getSurveyDetailStatus(surveyCounts, totalMembers);
-
-        return (
-          <Pressable
-            onPress={() => handleEdit(local)}
-            className={`bg-white mx-4 mt-3 p-4 rounded-xl shadow-sm ${
-              aggregateStatus === "FAILED" ||
-              aggregateStatus === "PARTIAL_FAILED"
-                ? "border border-red-300"
-                : aggregateStatus === "PENDING" ||
-                    aggregateStatus === "PARTIAL_PENDING"
-                  ? "border border-yellow-300"
-                  : aggregateStatus === "DRAFT"
-                    ? "border border-orange-300"
-                    : ""
-            }`}
-          >
-            <View className="flex-row justify-between items-start">
-              <View>
-                <Text className="text-base font-semibold">
-                  {headName || "Household Head"}
-                </Text>
-
-                <Text className="text-sm text-gray-600">
-                  Mobile: {headMobile || "No mobile"}
-                </Text>
-
-                <Text className="text-sm text-gray-700 mt-1">
-                  {municipalityMap[local.vdcnpCode] || "Municipality"} - Ward{" "}
-                  {local.wardNo}
-                </Text>
-
-                <Text
-                  className={`text-xs px-2 py-1 rounded mt-2 self-start ${aggregateMessage.className}`}
-                >
-                  {aggregateMessage.text}
-                </Text>
-              </View>
-
-              {/* RIGHT SIDE: Badge + Menu */}
-              <View className="items-end">
-                <SyncBadge status={aggregateStatus} />
-                {aggregateStatus === "FULLY_SYNCED" && (
-                  <Pressable
-                    onPress={() => showOptions(local)}
-                    className="mt-2 px-2 py-1"
-                  >
-                    <Text style={{ fontSize: 18 }}>⋮</Text>
-                  </Pressable>
-                )}
-              </View>
-            </View>
-
-            {/* Pregnant count display */}
-            {pregnantWomenCount > 0 && (
-              <View className="mt-3 flex-row items-center justify-between rounded-lg border border-pink-300 bg-pink-50 px-3 py-2">
-                <Text className="text-sm font-medium text-pink-500 ">
-                  Pregnant women / गर्भवती महिला
-                </Text>
-
-                <Text className="text-base font-bold text-pink-700">
-                  {pregnantWomenCount}
-                </Text>
-              </View>
-            )}
-
-            <Text className="text-gray-600 mt-2">
-              Address: {local.address || "Address not specified"}
-            </Text>
-
-            <Text className="text-xs text-gray-500 mt-1">
-              Household ID: {local.householdId || "Not synced yet"}
-            </Text>
-
-            <View className="mt-3 bg-gray-50 rounded-lg px-3 py-2">
-              <Text className="text-xs font-semibold text-gray-600 mb-1">
-                Sync Details
-              </Text>
-
-              <View className="flex-row justify-between py-0.5">
-                <Text className="text-xs text-gray-500">Household</Text>
-                <Text
-                  className={`text-xs font-medium ${householdDetail.className}`}
-                >
-                  {householdDetail.label}
-                </Text>
-              </View>
-
-              <View className="flex-row justify-between py-0.5">
-                <Text className="text-xs text-gray-500">Members</Text>
-                <Text
-                  className={`text-xs font-medium ${memberDetail.className}`}
-                >
-                  {memberDetail.label}
-                </Text>
-              </View>
-
-              <View className="flex-row justify-between py-0.5">
-                <Text className="text-xs text-gray-500">Surveys</Text>
-                <Text
-                  className={`text-xs font-medium ${surveyDetail.className}`}
-                >
-                  {surveyDetail.label}
-                </Text>
-              </View>
-            </View>
-          </Pressable>
-        );
-      }
-
-      const online = item as Household;
-      if (!online.householdId) return null;
-
-      const hasServerUpdate = Boolean(online.modifiedDate?.trim());
-      const isDownloaded = downloadedServerIds.has(online.householdId);
-      const modifiedDateLabel = formatServerModifiedDate(online.modifiedDate);
-
-      return (
-        <View
-          className={`bg-white mx-4 mt-3 p-4 rounded-xl shadow-sm border ${
-            hasServerUpdate ? "border-green-200" : "border-amber-200"
-          }`}
-        >
-          <View className="flex-row justify-between items-start">
-            <View className="flex-1 pr-3">
-              <Text className="text-base font-semibold text-gray-900">
-                {online.householdHeadName || "Household head not found"}
-              </Text>
-
-              <Text className="text-xs text-gray-500 mt-1">
-                Household ID: {online.householdId}
-              </Text>
-            </View>
-
-            <View
-              className={`px-2 py-1 rounded-full ${
-                hasServerUpdate ? "bg-green-100" : "bg-amber-100"
-              }`}
-            >
-              <Text
-                className={`text-xs font-semibold ${
-                  hasServerUpdate ? "text-green-700" : "text-amber-700"
-                }`}
-              >
-                {hasServerUpdate ? "Updated" : "Not updated"}
-              </Text>
-            </View>
-          </View>
-
-          <Text className="text-sm text-gray-700 mt-3">
-            {online.municipalityName || "Municipality"} · Ward {online.wardNo}
-          </Text>
-
-          <Text className="text-sm text-gray-600 mt-1">
-            {online.address || "Address not specified"}
-          </Text>
-
-          <Text className="text-sm text-gray-500 mt-1">
-            {online.memberCount}{" "}
-            {online.memberCount === 1
-              ? "household member"
-              : "household members"}
-          </Text>
-
-          <View
-            className={`mt-3 rounded-lg px-3 py-2 ${
-              hasServerUpdate ? "bg-green-50" : "bg-amber-50"
-            }`}
-          >
-            <Text
-              className={`text-sm font-semibold ${
-                hasServerUpdate ? "text-green-700" : "text-amber-700"
-              }`}
-            >
-              {hasServerUpdate
-                ? "✓ Household updated on server"
-                : "No synced update yet"}
-            </Text>
-
-            <Text
-              className={`text-xs mt-1 ${
-                hasServerUpdate ? "text-green-600" : "text-amber-600"
-              }`}
-            >
-              {hasServerUpdate
-                ? `Last updated (BS): ${modifiedDateLabel}`
-                : "Only the original household listing is available."}
-            </Text>
-          </View>
-
-          {isDownloaded ? (
-            <View className="mt-3 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-              <Text className="text-blue-700 font-medium">
-                ✓ Downloaded on this device
-              </Text>
-              <Text className="text-xs text-blue-600 mt-1">
-                Open it from the Downloaded tab.
-              </Text>
-            </View>
-          ) : (
-            <Pressable
-              onPress={() => handleDownload(online)}
-              className="mt-3 bg-blue-600 px-4 py-2 rounded-lg"
-            >
-              <Text className="text-white text-center font-medium">
-                Download household
-              </Text>
-            </Pressable>
-          )}
-        </View>
-      );
-    },
+    ({ item }: { item: HouseholdWithAggregate | Household }) => (
+      <HouseholdDashboardListItem
+        item={item}
+        activeTab={activeTab}
+        downloadedServerIds={downloadedServerIds}
+        municipalityMap={municipalityMap}
+        onEdit={handleEdit}
+        onShowOptions={showOptions}
+        onDownload={handleDownload}
+      />
+    ),
     [
       activeTab,
       downloadedServerIds,
@@ -1245,69 +744,15 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   // -----------------------------
   return (
     <View className="flex-1 bg-gray-50">
-      {/* HEADER */}
       {!isKeyboardVisible && (
-        <View className="px-4 pt-6 pb-4 bg-white shadow-sm">
-          {/* Title Row */}
-          {/* Title + Logout Row */}
-          <View className="flex-row justify-between items-center">
-            <Text className="text-2xl font-bold text-gray-900">Households</Text>
-
-            <View className="flex-row items-center gap-3">
-              <SupportLogButton />
-
-              <Pressable
-                onPress={handleLogout}
-                className="border border-red-500 bg-red-50 px-2 py-2 rounded-xl active:bg-red-100"
-              >
-                <Text className="text-red-600 font-semibold">Logout</Text>
-              </Pressable>
-            </View>
-          </View>
-
-          {/* Subtitle + Action Row */}
-          <View className="flex-row justify-between items-center mt-4">
-            <Text className="text-sm text-gray-500 flex-1 pr-2">
-              Manage and update households in your assigned ward
-            </Text>
-
-            {!isOnline ? (
-              <View className="px-3 py-1 rounded-full bg-gray-200">
-                <Text className="text-gray-600 text-xs font-medium">
-                  Offline
-                </Text>
-              </View>
-            ) : state === "UNLOCKED" ? (
-              <Pressable
-                onPress={handleManualSync}
-                disabled={syncing}
-                className={`px-4 py-2 rounded-full ${
-                  syncing ? "bg-gray-300" : "bg-blue-600"
-                }`}
-              >
-                <Text className="text-white text-sm font-medium">
-                  {syncing ? "Syncing..." : "Sync"}
-                </Text>
-              </Pressable>
-            ) : state === "SESSION_EXPIRED" ? (
-              <Pressable
-                onPress={() => router.replace("/login")}
-                className="px-4 py-2 rounded-full bg-orange-500"
-              >
-                <Text className="text-white text-sm font-medium">Login</Text>
-              </Pressable>
-            ) : null}
-          </View>
-        </View>
-      )}
-      {/* OFFLINE indicator  */}
-
-      {!isKeyboardVisible && !isOnline && (
-        <View className="bg-red-100 border border-red-300 p-2 rounded mx-4 mt-2">
-          <Text className="text-red-700 text-sm text-center">
-            You are offline. Sync disabled.
-          </Text>
-        </View>
+        <HouseholdDashboardHeader
+          isOnline={isOnline}
+          authState={state}
+          syncing={syncing}
+          onLogout={handleLogout}
+          onSync={handleManualSync}
+          onLogin={() => router.replace("/login")}
+        />
       )}
 
       {/* SUMMARY */}
@@ -1362,128 +807,30 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       />
 
       {activeTab === "COMMUNITY" && (
-        <CommunityTab empId={chwProfile.userName} isOnline={isOnline} />
+        <CommunityTab
+          key={JSON.stringify([chwProfile.userName, chwProfile.idofCHW])}
+          empId={chwProfile.userName}
+          supervisorId={chwProfile.idofCHW}
+          isOnline={isOnline}
+        />
       )}
 
-      {/* DOWNLOADED LIST CONTROLS - Search */}
-      {activeTab === "LOCAL" && (
-        <View className="mx-4 mt-3">
-          <Text className="text-sm text-gray-600">
-            {normalizedLocalSearchQuery
-              ? `${filteredLocalHouseholds.length} of ${households.length} downloaded households`
-              : `${households.length} downloaded ${
-                  households.length === 1 ? "household" : "households"
-                }`}
-          </Text>
-
-          <View className="mt-3 flex-row items-center bg-white border border-gray-300 rounded-xl px-3">
-            <Text className="text-gray-400 text-lg mr-2">⌕</Text>
-
-            <TextInput
-              value={localSearchQuery}
-              onChangeText={setLocalSearchQuery}
-              placeholder="Search by head, member name, or household ID"
-              placeholderTextColor="#9CA3AF"
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="search"
-              accessibilityLabel="Search downloaded households"
-              className="flex-1 py-3 text-base text-gray-900"
-              onSubmitEditing={() => Keyboard.dismiss()}
-            />
-
-            {localSearchQuery.length > 0 && (
-              <Pressable
-                onPress={() => setLocalSearchQuery("")}
-                accessibilityRole="button"
-                accessibilityLabel="Clear downloaded household search"
-                className="ml-2 px-2 py-2"
-              >
-                <Text className="text-blue-700 text-sm font-semibold">
-                  Clear
-                </Text>
-              </Pressable>
-            )}
-          </View>
-        </View>
-      )}
-
-      {/* ONLINE LIST CONTROLS - Search and refresh*/}
-      {activeTab === "ONLINE" && (
-        <View className="mx-4 mt-3">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-sm text-gray-600 flex-1 pr-3">
-              {onlineLoading
-                ? "Loading online households..."
-                : normalizedOnlineSearchQuery
-                  ? `${filteredOnlineHouseholds.length} of ${onlineHouseholds.length} households`
-                  : `${onlineHouseholds.length} online ${
-                      onlineHouseholds.length === 1 ? "household" : "households"
-                    }`}
-            </Text>
-
-            <Pressable
-              onPress={fetchOnlineHouseholds}
-              disabled={onlineLoading || !isOnline}
-              className={`px-4 py-2 rounded-lg ${
-                onlineLoading || !isOnline
-                  ? "bg-gray-200"
-                  : "bg-blue-100 active:bg-blue-200"
-              }`}
-            >
-              <View className="flex-row items-center">
-                {onlineLoading && (
-                  <ActivityIndicator
-                    size="small"
-                    color="#6B7280"
-                    style={{ marginRight: 6 }}
-                  />
-                )}
-
-                <Text
-                  className={`text-sm font-semibold ${
-                    onlineLoading || !isOnline
-                      ? "text-gray-500"
-                      : "text-blue-700"
-                  }`}
-                >
-                  {onlineLoading ? "Refreshing..." : "Refresh"}
-                </Text>
-              </View>
-            </Pressable>
-          </View>
-
-          <View className="mt-3 flex-row items-center bg-white border border-gray-300 rounded-xl px-3">
-            <Text className="text-gray-400 text-lg mr-2">⌕</Text>
-
-            <TextInput
-              value={onlineSearchQuery}
-              onChangeText={setOnlineSearchQuery}
-              placeholder="Search by head name or household ID"
-              placeholderTextColor="#9CA3AF"
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="search"
-              accessibilityLabel="Search online households"
-              className="flex-1 py-3 text-base text-gray-900"
-              onSubmitEditing={() => Keyboard.dismiss()}
-            />
-
-            {onlineSearchQuery.length > 0 && (
-              <Pressable
-                onPress={() => setOnlineSearchQuery("")}
-                accessibilityRole="button"
-                accessibilityLabel="Clear household search"
-                className="ml-2 px-2 py-2"
-              >
-                <Text className="text-blue-700 text-sm font-semibold">
-                  Clear
-                </Text>
-              </Pressable>
-            )}
-          </View>
-        </View>
-      )}
+      <HouseholdDashboardListControls
+        activeTab={activeTab}
+        isOnline={isOnline}
+        onlineLoading={onlineLoading}
+        localSearchQuery={localSearchQuery}
+        normalizedLocalSearchQuery={normalizedLocalSearchQuery}
+        downloadedCount={households.length}
+        filteredDownloadedCount={filteredLocalHouseholds.length}
+        onLocalSearchChange={setLocalSearchQuery}
+        onlineSearchQuery={onlineSearchQuery}
+        normalizedOnlineSearchQuery={normalizedOnlineSearchQuery}
+        onlineCount={onlineHouseholds.length}
+        filteredOnlineCount={filteredOnlineHouseholds.length}
+        onOnlineSearchChange={setOnlineSearchQuery}
+        onRefreshOnline={fetchOnlineHouseholds}
+      />
 
       {activeTab !== "COMMUNITY" && syncing && !isKeyboardVisible && (
         <View className="mx-4 mt-3 bg-white p-3 rounded-lg shadow-sm">
@@ -1522,106 +869,19 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
             paddingTop: currentData.length === 0 ? 80 : 12,
           }}
           ListEmptyComponent={
-            activeTab === "ONLINE" && onlineLoading ? (
-              <View className="items-center px-6">
-                <ActivityIndicator size="large" />
-
-                <Text className="text-lg font-semibold text-gray-700 mt-4">
-                  Loading online households
-                </Text>
-
-                <Text className="text-gray-500 text-center mt-2">
-                  The server has many household records. This may take one or
-                  two minutes.
-                </Text>
-              </View>
-            ) : activeTab === "ONLINE" && !isOnline ? (
-              <View className="items-center px-6">
-                <Text className="text-5xl mb-4">📡</Text>
-
-                <Text className="text-lg font-semibold text-gray-700 mb-2">
-                  No Internet Connection
-                </Text>
-
-                <Text className="text-gray-500 text-center">
-                  Connect to the internet to view and download online
-                  households.
-                </Text>
-              </View>
-            ) : activeTab === "ONLINE" && onlineError ? (
-              <View className="items-center px-6">
-                <Text className="text-5xl mb-4">⚠️</Text>
-
-                <Text className="text-lg font-semibold text-red-700 mb-2">
-                  Unable to load households
-                </Text>
-
-                <Text className="text-gray-500 text-center">{onlineError}</Text>
-
-                <Pressable
-                  onPress={fetchOnlineHouseholds}
-                  className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
-                >
-                  <Text className="text-white font-medium">Try Again</Text>
-                </Pressable>
-              </View>
-            ) : activeTab === "ONLINE" &&
-              normalizedOnlineSearchQuery &&
-              onlineHouseholds.length > 0 ? (
-              <View className="items-center px-6">
-                <Text className="text-5xl mb-4">🔎</Text>
-
-                <Text className="text-lg font-semibold text-gray-700 mb-2">
-                  No matching household found
-                </Text>
-
-                <Text className="text-gray-500 text-center">
-                  Try another household-head name or household ID.
-                </Text>
-
-                <Pressable
-                  onPress={() => setOnlineSearchQuery("")}
-                  className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
-                >
-                  <Text className="text-white font-medium">Clear Search</Text>
-                </Pressable>
-              </View>
-            ) : activeTab === "LOCAL" &&
-              normalizedLocalSearchQuery &&
-              households.length > 0 ? (
-              <View className="items-center px-6">
-                <Text className="text-5xl mb-4">🔎</Text>
-
-                <Text className="text-lg font-semibold text-gray-700 mb-2">
-                  No matching downloaded household found
-                </Text>
-
-                <Text className="text-gray-500 text-center">
-                  Try another household-head name, member name, or household ID.
-                </Text>
-
-                <Pressable
-                  onPress={() => setLocalSearchQuery("")}
-                  className="bg-blue-600 px-5 py-2 rounded-lg mt-4"
-                >
-                  <Text className="text-white font-medium">Clear Search</Text>
-                </Pressable>
-              </View>
-            ) : (
-              <View className="items-center px-6">
-                <Text className="text-5xl mb-4">🏠</Text>
-
-                <Text className="text-lg font-semibold text-gray-700 mb-2">
-                  No households yet
-                </Text>
-
-                <Text className="text-gray-500 text-center">
-                  {activeTab === "LOCAL"
-                    ? "Tap the + button below to create your first household listing."
-                    : "No households available online."}
-                </Text>
-              </View>
-            )
+            <HouseholdDashboardEmptyState
+              activeTab={activeTab}
+              isOnline={isOnline}
+              onlineLoading={onlineLoading}
+              onlineError={onlineError}
+              normalizedOnlineSearchQuery={normalizedOnlineSearchQuery}
+              onlineCount={onlineHouseholds.length}
+              normalizedLocalSearchQuery={normalizedLocalSearchQuery}
+              downloadedCount={households.length}
+              onRetryOnline={fetchOnlineHouseholds}
+              onClearOnlineSearch={() => setOnlineSearchQuery("")}
+              onClearLocalSearch={() => setLocalSearchQuery("")}
+            />
           }
           renderItem={renderItem}
           initialNumToRender={10}
