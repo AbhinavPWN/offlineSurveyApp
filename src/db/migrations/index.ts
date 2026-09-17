@@ -9,6 +9,7 @@ import { migration008 } from "./008_add_municipality_column";
 import { migration009 } from "./009_add_mother_child_fields";
 import { migration010 } from "./010_create_surveys";
 import { migration011 } from "./011_add_member_health_fields";
+import { migration012 } from "./012_create_community_tables";
 
 export const migrations = [
   migration001,
@@ -22,4 +23,5 @@ export const migrations = [
   migration009,
   migration010,
   migration011,
+  migration012,
 ];
