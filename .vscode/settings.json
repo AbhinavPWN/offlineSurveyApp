@@ -12,7 +12,8 @@
     "छान्नुहोस्",
     "जन्म",
     "जुकाको",
-    "विवाहित"
+    "विवाहित",
+    "विषय"
   ],
   "tailwindCSS.experimental.classAttributes": ["class", "twClass"],
   "tailwindCSS.includeLanguages": {

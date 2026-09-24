@@ -14,8 +14,13 @@ import {
   convertADToBSISO,
   convertBSToADISO,
 } from "../../../utils/nepaliDateUtils";
+import { SessionTopicGuidanceModal } from "./SessionTopicGuidanceModal";
 import type { CommunityMember } from "../models/CommunityMember";
 import type { CommunityVisitSessionTopics } from "../models/CommunityVisit";
+import {
+  communitySessionTopics,
+  type CommunitySessionTopic,
+} from "../master/communitySessionTopics";
 
 export type CommunityVisitFormMember = Pick<
   CommunityMember,
@@ -52,16 +57,16 @@ interface CommunityVisitFormProps {
   loadingMembers?: boolean;
 }
 
-const TOPICS: { key: keyof CommunityVisitSessionTopics; label: string }[] = [
-  { key: "sessionTopicNut", label: "Nutrition / पोषण" },
-  { key: "sessionTopicHealthly", label: "Healthy Lifestyle / स्वस्थ जीवनशैली" },
-  { key: "sessionTopicDrug", label: "Drug Abuse / लागूऔषधको दुरुपयोग" },
-  { key: "sessionTopicChild", label: "Child Marriage / बालविवाह" },
-  { key: "sessionTopicHeat", label: "Heat Stress / गर्मीको तनाव" },
-  { key: "sessionTopicMalaria", label: "Malaria / औलो" },
-  { key: "sessionTopicDiarrhoea", label: "Diarrhoea / पखाला" },
-  { key: "sessionTopicGbv", label: "Gender-based Violence / लैङ्गिक हिंसा" },
-];
+// const TOPICS: { key: keyof CommunityVisitSessionTopics; label: string }[] = [
+//   { key: "sessionTopicNut", label: "Nutrition / पोषण" },
+//   { key: "sessionTopicHealthly", label: "Healthy Lifestyle / स्वस्थ जीवनशैली" },
+//   { key: "sessionTopicDrug", label: "Drug Abuse / लागूऔषधको दुरुपयोग" },
+//   { key: "sessionTopicChild", label: "Child Marriage / बालविवाह" },
+//   { key: "sessionTopicHeat", label: "Heat Stress / गर्मीको तनाव" },
+//   { key: "sessionTopicMalaria", label: "Malaria / औलो" },
+//   { key: "sessionTopicDiarrhoea", label: "Diarrhoea / पखाला" },
+//   { key: "sessionTopicGbv", label: "Gender-based Violence / लैङ्गिक हिंसा" },
+// ];
 
 const EMPTY_TOPICS: CommunityVisitSessionTopics = {
   sessionTopicNut: "N",
@@ -152,10 +157,16 @@ export function CommunityVisitForm({
   const [topics, setTopics] = React.useState<CommunityVisitSessionTopics>(
     () => {
       const values = { ...EMPTY_TOPICS };
-      for (const { key } of TOPICS) values[key] = initialValues?.[key] ?? "N";
+      for (const { key } of communitySessionTopics) {
+        values[key] = initialValues?.[key] ?? "N";
+      }
       return values;
     },
   );
+
+  const [activeGuidanceTopic, setActiveGuidanceTopic] =
+    React.useState<CommunitySessionTopic | null>(null);
+
   const [selected, setSelected] = React.useState<
     Map<string, CommunityVisitFormMember>
   >(
@@ -246,6 +257,46 @@ export function CommunityVisitForm({
   });
 
   const busy = saving || savingHere;
+
+  const openTopicGuidance = React.useCallback(
+    (topic: CommunitySessionTopic) => {
+      if (busy || savingRef.current) {
+        return;
+      }
+
+      Keyboard.dismiss();
+
+      setTopics((previous) => {
+        if (previous[topic.key] === "Y") {
+          return previous;
+        }
+
+        return {
+          ...previous,
+          [topic.key]: "Y",
+        };
+      });
+
+      setActiveGuidanceTopic(topic);
+    },
+    [busy],
+  );
+
+  const removeActiveTopic = React.useCallback(() => {
+    if (!activeGuidanceTopic || busy || savingRef.current) {
+      return;
+    }
+
+    const key = activeGuidanceTopic.key;
+
+    setTopics((previous) => ({
+      ...previous,
+      [key]: "N",
+    }));
+
+    setActiveGuidanceTopic(null);
+  }, [activeGuidanceTopic, busy]);
+
   const visitDateAd = validAdDate(visitDateBs);
   const selectedMembers = Array.from(selected.values());
   const noOfFemales = selectedMembers.filter(
@@ -432,39 +483,78 @@ export function CommunityVisitForm({
                   />
                 </View>
                 <View className="mb-4 rounded-2xl border border-gray-200 bg-white p-4">
-                  <Text className="mb-3 text-lg font-semibold text-gray-900">
+                  <Text className="text-lg font-semibold text-gray-900">
                     Session topics / सत्रका विषयहरू
                   </Text>
-                  {TOPICS.map(({ key, label }) => (
-                    <Pressable
-                      key={key}
-                      accessibilityRole="checkbox"
-                      accessibilityLabel={label}
-                      accessibilityState={{
-                        checked: topics[key] === "Y",
-                        disabled: busy,
-                      }}
-                      disabled={busy}
-                      onPress={() =>
-                        setTopics((previous) => ({
-                          ...previous,
-                          [key]: previous[key] === "Y" ? "N" : "Y",
-                        }))
-                      }
-                      className="min-h-12 flex-row items-center border-b border-gray-100 py-3"
-                    >
-                      <View
-                        className={`mr-3 h-6 w-6 items-center justify-center rounded border ${topics[key] === "Y" ? "border-blue-600 bg-blue-600" : "border-gray-400 bg-white"}`}
+
+                  <Text className="mb-3 mt-1 text-sm leading-5 text-gray-500">
+                    Tap a topic to select it and view the guidance. विषय छान्न र
+                    मार्गदर्शन हेर्न ट्याप गर्नुहोस्।
+                  </Text>
+
+                  {communitySessionTopics.map((topic) => {
+                    const selectedTopic = topics[topic.key] === "Y";
+
+                    return (
+                      <Pressable
+                        key={topic.key}
+                        disabled={busy}
+                        onPress={() => openTopicGuidance(topic)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${topic.label}. ${
+                          selectedTopic ? "Selected" : "Not selected"
+                        }. Open guidance.`}
+                        accessibilityState={{
+                          selected: selectedTopic,
+                          disabled: busy,
+                        }}
+                        className={`min-h-14 flex-row items-center border-b border-gray-100 px-1 py-3 ${
+                          selectedTopic ? "bg-blue-50" : ""
+                        }`}
                       >
-                        {topics[key] === "Y" && (
-                          <Text className="font-bold text-white">✓</Text>
-                        )}
-                      </View>
-                      <Text className="flex-1 text-base text-gray-800">
-                        {label}
-                      </Text>
-                    </Pressable>
-                  ))}
+                        <View
+                          className={`mr-3 h-6 w-6 items-center justify-center rounded border ${
+                            selectedTopic
+                              ? "border-blue-600 bg-blue-600"
+                              : "border-gray-400 bg-white"
+                          }`}
+                        >
+                          {selectedTopic ? (
+                            <Text className="font-bold text-white">✓</Text>
+                          ) : null}
+                        </View>
+
+                        <View className="flex-1">
+                          <Text
+                            className={`text-base leading-6 ${
+                              selectedTopic
+                                ? "font-medium text-blue-900"
+                                : "text-gray-800"
+                            }`}
+                          >
+                            {topic.label}
+                          </Text>
+
+                          {selectedTopic ? (
+                            <Text className="mt-1 text-xs font-medium text-blue-700">
+                              Selected · Tap to view guidance
+                            </Text>
+                          ) : (
+                            <Text className="mt-1 text-xs text-gray-500">
+                              Tap to select and view guidance
+                            </Text>
+                          )}
+                        </View>
+
+                        <Text
+                          accessible={false}
+                          className="ml-2 text-xl text-gray-400"
+                        >
+                          ›
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
                 </View>
                 <View className="mb-4 rounded-2xl border border-gray-200 bg-white p-4">
                   <Text className="mb-3 text-lg font-semibold text-gray-900">
@@ -614,6 +704,15 @@ export function CommunityVisitForm({
           </View>
         </View>
       </KeyboardAvoidingView>
+      <SessionTopicGuidanceModal
+        visible={activeGuidanceTopic !== null}
+        topic={activeGuidanceTopic}
+        selected={
+          activeGuidanceTopic ? topics[activeGuidanceTopic.key] === "Y" : false
+        }
+        onClose={() => setActiveGuidanceTopic(null)}
+        onRemove={removeActiveTopic}
+      />
     </View>
   );
 }
