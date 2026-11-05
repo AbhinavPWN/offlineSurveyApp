@@ -1,3 +1,4 @@
+import { SurveyListingCacheRepository } from "@/src/repositories/SurveyListingCacheRepository";
 import { QueueCommunityVisitUseCase } from "@/src/features/community/usecases/QueueCommunityVisitUseCase";
 import { SyncCommunityVisitUseCase } from "@/src/features/community/usecases/SyncCommunityVisitUseCase";
 import { SQLiteHouseholdLocalRepository } from "../repositories/SQLiteHouseholdLocalRepository";
@@ -22,6 +23,7 @@ import { SaveCommunityVisitDraftUseCase } from "@/src/features/community/usecase
 // ------------------------
 
 // Repositories
+export const surveyListingCacheRepository = new SurveyListingCacheRepository();
 export const householdLocalRepository = new SQLiteHouseholdLocalRepository();
 export const householdMemberLocalRepository =
   new SQLiteHouseholdMemberLocalRepository();

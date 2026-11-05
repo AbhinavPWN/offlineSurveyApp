@@ -1,6 +1,25 @@
 export function mapAdultMfToApi(a: Record<string, any>) {
+  for (const key of ["adultMfBpMeasuredByNhf", "adultMfSugarMeasuredByNhf"]) {
+    if (a[key] !== "Y" && a[key] !== "N")
+      throw new Error(
+        "Open Adult Health and confirm whether NHF measured blood pressure and blood sugar before syncing.",
+      );
+  }
+  if (a.adultMfBpMeasuredByNhf === "Y" && !a.adultMfQ3)
+    throw new Error("Enter the NHF blood-pressure measurement before syncing.");
+  if (a.adultMfSugarMeasuredByNhf === "Y" && !a.adultMfQ4)
+    throw new Error("Enter the NHF blood-sugar measurement before syncing.");
   const q1: string[] = a.adultMfQ1 || [];
-  const q5: string[] = a.adultMfQ5 || [];
+  // Keep the local answer key so previously saved surveys can still sync.
+  let habits = a.adultMfQ5;
+  if (typeof habits === "string") {
+    try {
+      habits = JSON.parse(habits);
+    } catch {
+      habits = [];
+    }
+  }
+  const selectedHabits = Array.isArray(habits) ? habits : [];
 
   const hasQ1Selection = q1.length > 0;
 
@@ -29,20 +48,36 @@ export function mapAdultMfToApi(a: Record<string, any>) {
   }
 
   // ---------- BP ----------
-  if (a.adultMfQ3) {
+  if (a.adultMfBpMeasuredByNhf === "Y" && a.adultMfQ3) {
     result.adultMfQ3 = a.adultMfQ3;
   }
 
   // ---------- Glucose ----------
-  if (a.adultMfQ4) {
+  if (a.adultMfSugarMeasuredByNhf === "Y" && a.adultMfQ4) {
     result.adultMfQ4 = a.adultMfQ4;
   }
 
-  // ----------  Q5 FIXED ----------
-  result.adultMfQ5Ans1 = q5.includes("S") ? "S" : "";
-  result.adultMfQ5Ans2 = q5.includes("A") ? "A" : "";
-  result.adultMfQ5Ans3 = q5.includes("E") ? "E" : "";
-  result.adultMfQ5Ans4 = q5.includes("D") ? "D" : "";
+  const referralTypes = [
+    "health_facility",
+    "hospital",
+    "polyclinic",
+    "pharmacy",
+    "other",
+  ];
+  const referralType = a.adultMfReferralFacilityType;
+  const hasReferral = referralTypes.includes(referralType);
+
+  referralTypes.forEach((type, index) => {
+    result[`adultMfQ5Ans${index + 1}`] = hasReferral
+      ? referralType === type ? "Y" : "N"
+      : "";
+  });
+  result.adultMfQ5Ans5Others = "";
+
+  result.adultMfQ6Ans1 = selectedHabits.includes("S") ? "S" : "";
+  result.adultMfQ6Ans2 = selectedHabits.includes("A") ? "A" : "";
+  result.adultMfQ6Ans3 = selectedHabits.includes("E") ? "E" : "";
+  result.adultMfQ6Ans4 = selectedHabits.includes("D") ? "D" : "";
 
   return result;
 }

@@ -1,3 +1,7 @@
+import { buildSurveySyncMessage } from "../features/survey/utils/surveySyncMessage";
+import { useOnlineSession } from "../auth/context/useOnlineSession";
+import { getPendingSurveysForUser, syncPendingSurveys } from "../usecases/sync/surveySyncService";
+import { SurveyTab } from "../features/survey/components/SurveyTab";
 // src\screens\HouseholdDashboardScreen.tsx
 
 import React, { useEffect, useState } from "react";
@@ -62,6 +66,11 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
   createHouseholdUseCase,
 }) => {
   const router = useRouter();
+  const { valid: onlineSessionValid, requireLogin } = useOnlineSession();
+  const [surveySyncing, setSurveySyncing] = useState(false);
+  const [surveyProgress, setSurveyProgress] = useState("");
+  const [pendingSurveyCount, setPendingSurveyCount] = useState(0);
+  const surveySyncLock = React.useRef(false);
   const { logout } = useAuth();
   const { chwProfile, state, loading: authLoading, expireSession } = useAuth();
 
@@ -667,7 +676,6 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       setSyncSteps([
         { step: "HOUSEHOLD", status: "PENDING" },
         { step: "MEMBER", status: "PENDING" },
-        { step: "SURVEY", status: "PENDING" },
       ]);
 
       const result = await globalSyncUseCase.execute(chwProfile.userName);
@@ -720,6 +728,30 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
     }
   };
 
+  useFocusEffect(React.useCallback(() => {
+    let current = true;
+    if (activeTab !== "SURVEY" || surveySyncing) return;
+    if (chwProfile?.userName) void getPendingSurveysForUser(chwProfile.userName).then(items => {
+      if (current) setPendingSurveyCount(items.length);
+    }).catch(() => { if (current) setPendingSurveyCount(0); });
+    return () => { current = false; };
+  }, [chwProfile?.userName, activeTab, surveySyncing]));
+
+  const handleSurveySync = async () => {
+    if (!chwProfile || surveySyncLock.current) return;
+    if (!isOnline) { Alert.alert("Offline", "Your answers remain saved. Connect to the internet to sync."); return; }
+    if (!requireLogin()) return;
+    surveySyncLock.current = true; setSurveySyncing(true);
+    try {
+      const result = await syncPendingSurveys(chwProfile.userName, progress => {
+        setSurveyProgress(progress.status === "SYNCING" ? `Syncing ${progress.completed + 1} of ${progress.total}…` : `${progress.completed} of ${progress.total} processed`);
+      });
+      const feedback = buildSurveySyncMessage(result);
+      Alert.alert(feedback.title, feedback.message);
+    } catch (err) { Alert.alert("Survey sync stopped", `${err instanceof Error ? err.message : "Unable to complete survey sync. Please check your connection and sign-in status."}\n\nAny unsynced answers remain saved on this phone. Open Pending sync to check their status before retrying.`); }
+    finally { surveySyncLock.current = false; setSurveySyncing(false); setSurveyProgress(""); }
+  };
+
   // -----------------------------
   // Loading States
   // -----------------------------
@@ -747,10 +779,12 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
       {!isKeyboardVisible && (
         <HouseholdDashboardHeader
           isOnline={isOnline}
-          authState={state}
-          syncing={syncing}
+          syncing={activeTab === "SURVEY" ? surveySyncing : syncing}
+          syncLabel={activeTab === "SURVEY" ? (surveyProgress || `Sync surveys · ${pendingSurveyCount}`) : "Sync households"}
+          showSync={activeTab !== "COMMUNITY"}
+          authState={onlineSessionValid ? state : "SESSION_EXPIRED"}
           onLogout={handleLogout}
-          onSync={handleManualSync}
+          onSync={activeTab === "SURVEY" ? handleSurveySync : handleManualSync}
           onLogin={() => router.replace("/login")}
         />
       )}
@@ -806,6 +840,10 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         onSelect={handleSelectTab}
       />
 
+      <View style={{ flex: activeTab === "SURVEY" ? 1 : 0, display: activeTab === "SURVEY" ? "flex" : "none" }}>
+        <SurveyTab key={chwProfile.userName} username={chwProfile.userName} chwId={chwProfile.idofCHW} isOnline={isOnline} active={activeTab === "SURVEY"} syncRevision={surveySyncing} />
+      </View>
+
       {activeTab === "COMMUNITY" && (
         <CommunityTab
           key={JSON.stringify([chwProfile.userName, chwProfile.idofCHW])}
@@ -832,7 +870,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
         onRefreshOnline={fetchOnlineHouseholds}
       />
 
-      {activeTab !== "COMMUNITY" && syncing && !isKeyboardVisible && (
+      {(activeTab === "LOCAL" || activeTab === "ONLINE") && syncing && !isKeyboardVisible && (
         <View className="mx-4 mt-3 bg-white p-3 rounded-lg shadow-sm">
           <Text className="font-semibold mb-2">Sync Progress</Text>
 
@@ -852,7 +890,7 @@ export const HouseholdDashboardScreen: React.FC<Props> = ({
 
       {/* LIST */}
       {/* HOUSEHOLD LIST */}
-      {activeTab !== "COMMUNITY" && (
+      {(activeTab === "LOCAL" || activeTab === "ONLINE") && (
         <FlatList<HouseholdWithAggregate | Household>
           data={currentData}
           keyExtractor={(item, index) => {

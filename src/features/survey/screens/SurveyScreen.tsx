@@ -16,7 +16,6 @@ import {
 } from "react-native";
 import {
   SafeAreaView,
-  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { SurveySectionKey } from "../engine/surveyClassifier";
 
@@ -45,8 +44,6 @@ import { useAnswerHandler } from "../hooks/useAnswerHandler";
 import { validateSection, isSectionComplete } from "../hooks/surveyValidation";
 import { calculateSurveyProgress } from "../hooks/useSurveyProgress";
 
-import { detectSectionsFromAnswers } from "../utils/surveySyncUtils";
-import { buildSurveyPayload } from "../mappers/buildSurveyPayload";
 
 import SurveyStickyHeader from "../components/SurveyStickyHeader";
 import SectionGuidanceModal from "../components/SectionGuidanceModal";
@@ -80,7 +77,6 @@ export default function SurveyScreen() {
   const [hasAttemptedNext, setHasAttemptedNext] = useState(false);
   const scrollRef = React.useRef<ScrollView>(null);
   const questionPositions = React.useRef<Record<string, number>>({});
-  const insets = useSafeAreaInsets();
 
   const [guidanceVisible, setGuidanceVisible] = useState(false);
   // For finish & review modal
@@ -184,11 +180,23 @@ export default function SurveyScreen() {
     return currentSection ? [currentSection] : [];
   }, [currentSection]);
 
+  const childUpTo24Months = profileState?.childUpTo24Months;
+  const questionsBySection = useMemo(() => {
+    if (childUpTo24Months) return SECTION_QUESTIONS;
+
+    return {
+      ...SECTION_QUESTIONS,
+      children: SECTION_QUESTIONS.children.filter(
+        ({ key }) => key !== "childrenQ1" && !key.startsWith("childrenQ6Ans"),
+      ),
+    };
+  }, [childUpTo24Months]);
+
   const incompleteQuestionCount = useMemo(() => {
     let total = 0;
 
     for (const section of effectiveSections) {
-      const questions = SECTION_QUESTIONS[section];
+      const questions = questionsBySection[section];
 
       const errors = validateSection(questions, state.answers);
 
@@ -196,7 +204,7 @@ export default function SurveyScreen() {
     }
 
     return total;
-  }, [effectiveSections, state.answers]);
+  }, [effectiveSections, state.answers, questionsBySection]);
 
   // For current Guidance
   const currentGuidance = useMemo(() => {
@@ -214,7 +222,7 @@ export default function SurveyScreen() {
     setHasAttemptedNext(true);
 
     for (const section of activeSections) {
-      const sectionQuestions = SECTION_QUESTIONS[section];
+      const sectionQuestions = questionsBySection[section];
       const sectionErrors = validateSection(sectionQuestions, state.answers);
 
       validationErrors = { ...validationErrors, ...sectionErrors };
@@ -256,6 +264,7 @@ export default function SurveyScreen() {
     currentSection,
     setWizardState,
     activeSections,
+    questionsBySection,
     state.answers,
     effectiveSections,
     persistCurrentSection,
@@ -290,7 +299,7 @@ export default function SurveyScreen() {
 
     setErrors({}); // clear previous errors
 
-    const sectionQuestions = SECTION_QUESTIONS[currentSection];
+    const sectionQuestions = questionsBySection[currentSection];
     const validationErrors = validateSection(sectionQuestions, state.answers);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -300,23 +309,6 @@ export default function SurveyScreen() {
 
     try {
       await flushQueue();
-      // Temporary testing
-      const pending = await surveySQLite.getPendingSurveysForSync();
-
-      for (const item of pending) {
-        const { answers } = item;
-
-        const sections = detectSectionsFromAnswers(answers);
-
-        console.log("[RAW ANSWERS]", JSON.stringify(answers, null, 2));
-
-        console.log("[DETECTED SECTIONS]", sections);
-
-        const payload = buildSurveyPayload(answers, sections);
-
-        console.log("[FINAL PAYLOAD]", payload);
-      }
-      // Temporary testing
       await surveySQLite.markSurveyCompleted(surveyId);
       setIsCompleted(true);
 
@@ -326,7 +318,7 @@ export default function SurveyScreen() {
     } catch (err) {
       console.error("Failed to complete survey", err);
     }
-  }, [wizardState, currentSection, surveyId, state.answers, router]);
+  }, [wizardState, currentSection, surveyId, state.answers, questionsBySection, router]);
 
   if (!FEATURES.SURVEY_ENABLED) {
     return (
@@ -402,9 +394,8 @@ export default function SurveyScreen() {
     );
   }
   const sectionMeta = SECTION_CONFIG[currentSection];
-  // const questions = SECTION_QUESTIONS[currentSection];
   const isCurrentSectionComplete = activeSections.every((section) =>
-    isSectionComplete(SECTION_QUESTIONS[section], state.answers),
+    isSectionComplete(questionsBySection[section], state.answers),
   );
   console.log("[ANSWERS DEBUG]", state.answers);
   console.log("[WIZARD DEBUG]", {
@@ -416,27 +407,13 @@ export default function SurveyScreen() {
     totalQuestions,
     answeredQuestions,
     progress: safeProgress,
-  } = calculateSurveyProgress(activeSections, state.answers, SECTION_QUESTIONS);
+  } = calculateSurveyProgress(activeSections, state.answers, questionsBySection);
 
   // Main survey UI
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white">
       {/* Sticky progress BAR */}
-      <View
-        style={{
-          paddingTop: insets.top,
-        }}
-        className="
-            absolute
-            top-0
-            left-0
-            right-0
-            z-50
-            bg-white
-            border-b
-            border-gray-200
-             "
-      >
+      <View className="border-b border-gray-200 bg-white">
         <SurveyStickyHeader
           title={sectionMeta.title}
           progress={safeProgress}
@@ -461,8 +438,8 @@ export default function SurveyScreen() {
         ref={scrollRef}
         className="flex-1 px-4"
         contentContainerStyle={{
-          paddingTop: 200,
-          paddingBottom: 120,
+          paddingTop: 16,
+          paddingBottom: 24,
         }}
       >
         {/* Temporary reset button  */}
@@ -503,16 +480,9 @@ export default function SurveyScreen() {
             </Text>
           ) : (
             activeSections.map((section) => {
-              const sectionQuestions = SECTION_QUESTIONS[section];
-              const sectionMeta = SECTION_CONFIG[section];
-
+              const sectionQuestions = questionsBySection[section];
               return (
                 <View key={section} className="mt-6">
-                  {/* Section Title */}
-                  <Text className="text-xl font-semibold">
-                    {sectionMeta.title}
-                  </Text>
-
                   {/* Section Questions */}
                   <SurveySectionRenderer
                     questions={sectionQuestions}

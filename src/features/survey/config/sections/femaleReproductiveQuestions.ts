@@ -194,12 +194,13 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp: "कुन प्रकारको साधन प्रयोग गर्नुहुन्छ?",
     type: "select",
     visibleIf: { dependsOn: "feReproductiveQ8", value: "Y" },
+    visibleIfAll: [SHOW_UNLESS_PREGNANT],
 
     options: [
-      { label: "Pill", labelNp: "पिल्स", value: "P" },
+      { label: "Pill", labelNp: "पिल्स (चक्की)", value: "P" },
       { label: "Condom", labelNp: "कण्डम", value: "C" },
       { label: "Implant", labelNp: "इम्पलान्ट", value: "M" },
-      { label: "IUD", labelNp: "आईयूडी", value: "U" },
+      { label: "IUD", labelNp: "आई.यू.डी.", value: "U" },
       { label: "Injection", labelNp: "सुई (डिपो)", value: "I" },
       { label: "Others", labelNp: "अन्य", value: "O" },
     ],
@@ -217,7 +218,10 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp: "अन्य (लेख्नुहोस्)",
     type: "text",
     visibleIf: { dependsOn: "feReproductiveQ9", value: "O" },
-    visibleIfAll: [SHOW_UNLESS_PREGNANT],
+    visibleIfAll: [
+      SHOW_UNLESS_PREGNANT,
+      { dependsOn: "feReproductiveQ8", value: "Y" },
+    ],
     validation: [
       {
         type: "required",
@@ -228,42 +232,101 @@ export const feReproductiveQuestions: QuestionConfig[] = [
 
   // ---------- SYMPTOMS ----------
   {
-    key: "feReproductiveQ10",
-    label: "Are you or your partner suffering from any of the following?",
-    labelNp: "के तपाईं वा तपाईंको श्रीमानलाई तलका मध्ये कुनै समस्या छ?",
-    type: "checkbox",
+    key: "feReproductiveQ10Ans1",
+    groupTitle: "Are you/or your partner suffering from any of the following?",
+    groupTitleNp: "के तपाईं वा तपाईंको श्रीमानलाई तलका मध्ये कुनै समस्या छ?",
+    label: "Burning urine",
+    labelNp: "पिसाब पोल्ने",
+    type: "radio",
+    compactChoices: true,
+    required: true,
     visibleIf: SHOW_UNLESS_PREGNANT,
     options: [
-      { label: "Burning urine", labelNp: "पिसाब पोल्ने", value: "1" },
-      {
-        label: "Genital discharge (curdy/foul smelling/itchy)",
-        labelNp: "यौनाङ्गबाट पानी वा पीप बग्ने (गन्हाउने/चिलाउने)",
-        value: "2",
-      },
-      {
-        label: "Genital sore/ulcer",
-        labelNp: "यौनाङ्गमा घाउ वा खटिरा",
-        value: "3",
-      },
-      {
-        label: "Abnormal growth in genital area",
-        labelNp: "यौनाङ्गमा अस्वाभाविक मासु पलाएको वा डल्लो",
-        value: "4",
-      },
-      {
-        label: "Lower abdominal pain",
-        labelNp: "पेटको तल्लो भाग दुख्ने",
-        value: "5",
-      },
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      { type: "required", message: "Please select Yes or No for this symptom" },
+    ],
+  },
+  {
+    key: "feReproductiveQ10Ans2",
+    label: "Genital discharge (curdy/foul smelling/itchy)",
+    labelNp: "यौनाङ्गबाट पानी वा पीप बग्ने (गन्हाउने/चिलाउने)",
+    type: "radio",
+    compactChoices: true,
+    required: true,
+    visibleIf: SHOW_UNLESS_PREGNANT,
+    options: [
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      { type: "required", message: "Please select Yes or No for this symptom" },
+    ],
+  },
+  {
+    key: "feReproductiveQ10Ans3",
+    label: "Genital sore/ulcer",
+    labelNp: "यौनाङ्गमा घाउ वा खटिरा",
+    type: "radio",
+    compactChoices: true,
+    required: true,
+    visibleIf: SHOW_UNLESS_PREGNANT,
+    options: [
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      { type: "required", message: "Please select Yes or No for this symptom" },
+    ],
+  },
+  {
+    key: "feReproductiveQ10Ans4",
+    label: "Abnormal growth in genital area",
+    labelNp: "यौनाङ्गमा अस्वाभाविक मासु पलाएको वा डल्लो",
+    type: "radio",
+    compactChoices: true,
+    required: true,
+    visibleIf: SHOW_UNLESS_PREGNANT,
+    options: [
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      { type: "required", message: "Please select Yes or No for this symptom" },
+    ],
+  },
+  {
+    key: "feReproductiveQ10Ans5",
+    label: "Lower abdominal pain",
+    labelNp: "पेटको तल्लो भाग दुख्ने",
+    type: "radio",
+    compactChoices: true,
+    required: true,
+    visibleIf: SHOW_UNLESS_PREGNANT,
+    options: [
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      { type: "required", message: "Please select Yes or No for this symptom" },
     ],
   },
 
   {
     key: "feReproductiveQ11",
     label: "Have you or your partner visited a health facility?",
-    labelNp: "के तपाईं वा तपाईंको श्रीमान स्वास्थ्य संस्थामा जचाउन जानुभयो?",
+    labelNp: "के तपाईं वा तपाईंको श्रीमान स्वास्थ्य संस्थामा जचाउन जानुभयो? ",
     type: "select",
-    visibleIf: SHOW_UNLESS_PREGNANT,
+    visibleIfAll: [SHOW_UNLESS_PREGNANT],
+    visibleIfAny: [
+      { dependsOn: "feReproductiveQ10Ans1", value: "Y" },
+      { dependsOn: "feReproductiveQ10Ans2", value: "Y" },
+      { dependsOn: "feReproductiveQ10Ans3", value: "Y" },
+      { dependsOn: "feReproductiveQ10Ans4", value: "Y" },
+      { dependsOn: "feReproductiveQ10Ans5", value: "Y" },
+    ],
     options: [
       { label: "Yes", labelNp: "गयौं", value: "Y" },
       { label: "No", labelNp: "गएनौं", value: "N" },
@@ -277,32 +340,69 @@ export const feReproductiveQuestions: QuestionConfig[] = [
   },
 
   {
-    key: "feReproductiveQ12",
-    label: "Do you have following symptom/ complication?",
-    labelNp: "के तपाईंलाई तलका मध्ये कुनै समस्या छ?",
-    type: "checkbox",
+    key: "feReproductiveQ12Ans1",
+    groupTitle: "Q12. Do you have following symptom/ complication?",
+    groupTitleNp: "के तपाईंलाई तलका मध्ये कुनै समस्या छ?",
+    label: "Leaking of urine or stool (Fistula)",
+    labelNp: "पिसाब वा दिसा चुहिएर नरोकिने (फिस्टुला)",
+    type: "radio",
+    compactChoices: true,
+    required: true,
     visibleIf: SHOW_UNLESS_PREGNANT,
     options: [
-      {
-        label: "Leaking of urine or stool (Fistula)",
-        labelNp: "पिसाब वा दिसा चुहिएर नरोकिने (फिस्टुला)",
-        value: "1",
-      },
-      {
-        label: "Something coming out from vagina (Prolapse)",
-        labelNp: "पाठेघर खस्ने वा आङ खस्ने समस्या (प्रोल्याप्स)",
-        value: "2",
-      },
-      {
-        label: "Excessive vaginal bleeding",
-        labelNp: "धेरै रगत बग्ने समस्या",
-        value: "3",
-      },
-      {
-        label: "Breast lump/cancer",
-        labelNp: "स्तनमा गिर्खा वा क्यान्सर",
-        value: "4",
-      },
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      { type: "required", message: "Please select Yes or No for this symptom" },
+    ],
+  },
+  {
+    key: "feReproductiveQ12Ans2",
+    label: "Something coming out from vagina (Prolapse)",
+    labelNp: "पाठेघर खस्ने वा आङ खस्ने समस्या (प्रोल्याप्स)",
+    type: "radio",
+    compactChoices: true,
+    required: true,
+    visibleIf: SHOW_UNLESS_PREGNANT,
+    options: [
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      { type: "required", message: "Please select Yes or No for this symptom" },
+    ],
+  },
+  {
+    key: "feReproductiveQ12Ans3",
+    label: "Excessive vaginal bleeding",
+    labelNp: "धेरै रगत बग्ने समस्या",
+    type: "radio",
+    compactChoices: true,
+    required: true,
+    visibleIf: SHOW_UNLESS_PREGNANT,
+    options: [
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      { type: "required", message: "Please select Yes or No for this symptom" },
+    ],
+  },
+  {
+    key: "feReproductiveQ12Ans4",
+    label: "Breast lump/cancer",
+    labelNp: "स्तनमा गिर्खा वा क्यान्सर",
+    type: "radio",
+    compactChoices: true,
+    required: true,
+    visibleIf: SHOW_UNLESS_PREGNANT,
+    options: [
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      { type: "required", message: "Please select Yes or No for this symptom" },
     ],
   },
 
@@ -312,7 +412,13 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     labelNp:
       "के तपाईंले स्वास्थ्यकर्मीलाई भेट्नुभयो वा स्वास्थ्य संस्था जानुभयो?",
     type: "select",
-    visibleIf: SHOW_UNLESS_PREGNANT,
+    visibleIfAll: [SHOW_UNLESS_PREGNANT],
+    visibleIfAny: [
+      { dependsOn: "feReproductiveQ12Ans1", value: "Y" },
+      { dependsOn: "feReproductiveQ12Ans2", value: "Y" },
+      { dependsOn: "feReproductiveQ12Ans3", value: "Y" },
+      { dependsOn: "feReproductiveQ12Ans4", value: "Y" },
+    ],
     options: [
       { label: "Yes", labelNp: "गएँ", value: "Y" },
       {
@@ -336,6 +442,12 @@ export const feReproductiveQuestions: QuestionConfig[] = [
     type: "text",
     visibleIf: { dependsOn: "feReproductiveQ13", value: "N" },
     visibleIfAll: [SHOW_UNLESS_PREGNANT],
+    visibleIfAny: [
+      { dependsOn: "feReproductiveQ12Ans1", value: "Y" },
+      { dependsOn: "feReproductiveQ12Ans2", value: "Y" },
+      { dependsOn: "feReproductiveQ12Ans3", value: "Y" },
+      { dependsOn: "feReproductiveQ12Ans4", value: "Y" },
+    ],
     validation: [
       {
         type: "required",

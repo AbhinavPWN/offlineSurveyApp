@@ -3,10 +3,12 @@ import { Pressable, Text, View } from "react-native";
 
 type RadioOption = {
   label: string;
+  labelNp?: string;
   value: string;
 };
 
 type RadioGroupFieldProps = {
+  horizontal?: boolean;
   label: string;
   value: string | null;
   options: RadioOption[];
@@ -18,12 +20,13 @@ type RadioGroupFieldProps = {
 
 type RadioOptionItemProps = {
   label: string;
+  labelNp?: string;
   value: string;
   selected: boolean;
   onSelect: (value: string) => void;
 };
 
-const FIELD_CONTAINER_CLASS = "mb-4";
+const FIELD_CONTAINER_CLASS = "";
 // const FIELD_LABEL_CLASS = "mb-1.5 text-sm font-medium text-gray-900";
 const FIELD_ERROR_CLASS = "mt-1.5 text-xs text-red-600";
 const OPTION_BASE_CLASS =
@@ -37,6 +40,7 @@ const RADIO_OUTER_SELECTED_CLASS = `${RADIO_OUTER_BASE_CLASS} border-blue-600`;
 
 function RadioOptionItemComponent({
   label,
+  labelNp,
   value,
   selected,
   onSelect,
@@ -68,7 +72,12 @@ function RadioOptionItemComponent({
         />
       </View>
 
-      <Text className="flex-1 text-sm text-gray-900">{label}</Text>
+      <View className="flex-1">
+        <Text className="text-sm text-gray-900">{label}</Text>
+        {!!labelNp && (
+          <Text className="mt-0.5 text-sm text-gray-700">{labelNp}</Text>
+        )}
+      </View>
     </Pressable>
   );
 }
@@ -76,6 +85,7 @@ function RadioOptionItemComponent({
 const RadioOptionItem = memo(RadioOptionItemComponent);
 
 function RadioGroupFieldComponent({
+  horizontal = false,
   label,
   value,
   options,
@@ -94,7 +104,9 @@ function RadioGroupFieldComponent({
   return (
     <View className={FIELD_CONTAINER_CLASS}>
       <View className="flex-row justify-between items-center mb-1.5">
-        <Text className="text-sm font-medium text-gray-900">{label}</Text>
+        <Text className="flex-1 text-sm font-medium text-gray-900">
+          {label}
+        </Text>
 
         {savingStatus === "saving" && (
           <Text className="text-gray-400 text-xs">Saving...</Text>
@@ -111,15 +123,18 @@ function RadioGroupFieldComponent({
         )}
       </View>
 
-      <View>
+      <View style={horizontal ? { flexDirection: "row", gap: 8 } : undefined}>
         {options.map((option) => (
-          <RadioOptionItem
-            key={option.value}
-            label={option.label}
-            value={option.value}
-            selected={value === option.value}
-            onSelect={handleSelect}
-          />
+          <View key={option.value} style={horizontal ? { flex: 1 } : undefined}>
+            <RadioOptionItem
+              key={option.value}
+              label={option.label}
+              labelNp={option.labelNp}
+              value={option.value}
+              selected={value === option.value}
+              onSelect={handleSelect}
+            />
+          </View>
         ))}
       </View>
 

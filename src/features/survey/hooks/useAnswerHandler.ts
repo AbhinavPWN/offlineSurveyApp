@@ -33,10 +33,11 @@ export function useAnswerHandler({
       if (!surveyId) return;
 
       // ---------- AUTO CALCULATE EDD ----------
-      if (questionKey === "pregnantWomanQ1" && typeof answer === "string") {
-        const edd = calculateEDDFromLMP(answer);
+      if (questionKey === "pregnantWomanQ1") {
+        const edd =
+          typeof answer === "string" ? calculateEDDFromLMP(answer) : null;
 
-        if (edd) {
+        {
           dispatch({
             type: "SET_ANSWER",
             payload: {

@@ -37,6 +37,9 @@ export const emptySurveyPayload = {
   childrenQ3: "",
   childrenQ4: "",
   childrenQ5: "",
+  childrenQ6Ans1: "",
+  childrenQ6Ans2: "",
+  childrenQ6Ans3: "",
 
   // ---------- Female Adolescent Unmarried ----------
   feAdolescentUnQ1: "",
@@ -148,6 +151,9 @@ export const emptySurveyPayload = {
   postpartumWoQ9: "",
   postpartumWoQ10: "",
   postpartumWoQ11: "",
+  postpartumWoQ11Ans1: "",
+  postpartumWoQ11Ans2: "",
+  postpartumWoQ11Ans3: "",
   postpartumWoQ11Others: "",
   postpartumWoQ12: "",
   postpartumWoQ13: "",
@@ -173,6 +179,12 @@ export const emptySurveyPayload = {
   adultMfQ5Ans2: "",
   adultMfQ5Ans3: "",
   adultMfQ5Ans4: "",
+  adultMfQ5Ans5: "",
+  adultMfQ5Ans5Others: "",
+  adultMfQ6Ans1: "",
+  adultMfQ6Ans2: "",
+  adultMfQ6Ans3: "",
+  adultMfQ6Ans4: "",
 
   // ---------- Social Protection Women ----------
   adultFQ1: "",

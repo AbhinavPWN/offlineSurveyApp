@@ -18,6 +18,7 @@ export interface MemberSurveyProfile {
   ageDays?: number | null;
 
   childAgeDays: number | null;
+  childUpTo24Months?: boolean;
 
   gender?: "M" | "F" | string | null;
   maritalStatus?: "M" | "U" | string | null;

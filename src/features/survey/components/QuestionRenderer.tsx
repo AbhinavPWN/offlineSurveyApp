@@ -1,7 +1,8 @@
 import React, { memo, useCallback, useMemo } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 
 import { TextInputField } from "./TextInputField";
+import { BSDateDisplayField } from "./BSDateDisplayField";
 import { RadioGroupField } from "./RadioGroupField";
 import { SelectField } from "./SelectField";
 import { CheckboxGroupField } from "./CheckboxGroupField";
@@ -41,7 +42,11 @@ export type QuestionConfig = {
   labelNp?: string;
   required?: boolean;
   inputFormat?: "bs-date";
+  dayFirstDisplay?: boolean;
   options?: Option[];
+  groupTitle?: string;
+  groupTitleNp?: string;
+  compactChoices?: boolean;
 
   // Single visibility condition
   visibleIf?: VisibleIf;
@@ -106,7 +111,9 @@ const QuestionRendererComponent = ({
         question.inputFormat === "bs-date" &&
         typeof newValue === "string"
       ) {
-        finalValue = formatBSDate(newValue);
+        finalValue = question.dayFirstDisplay
+          ? newValue
+          : formatBSDate(newValue);
       }
 
       dispatch({
@@ -143,6 +150,20 @@ const QuestionRendererComponent = ({
 
   switch (question.type) {
     case "text":
+      if (question.dayFirstDisplay) {
+        field = (
+          <BSDateDisplayField
+            label={displayLabel}
+            value={(value as string) ?? null}
+            error={error}
+            onChange={handleChange}
+            savingStatus={savingStatus}
+            onRetry={handleRetry}
+            readonly={question.readonly}
+          />
+        );
+        break;
+      }
       field = (
         <TextInputField
           label={displayLabel}
@@ -163,6 +184,7 @@ const QuestionRendererComponent = ({
     case "radio":
       field = (
         <RadioGroupField
+          horizontal={question.compactChoices}
           label={displayLabel}
           value={(value as string) ?? null}
           error={error}
@@ -222,7 +244,29 @@ const QuestionRendererComponent = ({
       return null;
   }
 
-  return <View className="mb-5">{field}</View>;
+  return (
+    <View className="mb-4">
+      {question.groupTitle && (
+        <View className="mb-3 rounded-xl border border-blue-100 bg-blue-50 p-3">
+          <Text className="text-base font-bold text-blue-900">
+            {question.groupTitle}
+          </Text>
+          {!!question.groupTitleNp && (
+            <Text className="mt-1 text-sm text-blue-900">
+              {question.groupTitleNp}
+            </Text>
+          )}
+          <Text className="mt-2 text-xs text-blue-800">
+            Select Yes or No for each item. / प्रत्येक विकल्पका लागि छ वा छैन
+            छान्नुहोस्।
+          </Text>
+        </View>
+      )}
+      <View className="rounded-xl border border-gray-200 bg-white p-3">
+        {field}
+      </View>
+    </View>
+  );
 };
 
 // ---------- MEMO ----------

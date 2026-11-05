@@ -11,7 +11,7 @@ export const adultMfQuestions: QuestionConfig[] = [
     options: [
       {
         label: "Hypertension",
-        labelNp: "उच्च रक्तचाप",
+        labelNp: "उच्च रक्तचाप (High BP)",
         value: "H",
       },
       {
@@ -87,7 +87,7 @@ export const adultMfQuestions: QuestionConfig[] = [
 
   {
     key: "adultMfQ2",
-    label: "Are you taking any medication for those conditions?",
+    label: "Are you taking any medication from those?",
     labelNp: "के तपाईंले माथि उल्लेखित रोगका लागि कुनै औषधि खाइरहनुभएको छ?",
     type: "select",
     visibleIf: {
@@ -107,12 +107,33 @@ export const adultMfQuestions: QuestionConfig[] = [
   },
 
   {
+    // Local measurement confirmation; excluded from the API payload.
+    key: "adultMfBpMeasuredByNhf",
+    label: "Was blood pressure measured by NHF?",
+    labelNp: "के NHF ले रक्तचाप मापन गरेको छ?",
+    type: "radio",
+    compactChoices: true,
+    required: true,
+    options: [
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      {
+        type: "required",
+        message: "Please confirm whether NHF performed this measurement",
+      },
+    ],
+  },
+
+  {
     key: "adultMfQ3",
     label:
       "Blood Pressure (mm of Hg) — If systolic is 140 or higher and/or diastolic is 90 or higher, refer to a health facility",
     labelNp:
       "रक्तचाप (ब्लड प्रेसर) — माथिल्लो १४० वा सोभन्दा बढी र/वा तल्लो ९० वा सोभन्दा बढी भएमा स्वास्थ्य संस्थामा पठाउने",
     type: "text",
+    visibleIf: { dependsOn: "adultMfBpMeasuredByNhf", value: "Y" },
     keyboardType: "number-pad",
     placeholder: "e.g. 120/80",
     validation: [
@@ -129,12 +150,33 @@ export const adultMfQuestions: QuestionConfig[] = [
   },
 
   {
+    // Local measurement confirmation; excluded from the API payload.
+    key: "adultMfSugarMeasuredByNhf",
+    label: "Was blood sugar measured by NHF?",
+    labelNp: "के NHF ले रगतमा चिनीको मात्रा मापन गरेको छ?",
+    type: "radio",
+    compactChoices: true,
+    required: true,
+    options: [
+      { label: "Yes", labelNp: "छ", value: "Y" },
+      { label: "No", labelNp: "छैन", value: "N" },
+    ],
+    validation: [
+      {
+        type: "required",
+        message: "Please confirm whether NHF performed this measurement",
+      },
+    ],
+  },
+
+  {
     key: "adultMfQ4",
     label:
       "Blood Glucose (mmol/L) — If random blood sugar is above 11.1, refer to a health facility",
     labelNp:
       "रगतमा चिनीको मात्रा (सुगर) — सुगर ११.१ भन्दा बढी भएमा स्वास्थ्य संस्थामा पठाउने",
     type: "text",
+    visibleIf: { dependsOn: "adultMfSugarMeasuredByNhf", value: "Y" },
     keyboardType: "number-pad",
     placeholder: "e.g. 5.6",
     validation: [
@@ -146,13 +188,27 @@ export const adultMfQuestions: QuestionConfig[] = [
   },
 
   {
+    key: "adultMfReferralFacilityType",
+    label: "Q5. What type of facility was the person referred to?",
+    labelNp: "प्रेषण गरिएको स्वास्थ्य संस्थाको प्रकार",
+    type: "select",
+    options: [
+      { label: "Health facility", labelNp: "स्वास्थ्य संस्था", value: "health_facility" },
+      { label: "Hospital", labelNp: "अस्पताल", value: "hospital" },
+      { label: "Polyclinic", labelNp: "पोलिक्लिनिक", value: "polyclinic" },
+      { label: "Pharmacy", labelNp: "फार्मेसी", value: "pharmacy" },
+      { label: "Other", labelNp: "अन्य", value: "other" },
+    ],
+  },
+
+  {
     key: "adultMfQ5",
     label: "Do you practice the following healthy habits?",
-    labelNp: "के तपाईंले तलका स्वस्थ बानीहरू अपनाउनुहुन्छ?",
+    labelNp: "के तपाईंले तलका स्वस्थ बानीहरू अपनाउनुहुन्छ? (बहु विकल्प)",
     type: "checkbox",
     options: [
       {
-        label: "Avoid smoking/tobacco",
+        label: "Avoid smoking or tobacco?",
         labelNp: "धुम्रपान वा सुर्तीजन्य पदार्थ नखानु वा छोड्नु",
         value: "S",
       },

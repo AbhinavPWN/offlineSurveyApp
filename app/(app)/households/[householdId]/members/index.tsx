@@ -29,12 +29,19 @@ import {
 
 function getSurveyStatusUI(status?: SurveyMemberDisplayStatus) {
   switch (status) {
+    case "REVIEW_REQUIRED":
+      return {
+        label: "Submission needs checking",
+        bg: "bg-red-100",
+        text: "text-red-700",
+        button: "Check submission",
+      };
     case "IN_PROGRESS":
       return {
         label: "In Progress",
         bg: "bg-blue-100",
         text: "text-blue-700",
-        button: "Continue Household Visit",
+        button: "Continue survey",
       };
 
     case "READY_TO_SYNC":
@@ -42,7 +49,7 @@ function getSurveyStatusUI(status?: SurveyMemberDisplayStatus) {
         label: "Saved Locally",
         bg: "bg-yellow-100",
         text: "text-yellow-700",
-        button: "Review Household Visit",
+        button: "Review survey",
       };
 
     case "SYNCED":
@@ -50,7 +57,7 @@ function getSurveyStatusUI(status?: SurveyMemberDisplayStatus) {
         label: "Synced",
         bg: "bg-green-100",
         text: "text-green-700",
-        button: "Review Household Visit",
+        button: "Review survey",
       };
 
     default:
@@ -58,7 +65,7 @@ function getSurveyStatusUI(status?: SurveyMemberDisplayStatus) {
         label: "Not Started",
         bg: "bg-gray-100",
         text: "text-gray-600",
-        button: "Household Visit",
+        button: "Start survey",
       };
   }
 }
@@ -74,7 +81,8 @@ function isPregnantMember(value: unknown): boolean {
 
 export default function MembersListScreen() {
   const router = useRouter();
-  const { householdId } = useLocalSearchParams();
+  const { householdId, mode } = useLocalSearchParams();
+  const isSurveyMode = mode === "survey";
 
   const householdLocalId = typeof householdId === "string" ? householdId : null;
 
@@ -256,7 +264,13 @@ export default function MembersListScreen() {
   if (loading) {
     return (
       <>
-        <Stack.Screen options={{ title: "Household Members" }} />
+        <Stack.Screen
+          options={{
+            title: isSurveyMode
+              ? "Select member for survey"
+              : "Household Members",
+          }}
+        />
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator />
         </View>
@@ -267,7 +281,13 @@ export default function MembersListScreen() {
   if (!householdLocalId) {
     return (
       <>
-        <Stack.Screen options={{ title: "Household Members" }} />
+        <Stack.Screen
+          options={{
+            title: isSurveyMode
+              ? "Select member for survey"
+              : "Household Members",
+          }}
+        />
         <View className="flex-1 justify-center items-center">
           <Text>Invalid household</Text>
         </View>
@@ -290,14 +310,22 @@ export default function MembersListScreen() {
 
   // const canAddMember =
   //   !!household && (!hasValidMemberLimit || totalMembers < allowedMembers);
-  const canAddMember = !!household;
+  const canAddMember = !!household && !isSurveyMode;
 
   return (
     <>
-      <Stack.Screen options={{ title: "Household Members" }} />
+      <Stack.Screen
+        options={{
+          title: isSurveyMode
+            ? "Select member for survey"
+            : "Household Members",
+        }}
+      />
 
       <View className="flex-1 bg-gray-50 p-4">
-        <Text className="text-xl font-bold">Household Members</Text>
+        <Text className="text-xl font-bold">
+          {isSurveyMode ? "Select member for survey" : "Household Members"}
+        </Text>
 
         <View className="mt-2 mb-4">
           {totalMembers === 0 ? (
@@ -352,6 +380,7 @@ export default function MembersListScreen() {
                 <View className="flex-row justify-between items-start">
                   <View className="flex-1">
                     <Pressable
+                      disabled={isSurveyMode}
                       onPress={() =>
                         router.push(
                           `/households/${householdLocalId}/members/${item.localId}`,
@@ -404,8 +433,9 @@ export default function MembersListScreen() {
                     </Pressable>
                   </View>
 
-                  {household?.syncStatus !== "SYNCED" && (
+                  {!isSurveyMode && household?.syncStatus !== "SYNCED" && (
                     <Pressable
+                      disabled={isSurveyMode}
                       onPress={() =>
                         Alert.alert("Member Options", "", [
                           {
@@ -442,55 +472,60 @@ export default function MembersListScreen() {
                 {/* 🔥 NEW ACTION BUTTONS */}
                 <View className="flex-row mt-3 gap-2">
                   {/* Edit Button */}
-                  <Pressable
-                    onPress={() =>
-                      router.push(
-                        `/households/${householdLocalId}/members/${item.localId}`,
-                      )
-                    }
-                    className="flex-1 py-2 bg-gray-200 rounded-lg"
-                  >
-                    <Text className="text-center text-sm">Edit</Text>
-                  </Pressable>
-
-                  {/* Survey Button */}
-                  {FEATURES.SURVEY_ENABLED ? (
+                  {!isSurveyMode && (
                     <Pressable
                       onPress={() =>
-                        router.push({
-                          pathname: "/(app)/survey",
-                          params: {
-                            memberId: item.localId,
-                            householdId: householdLocalId,
-                            surveyType: "client",
-                          },
-                        })
+                        router.push(
+                          `/households/${householdLocalId}/members/${item.localId}`,
+                        )
                       }
-                      className="flex-1 py-2 bg-purple-600 rounded-lg"
+                      className="flex-1 py-2 bg-gray-200 rounded-lg"
                     >
-                      <Text className="text-white text-center text-sm">
-                        {/* Survey */}
-                        {surveyUI.button}
-                      </Text>
-                    </Pressable>
-                  ) : (
-                    <Pressable
-                      onPress={() => alert("Survey feature coming soon")}
-                      className="flex-1 py-2 bg-gray-400 rounded-lg"
-                    >
-                      <Text className="text-white text-center text-sm">
-                        {/* Survey */}
-                        {surveyUI.button}
-                      </Text>
+                      <Text className="text-center text-sm">Edit</Text>
                     </Pressable>
                   )}
+
+                  {/* Survey Button */}
+                  {isSurveyMode &&
+                    (FEATURES.SURVEY_ENABLED ? (
+                      <Pressable
+                        onPress={() =>
+                          surveyStatus === "REVIEW_REQUIRED"
+                          ? Alert.alert("Submission needs checking", "An earlier upload may have reached the server. Ask support to verify it before retrying. Your answers remain saved on this phone.")
+                          : router.push({
+                            pathname: "/(app)/survey",
+                            params: {
+                              memberId: item.localId,
+                              householdId: householdLocalId,
+                              surveyType: "client",
+                            },
+                          })
+                        }
+                        className="flex-1 py-2 bg-purple-600 rounded-lg"
+                      >
+                        <Text className="text-white text-center text-sm">
+                          {/* Survey */}
+                          {surveyUI.button}
+                        </Text>
+                      </Pressable>
+                    ) : (
+                      <Pressable
+                        onPress={() => alert("Survey feature coming soon")}
+                        className="flex-1 py-2 bg-gray-400 rounded-lg"
+                      >
+                        <Text className="text-white text-center text-sm">
+                          {/* Survey */}
+                          {surveyUI.button}
+                        </Text>
+                      </Pressable>
+                    ))}
                 </View>
               </View>
             );
           }}
         />
 
-        {/* {household?.syncStatus !== "SYNCED" && (
+        {/* {!isSurveyMode && household?.syncStatus !== "SYNCED" && (
           <Pressable
             onPress={handleAddMember}
             className="bg-blue-600 p-4 rounded-xl mt-4"

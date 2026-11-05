@@ -1,3 +1,10 @@
+import { normalizeReproductiveSymptoms } from "../utils/normalizeReproductiveSymptoms";
+import { normalizePostpartumComplications } from "../utils/normalizePostpartumComplications";
+import {
+  normalizeMarriedAdolescentSymptoms,
+  normalizeMaleAdolescentSymptoms,
+  normalizeUnmarriedAdolescentSymptoms,
+} from "../utils/normalizeAdolescentSymptoms";
 // src\features\survey\hooks\useSurveyInitialization.ts
 import { useEffect, useState } from "react";
 import { getMemberForSurvey } from "../services/getMemberForSurvey";
@@ -75,6 +82,12 @@ export function useSurveyInitialization({
         // Load member data and map to survey profile from local db
         const member = await getMemberForSurvey(safeMemberId);
 
+        if (member.householdLocalId !== householdId) {
+          throw new Error(
+            "This member does not belong to the selected household.",
+          );
+        }
+
         const household = await householdLocalRepository.getByLocalId(
           member.householdLocalId,
         );
@@ -142,6 +155,11 @@ export function useSurveyInitialization({
         for (const key in rawAnswers) {
           const value = rawAnswers[key];
 
+          if (key === "postpartumWoQ11") {
+            cleanedAnswers[key] = normalizePostpartumComplications(value);
+            continue;
+          }
+
           // 🔥 FIX: detect corrupted array
           if (Array.isArray(value)) {
             // check if it's character array corruption
@@ -166,6 +184,10 @@ export function useSurveyInitialization({
         }
         if (!isActive) return;
 
+        Object.assign(cleanedAnswers, normalizeMarriedAdolescentSymptoms(cleanedAnswers));
+        Object.assign(cleanedAnswers, normalizeUnmarriedAdolescentSymptoms(cleanedAnswers));
+        Object.assign(cleanedAnswers, normalizeMaleAdolescentSymptoms(cleanedAnswers));
+        Object.assign(cleanedAnswers, normalizeReproductiveSymptoms(cleanedAnswers));
         dispatch(loadSurveyDraft(cleanedAnswers));
 
         // 6. initialize wizard with eligible sections and resume at last section if applicable

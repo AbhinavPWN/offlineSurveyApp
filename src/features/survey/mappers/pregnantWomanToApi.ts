@@ -1,12 +1,25 @@
 export function mapPregnantWomanToApi(a: Record<string, any>) {
-  const q4 = a.pregnantWomanQ4 || [];
+  const hasPreviousPregnancy = a.pregnantWomanQ3 === "N";
+  const q4 = hasPreviousPregnancy ? a.pregnantWomanQ4 || [] : [];
+  for (const key of [
+    "pregnantWomanBpMeasuredByNhf",
+    "pregnantWomanSugarMeasuredByNhf",
+  ]) {
+    if (a[key] !== "Y" && a[key] !== "N")
+      throw new Error(
+        "Open the Pregnancy section and confirm whether NHF measured blood pressure and blood sugar before syncing.",
+      );
+  }
+  if (a.pregnantWomanBpMeasuredByNhf === "Y" && !a.pregnantWomanQ11)
+    throw new Error("Enter the NHF blood-pressure measurement before syncing.");
+  if (a.pregnantWomanSugarMeasuredByNhf === "Y" && !a.pregnantWomanQ12)
+    throw new Error("Enter the NHF blood-sugar measurement before syncing.");
   const q5 = a.pregnantWomanQ5;
   const q9 = a.pregnantWomanQ9;
 
   const result: Record<string, any> = {
     // ---------- ALWAYS ----------
     pregnantWomanQ3: a.pregnantWomanQ3 ?? "N",
-    pregnantWomanQ5: q5 ?? "N",
     pregnantWomanQ9: q9 ?? "N",
     pregnantWomanQ13: a.pregnantWomanQ13 ?? "N",
   };
@@ -34,8 +47,10 @@ export function mapPregnantWomanToApi(a: Record<string, any>) {
     result.pregnantWomanQ4Ans7Others = a.pregnantWomanQ4Others ?? "";
   }
 
+  if (hasPreviousPregnancy) result.pregnantWomanQ5 = q5 ?? "N";
+
   // ---------- ANC VISIT ----------
-  if (q5 === "Y") {
+  if (hasPreviousPregnancy && q5 === "Y") {
     result.pregnantWomanQ6 = a.pregnantWomanQ6 ?? "";
   }
 
@@ -54,11 +69,11 @@ export function mapPregnantWomanToApi(a: Record<string, any>) {
   }
 
   // ---------- OPTIONAL HEALTH FIELDS ----------
-  if (a.pregnantWomanQ11) {
+  if (a.pregnantWomanBpMeasuredByNhf === "Y" && a.pregnantWomanQ11) {
     result.pregnantWomanQ11 = a.pregnantWomanQ11;
   }
 
-  if (a.pregnantWomanQ12) {
+  if (a.pregnantWomanSugarMeasuredByNhf === "Y" && a.pregnantWomanQ12) {
     result.pregnantWomanQ12 = a.pregnantWomanQ12;
   }
 

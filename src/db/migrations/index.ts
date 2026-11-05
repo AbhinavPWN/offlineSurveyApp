@@ -11,6 +11,9 @@ import { migration010 } from "./010_create_surveys";
 import { migration011 } from "./011_add_member_health_fields";
 import { migration012 } from "./012_create_community_tables";
 
+import { migration013 } from "./013_create_survey_listing_cache";
+import { migration014 } from "./014_create_survey_submission_attempts";
+
 export const migrations = [
   migration001,
   migration002,
@@ -24,4 +27,6 @@ export const migrations = [
   migration010,
   migration011,
   migration012,
+  migration013,
+  migration014,
 ];

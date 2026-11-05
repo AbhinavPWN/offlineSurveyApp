@@ -79,7 +79,7 @@ function CheckboxGroupFieldComponent({
           >
             <Text className="mr-2">{selected ? "☑" : "☐"}</Text>
 
-            <View>
+            <View className="flex-1">
               <Text className="text-sm text-gray-900">{opt.label}</Text>
 
               {opt.labelNp && (

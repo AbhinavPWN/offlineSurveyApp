@@ -91,6 +91,9 @@ export function mapMemberToSurveyProfile(
 
   const now = Date.now();
   const childAgeDays = calculateChildAgeDays(childDob);
+  const secondBirthday = childDob ? new Date(childDob) : null;
+  secondBirthday?.setFullYear(secondBirthday.getFullYear() + 2);
+  secondBirthday?.setHours(23, 59, 59, 999);
 
   const ageDays =
     dob !== null
@@ -118,6 +121,11 @@ export function mapMemberToSurveyProfile(
     ageYears,
     ageDays,
     childAgeDays,
+    childUpTo24Months:
+      secondBirthday !== null &&
+      childAgeDays !== null &&
+      childAgeDays >= 0 &&
+      now <= secondBirthday.getTime(),
     gender,
     maritalStatus,
     isPregnant,

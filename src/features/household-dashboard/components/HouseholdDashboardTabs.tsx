@@ -1,7 +1,8 @@
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
 
-export type HouseholdDashboardTab = "LOCAL" | "ONLINE" | "COMMUNITY";
+export type HouseholdDashboardTab = "LOCAL" | "ONLINE" | "COMMUNITY" | "SURVEY";
 
 interface HouseholdDashboardTabsProps {
   activeTab: HouseholdDashboardTab;
@@ -12,21 +13,26 @@ interface HouseholdDashboardTabsProps {
 interface TabDefinition {
   key: HouseholdDashboardTab;
   label: string;
+  icon: React.ComponentProps<typeof Ionicons>["name"];
 }
 
 const tabs: TabDefinition[] = [
   {
     key: "LOCAL",
     label: "Downloaded",
+    icon: "download-outline",
   },
   {
     key: "ONLINE",
     label: "Online",
+    icon: "cloud-outline",
   },
   {
     key: "COMMUNITY",
     label: "Community",
+    icon: "people-outline",
   },
+  { key: "SURVEY", label: "Survey", icon: "clipboard-outline" },
 ];
 
 export const HouseholdDashboardTabs = React.memo(
@@ -37,7 +43,7 @@ export const HouseholdDashboardTabs = React.memo(
   }: HouseholdDashboardTabsProps) {
     return (
       <View
-        className="mx-4 mt-4 flex-row overflow-hidden rounded-lg bg-gray-200"
+        className="mx-4 mt-2 flex-row rounded-xl bg-gray-100 p-1"
         accessibilityRole="tablist"
       >
         {tabs.map((tab) => {
@@ -57,13 +63,19 @@ export const HouseholdDashboardTabs = React.memo(
                 selected: isActive,
                 disabled: isLoadingOnlineTab,
               }}
-              className={`flex-1 py-2 ${
-                isActive ? "bg-white" : ""
+              className={`flex-1 rounded-lg px-1 py-2 ${
+                isActive ? "bg-blue-700" : ""
               } ${isLoadingOnlineTab ? "opacity-60" : ""}`}
             >
+              <Ionicons
+                name={tab.icon}
+                size={18}
+                color={isActive ? "white" : "#4b5563"}
+                style={{ alignSelf: "center", marginBottom: 4 }}
+              />
               <Text
-                className={`text-center text-sm font-medium ${
-                  isActive ? "text-gray-900" : "text-gray-600"
+                className={`text-center text-xs font-medium ${
+                  isActive ? "text-white" : "text-gray-600"
                 }`}
                 numberOfLines={1}
               >

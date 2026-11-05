@@ -1,62 +1,68 @@
-export function mapFeReproductiveToApi(a: Record<string, any>) {
-  const q1 = a.feReproductiveQ1;
-  const q8 = a.feReproductiveQ8;
-  const q9 = a.feReproductiveQ9;
-  const q10 = a.feReproductiveQ10 || [];
-  const q12 = a.feReproductiveQ12 || [];
-  const q13 = a.feReproductiveQ13;
+import { normalizeReproductiveSymptoms } from "../utils/normalizeReproductiveSymptoms";
 
-  const hasQ10 = q10.length > 0;
-  const hasQ12 = q12.length > 0;
-
+export function mapFeReproductiveToApi(raw: Record<string, any>) {
+  const a = normalizeReproductiveSymptoms(raw);
   const result: Record<string, any> = {
-    // ---------- ALWAYS ----------
-    feReproductiveQ1: q1 ?? "N",
-    feReproductiveQ2: a.feReproductiveQ2 ?? "N",
-    feReproductiveQ3: a.feReproductiveQ3 ?? "N",
-    feReproductiveQ8: q8 ?? "N",
+    feReproductiveQ1: a.feReproductiveQ1 ?? "N",
   };
+  if (a.feReproductiveQ1 === "N") {
+    result.feReproductiveQ2 = a.feReproductiveQ2 ?? "N";
+    result.feReproductiveQ3 = a.feReproductiveQ3 ?? "N";
+  }
+  // Pregnancy answers belong to the existing Pregnancy section.
+  if (a.feReproductiveQ3 === "Y") return result;
 
-  // ---------- Q4–Q7 (ONLY if Q1 = Y) ----------
-  if (q1 === "Y") {
-    result.feReproductiveQ4 = a.feReproductiveQ4 ?? "";
+  result.feReproductiveQ4 = a.feReproductiveQ4 ?? "";
+  if (a.feReproductiveQ4 === "D")
     result.feReproductiveQ5 = a.feReproductiveQ5 ?? "";
+  if (a.feReproductiveQ4 === "R") {
     result.feReproductiveQ6 = a.feReproductiveQ6 ?? "";
     result.feReproductiveQ7 = a.feReproductiveQ7 ?? "";
   }
+  result.feReproductiveQ8 = a.feReproductiveQ8 ?? "N";
+  if (a.feReproductiveQ8 === "Y")
+    result.feReproductiveQ9 = a.feReproductiveQ9 ?? "";
 
-  // ---------- Q9 (ONLY if Q8 = Y) ----------
-  if (q8 === "Y") {
-    result.feReproductiveQ9 = q9 ?? "";
-  }
-
-  // ---------- CHECKBOX Q10 (ALWAYS SEND FULL SET) ----------
-  result.feReproductiveQ10Ans1 = q10.includes("1") ? "Y" : "N";
-  result.feReproductiveQ10Ans2 = q10.includes("2") ? "Y" : "N";
-  result.feReproductiveQ10Ans3 = q10.includes("3") ? "Y" : "N";
-  result.feReproductiveQ10Ans4 = q10.includes("4") ? "Y" : "N";
-  result.feReproductiveQ10Ans5 = q10.includes("5") ? "Y" : "N";
-
-  // ---------- Q11 (ONLY if any Q10 selected) ----------
-  if (hasQ10) {
-    result.feReproductiveQ11 = a.feReproductiveQ11 ?? "N";
-  }
-
-  // ---------- CHECKBOX Q12 ----------
-  result.feReproductiveQ12Ans1 = q12.includes("1") ? "Y" : "N";
-  result.feReproductiveQ12Ans2 = q12.includes("2") ? "Y" : "N";
-  result.feReproductiveQ12Ans3 = q12.includes("3") ? "Y" : "N";
-  result.feReproductiveQ12Ans4 = q12.includes("4") ? "Y" : "N";
-
-  // ---------- Q13 (ONLY if Q12 selected) ----------
-  if (hasQ12) {
-    result.feReproductiveQ13 = q13 ?? "N";
-
-    // ---------- DETAILS ONLY IF YES ----------
-    if (q13 === "Y") {
-      result.feReproductiveQ13Others = a.feReproductiveQ13Details ?? "";
+  for (const [prefix, count] of [
+    ["feReproductiveQ10", 5],
+    ["feReproductiveQ12", 4],
+  ] as const) {
+    for (let i = 1; i <= count; i++) {
+      const key = `${prefix}Ans${i}`;
+      if (a[key] !== "Y" && a[key] !== "N") {
+        throw new Error(
+          "Open the Reproductive Health section and answer Yes or No for every symptom before syncing.",
+        );
+      }
+      result[key] = a[key];
     }
   }
-
+  const hasSymptoms = Array.from(
+    { length: 5 },
+    (_, i) => a[`feReproductiveQ10Ans${i + 1}`],
+  ).includes("Y");
+  const hasComplications = Array.from(
+    { length: 4 },
+    (_, i) => a[`feReproductiveQ12Ans${i + 1}`],
+  ).includes("Y");
+  if (hasSymptoms) {
+    if (a.feReproductiveQ11 !== "Y" && a.feReproductiveQ11 !== "N")
+      throw new Error(
+        "Answer the Q11 health-facility question before syncing.",
+      );
+    result.feReproductiveQ11 = a.feReproductiveQ11;
+  }
+  if (hasComplications) {
+    if (a.feReproductiveQ13 !== "Y" && a.feReproductiveQ13 !== "N")
+      throw new Error(
+        "Answer the Q13 health-provider question before syncing.",
+      );
+    if (a.feReproductiveQ13 === "N" && !a.feReproductiveQ13Details?.trim())
+      throw new Error("Enter the referral facility name before syncing.");
+    result.feReproductiveQ13 = a.feReproductiveQ13;
+    // This field records a referral facility when the answer is No.
+    if (a.feReproductiveQ13 === "N")
+      result.feReproductiveQ13Others = a.feReproductiveQ13Details ?? "";
+  }
   return result;
 }

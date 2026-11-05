@@ -1,8 +1,6 @@
 export function mapInfantToApi(a: Record<string, any>) {
   const vaccinations = a.infantQ2 || [];
 
-  const hadDiarrhea = a.infantQ5 === "Y";
-
   return {
     // ---------- Feeding ----------
     infantQ1: a.infantQ1 ?? "",
@@ -21,7 +19,7 @@ export function mapInfantToApi(a: Record<string, any>) {
     // ---------- Diarrhea ----------
     infantQ5: a.infantQ5 ?? "",
 
-    // ---------- Conditional ----------
-    infantQ6: hadDiarrhea ? (a.infantQ6 ?? "") : "",
+    // Displayed Q4 is independent of the diarrhoea answer in the approved wording.
+    infantQ6: a.infantQ6 ?? "",
   };
 }

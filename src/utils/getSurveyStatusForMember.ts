@@ -1,9 +1,13 @@
 import { surveySQLite } from "@/src/services/surveySQLite";
+import { SurveySubmissionAttemptRepository } from "@/src/repositories/SurveySubmissionAttemptRepository";
+
+const submissionAttempts = new SurveySubmissionAttemptRepository();
 
 export type SurveyMemberDisplayStatus =
   | "NOT_STARTED"
   | "IN_PROGRESS"
   | "READY_TO_SYNC"
+  | "REVIEW_REQUIRED"
   | "SYNCED";
 
 export async function getSurveyStatusForMember(
@@ -19,6 +23,9 @@ export async function getSurveyStatusForMember(
     // No survey exists
     if (!survey) {
       return "NOT_STARTED";
+    }
+    if (survey.synced === 0 && await submissionAttempts.requiresReview(survey.surveyId)) {
+      return "REVIEW_REQUIRED";
     }
 
     // Draft survey

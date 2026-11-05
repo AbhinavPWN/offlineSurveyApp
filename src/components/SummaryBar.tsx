@@ -14,25 +14,10 @@ export const SummaryBar: React.FC<Props> = ({ households }) => {
   const synced = households.filter((h) => h.syncStatus === "SYNCED").length;
 
   return (
-    <View className="bg-white rounded-xl p-4 shadow-sm">
-      <Text className="text-sm text-gray-500 mb-3">Sync Overview</Text>
-
-      <View className="flex-row justify-between">
-        <View className="items-center flex-1">
-          <Text className="text-xl font-bold text-amber-600">{pending}</Text>
-          <Text className="text-xs text-gray-500 mt-1">Pending</Text>
-        </View>
-
-        <View className="items-center flex-1">
-          <Text className="text-xl font-bold text-red-600">{failed}</Text>
-          <Text className="text-xs text-gray-500 mt-1">Failed</Text>
-        </View>
-
-        <View className="items-center flex-1">
-          <Text className="text-xl font-bold text-green-600">{synced}</Text>
-          <Text className="text-xs text-gray-500 mt-1">Synced</Text>
-        </View>
-      </View>
+    <View className="flex-row justify-between rounded-lg bg-white px-3 py-2">
+      <Text className="text-xs text-amber-700">Pending {pending}</Text>
+      <Text className="text-xs text-red-700">Failed {failed}</Text>
+      <Text className="text-xs text-green-700">Synced {synced}</Text>
     </View>
   );
 };

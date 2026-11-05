@@ -1,9 +1,19 @@
+import { normalizeMaleAdolescentSymptoms } from "../utils/normalizeAdolescentSymptoms";
+
 export function mapMaAdolescentMaToApi(a: Record<string, any>) {
+  a = normalizeMaleAdolescentSymptoms(a);
   const q1 = a.maAdolescentMaQ1;
   const q2 = a.maAdolescentMaQ2;
-  const q3 = a.maAdolescentMaQ3 || [];
-
-  const hasQ3Selection = q3.length > 0;
+  const symptoms = Array.from(
+    { length: 5 },
+    (_, i) => a[`maAdolescentMaQ3Ans${i + 1}`],
+  );
+  if (symptoms.some((value) => value !== "Y" && value !== "N")) {
+    throw new Error(
+      "Open this survey and answer Yes or No for all five Q3 symptoms before syncing.",
+    );
+  }
+  const hasQ3Selection = symptoms.includes("Y");
 
   const result: Record<string, any> = {
     // ---------- ALWAYS ----------
@@ -23,16 +33,21 @@ export function mapMaAdolescentMaToApi(a: Record<string, any>) {
     }
   }
 
-  // ---------- CHECKBOX Q3 (ALWAYS send full set) ----------
-  result.maAdolescentMaQ3Ans1 = q3.includes("1") ? "Y" : "N";
-  result.maAdolescentMaQ3Ans2 = q3.includes("2") ? "Y" : "N";
-  result.maAdolescentMaQ3Ans3 = q3.includes("3") ? "Y" : "N";
-  result.maAdolescentMaQ3Ans4 = q3.includes("4") ? "Y" : "N";
-  result.maAdolescentMaQ3Ans5 = q3.includes("5") ? "Y" : "N";
+  // ---------- Q3: explicit Yes/No answers ----------
+  result.maAdolescentMaQ3Ans1 = symptoms[0];
+  result.maAdolescentMaQ3Ans2 = symptoms[1];
+  result.maAdolescentMaQ3Ans3 = symptoms[2];
+  result.maAdolescentMaQ3Ans4 = symptoms[3];
+  result.maAdolescentMaQ3Ans5 = symptoms[4];
 
   // ---------- Q4 (ONLY if any Q3 selected) ----------
   if (hasQ3Selection) {
-    result.maAdolescentMaQ4 = a.maAdolescentMaQ4 ?? "N";
+    if (a.maAdolescentMaQ4 !== "Y" && a.maAdolescentMaQ4 !== "N") {
+      throw new Error(
+        "Open this survey and answer the Q4 health-facility question before syncing.",
+      );
+    }
+    result.maAdolescentMaQ4 = a.maAdolescentMaQ4;
   }
 
   return result;

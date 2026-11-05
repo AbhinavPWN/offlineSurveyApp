@@ -4,6 +4,10 @@ import { mapListingDtoToHousehold } from "./api/mappers/householdListingMapper";
 import { GetHHDataListResponse } from "./api/dto/GetHHDataListResponse";
 import { AppLogger } from "../utils/AppLogger";
 import { BaseApiClient } from "./api/BaseApiClient";
+import {
+  HouseholdVisitListParams,
+  parseHouseholdVisitListResponse,
+} from "./api/dto/HouseholdVisitDTO";
 
 // --------------------
 // API Base
@@ -67,6 +71,9 @@ export interface HouseholdApiService {
   updateHousehold(payload: UpdateHouseholdPayload): Promise<void>;
 
   getHouseholdListing(chwId: string): Promise<Household[]>;
+  getHouseholdVisitListing(
+    params: HouseholdVisitListParams,
+  ): Promise<Household[]>;
   getHouseholdHeadName(householdId: string): Promise<string>;
 }
 
@@ -117,6 +124,25 @@ function getHouseholdHeadNameFromRemoteMembers(members: any[]): string {
 
 export class HouseholdApiServiceImpl implements HouseholdApiService {
   private client = BaseApiClient.getInstance();
+
+  async getHouseholdVisitListing({
+    day,
+    chwUsername,
+  }: HouseholdVisitListParams): Promise<Household[]> {
+    if (!Number.isInteger(day) || day < 1 || day > 32) {
+      throw new Error("Choose a day from 1 to 32.");
+    }
+    const username = chwUsername.trim();
+    if (!username) {
+      throw new Error("Your login username is missing. Please sign in again.");
+    }
+
+    const response = await this.client.get<unknown>("/GetHHVisitDataList", {
+      params: { HH_date: String(day), CHW_Id: username },
+    });
+    const data = parseHouseholdVisitListResponse(response.data);
+    return data.properties.map(mapListingDtoToHousehold);
+  }
 
   // -----------------------------
   // INSERT

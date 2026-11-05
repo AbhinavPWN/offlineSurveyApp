@@ -129,11 +129,11 @@ export const neonateQuestions: QuestionConfig[] = [
   {
     key: "neonateQ6",
     label: "Was the baby taken to health facility?",
-    labelNp: "के बच्चालाई स्वास्थ्य संस्था लगियो?",
+    labelNp: "के बच्चालाई स्वास्थ्य संस्था (अस्पताल वा क्लिनिक) लगियो?",
     type: "select",
     options: [
-      { label: "Yes", labelNp: "छ", value: "Y" },
-      { label: "No", labelNp: "छैन", value: "N" },
+      { label: "Yes", labelNp: "लगियो", value: "Y" },
+      { label: "No", labelNp: "लगिएन", value: "N" },
     ],
     validation: [
       {
@@ -149,12 +149,12 @@ export const neonateQuestions: QuestionConfig[] = [
     labelNp: "तपाईं कहाँ सुत्केरी हुनुभयो?",
     type: "select",
     options: [
+      { label: "Home", labelNp: "घरमा", value: "H" },
       {
-        label: "Facility",
-        labelNp: "स्वास्थ्य संस्था - अस्पताल",
+        label: "Health Facility",
+        labelNp: "स्वास्थ्य संस्था (अस्पताल) मा",
         value: "F",
       },
-      { label: "Home", labelNp: " घर", value: "H" },
     ],
     validation: [
       {
@@ -166,8 +166,8 @@ export const neonateQuestions: QuestionConfig[] = [
 
   {
     key: "neonateQ8",
-    label: "Any complications during or after delivery?",
-    labelNp: "सुत्केरी हुँदा वा पछि समस्या भयो?",
+    label: "Have you had any complications during or after delivery?",
+    labelNp: "सुत्केरी हुँदा वा भएपछि तपाईंलाई केही स्वास्थ्य समस्या वा जटिलता भयो?",
     type: "select",
     options: [
       { label: "Yes", labelNp: "भयो", value: "Y" },
@@ -183,8 +183,8 @@ export const neonateQuestions: QuestionConfig[] = [
 
   {
     key: "neonateQ9",
-    label: "Type of complication",
-    labelNp: "कस्तो जटिलता भएको थियो?",
+    label: "What type of complication it was?",
+    labelNp: "कस्तो खालको जटिलता भएको थियो?",
     type: "select", //  dropdown
     visibleIf: {
       dependsOn: "neonateQ8", // only if complication = YES
@@ -198,7 +198,7 @@ export const neonateQuestions: QuestionConfig[] = [
       },
       {
         label: "Convulsion",
-        labelNp: "जिउ अठ्याउने वा काँप्ने",
+        labelNp: "जिउ काँप्ने वा झड्का आउने",
         value: "2",
       },
       {
@@ -217,8 +217,8 @@ export const neonateQuestions: QuestionConfig[] = [
         value: "5",
       },
       {
-        label: "Others",
-        labelNp: "अन्य",
+        label: "Others (specify)",
+        labelNp: "अन्य (खुलाउनुहोस्)",
         value: "6",
       },
     ],
@@ -252,8 +252,8 @@ export const neonateQuestions: QuestionConfig[] = [
 
   {
     key: "neonateQ10",
-    label: "Visited health provider?",
-    labelNp: "स्वास्थ्यकर्मीलाई भेट्नुभयो?",
+    label: "Have you visited a health provider or a health facility to seek any health-related service or care?",
+    labelNp: "के तपाईंले कुनै स्वास्थ्यसम्बन्धी सेवा वा उपचारका लागि स्वास्थ्यकर्मीलाई भेट्नुभएको वा स्वास्थ्य संस्थामा जानुभएको छ?",
     type: "select",
     options: [
       { label: "Yes", labelNp: "गएँ/भेटेँ", value: "Y" },

@@ -1,6 +1,5 @@
 import { SyncHouseholdUseCase } from "../household/SyncHouseholdUseCase";
 import { SyncMembersUseCase } from "../members/SyncMemberUseCase";
-import { syncPendingSurveys } from "./surveySyncService";
 import { SyncContextGuard } from "./SyncContextGuard";
 import { AppLogger } from "@/src/utils/AppLogger";
 
@@ -107,16 +106,6 @@ export class GlobalSyncUseCase {
                 reason: offlineReason,
               }),
             },
-            {
-              step: "SURVEY",
-              status: "FAILED",
-              message: offlineReason,
-              summary: createFailedStepSummary({
-                id: "SURVEY_OFFLINE",
-                label: "Surveys",
-                reason: offlineReason,
-              }),
-            },
           ],
         };
       }
@@ -216,50 +205,6 @@ export class GlobalSyncUseCase {
 
       results.push({
         step: "MEMBER",
-        status: "FAILED",
-        message: reason,
-        summary,
-      });
-    }
-
-    // -----------------------------
-    // 4. Survey Sync
-    // -----------------------------
-    try {
-      await AppLogger.log("SYNC", "[SURVEY][START]");
-
-      const surveySummary = normalizeSummary(
-        await syncPendingSurveys(chwUsername),
-      );
-
-      const surveyStatus = getStepStatus(surveySummary);
-
-      await AppLogger.log("SYNC", "[SURVEY][END]", {
-        status: surveyStatus,
-        summary: surveySummary,
-      });
-
-      results.push({
-        step: "SURVEY",
-        status: surveyStatus,
-        summary: surveySummary,
-      });
-    } catch (error: any) {
-      const reason = getSafeSyncReason(error);
-
-      await AppLogger.log("ERROR", "[SURVEY][FAIL]", {
-        message: error?.message,
-        reason,
-      });
-
-      const summary = createFailedStepSummary({
-        id: "SURVEY_SYNC",
-        label: "Surveys",
-        reason,
-      });
-
-      results.push({
-        step: "SURVEY",
         status: "FAILED",
         message: reason,
         summary,

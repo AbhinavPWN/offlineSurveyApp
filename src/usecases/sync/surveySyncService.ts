@@ -1,11 +1,18 @@
 // src/usecases/sync/surveySyncService.ts
 
 import { surveySQLite } from "@/src/services/surveySQLite";
+import { SurveySubmissionAttemptRepository } from "@/src/repositories/SurveySubmissionAttemptRepository";
+import { loadAuthSession } from "@/src/auth/storage/authStorage";
+import { isTokenValid } from "@/src/auth/service/token";
+
 import { buildSurveyPayload } from "@/src/features/survey/mappers/buildSurveyPayload";
 import { emptySurveyPayload } from "@/src/features/survey/mappers/emptySurveyPayload";
 
 import { BaseApiClient } from "@/src/services/api/BaseApiClient";
-import { householdMemberLocalRepository } from "@/src/di/container";
+import {
+  householdLocalRepository,
+  householdMemberLocalRepository,
+} from "@/src/di/container";
 
 import { validateSurveyPayload } from "./validators/payloadValidator";
 import { analyzeSurveyPayload } from "./validators/payloadAnalyzer";
@@ -20,6 +27,15 @@ import {
   createEmptySyncSummary,
   getSafeSyncReason,
 } from "./SyncSummary";
+
+const submissionAttempts = new SurveySubmissionAttemptRepository();
+let syncRunning = false;
+export interface SurveySyncProgress {
+  surveyId: string;
+  completed: number;
+  total: number;
+  status: "SYNCING" | "SYNCED" | "FAILED" | "REVIEW_REQUIRED";
+}
 
 // ---------- Utils ----------
 function ensureApiDateFormat(dateStr: string | null): string {
@@ -91,10 +107,36 @@ function cleanConditionalOthers(payload: Record<string, any>) {
 }
 
 // ---------- Main Sync ----------
+export async function getPendingSurveysForUser(username: string) {
+  const pending = await surveySQLite.getPendingSurveysForSync();
+  const owned = [];
+  for (const item of pending) {
+    const household = await householdLocalRepository.getByHouseholdId(
+      item.survey.householdId,
+    );
+    if (household?.chwUsername === username) owned.push(item);
+  }
+  return owned;
+}
+
 export async function syncPendingSurveys(
   userId: string,
+  onProgress?: (progress: SurveySyncProgress) => void,
 ): Promise<SyncEntitySummary> {
-  const pending = await surveySQLite.getPendingSurveysForSync();
+  if (syncRunning) throw new Error("Survey sync is already running.");
+  syncRunning = true;
+  try {
+    return await runSurveySync(userId, onProgress);
+  } finally {
+    syncRunning = false;
+  }
+}
+
+async function runSurveySync(
+  userId: string,
+  onProgress?: (progress: SurveySyncProgress) => void,
+): Promise<SyncEntitySummary> {
+  const pending = await getPendingSurveysForUser(userId);
 
   const summary = createEmptySyncSummary();
   summary.total = pending.length;
@@ -117,6 +159,39 @@ export async function syncPendingSurveys(
 
   for (const item of pending) {
     const { survey, answers } = item;
+    const notify = (status: SurveySyncProgress["status"]) => {
+      // UI callbacks must never change the submission outcome.
+      try {
+        onProgress?.({
+          surveyId: survey.surveyId,
+          completed: summary.items.length,
+          total: pending.length,
+          status,
+        });
+      } catch {
+        /* observer only */
+      }
+    };
+    if (await submissionAttempts.requiresReview(survey.surveyId)) {
+      summary.failed++;
+      failCount++;
+      summary.items.push({
+        id: survey.surveyId,
+        label: "Survey needs checking",
+        status: "FAILED",
+        reason:
+          "An earlier submission outcome is unconfirmed. Check the backend before retrying; this survey was not sent again.",
+      });
+      notify("REVIEW_REQUIRED");
+      continue;
+    }
+    const session = await loadAuthSession();
+    if (!session || session.userName !== userId || !isTokenValid(session)) {
+      throw new Error(
+        "Sign in again to continue survey sync. Remaining answers are saved on this phone.",
+      );
+    }
+    notify("SYNCING");
 
     await AppLogger.log("SYNC", "[SURVEY][PROCESSING]", {
       surveyId: survey.surveyId,
@@ -164,6 +239,8 @@ export async function syncPendingSurveys(
         status: "FAILED",
         reason,
       });
+
+      notify("FAILED");
 
       continue;
     }
@@ -262,20 +339,7 @@ export async function syncPendingSurveys(
       const validationErrors = validateSurveyPayload(payload);
 
       if (validationErrors.length > 0) {
-        await AppLogger.log("WARN", "[SURVEY][VALIDATION_ERRORS]", {
-          surveyId: survey.surveyId,
-          householdId: survey.householdId,
-          memberId: survey.memberId,
-          errorCount: validationErrors.length,
-          errors: validationErrors,
-        });
-
-        if (__DEV__) {
-          console.warn("[PAYLOAD][VALIDATION_ERRORS]", {
-            surveyId: survey.surveyId,
-            errors: validationErrors,
-          });
-        }
+        throw new Error(`Survey was not sent: ${validationErrors.join("; ")}`);
       } else {
         await AppLogger.log("SYNC", "[SURVEY][VALIDATION_OK]", {
           surveyId: survey.surveyId,
@@ -305,6 +369,17 @@ export async function syncPendingSurveys(
         clientNo: survey.memberId,
       });
 
+      const currentSession = await loadAuthSession();
+      if (
+        !currentSession ||
+        currentSession.userName !== userId ||
+        !isTokenValid(currentSession)
+      ) {
+        throw new Error(
+          "Sign in again. This survey was not sent and remains saved.",
+        );
+      }
+      await submissionAttempts.begin(survey.surveyId);
       const response = await api.post(
         "/Household_Member_Survey_Entry",
         payload,
@@ -323,7 +398,16 @@ export async function syncPendingSurveys(
         });
       }
 
+      const code = response.data?.response_code;
+      // Confirmed by the developer's Postman Survey submission test.
+      if (code !== "SUCCESS") {
+        throw new Error(
+          response.data?.response_message ||
+            "Survey acceptance was not confirmed. Answers remain saved on this phone.",
+        );
+      }
       await surveySQLite.markSurveySynced(survey.surveyId);
+      await submissionAttempts.clear(survey.surveyId);
 
       await AppLogger.log("SYNC", "[SURVEY][MARKED_SYNCED]", {
         surveyId: survey.surveyId,
@@ -336,10 +420,17 @@ export async function syncPendingSurveys(
         label: memberLabel,
         status: "SUCCESS",
       });
+      notify("SYNCED");
     } catch (error: any) {
+      // A definitive authentication rejection can be retried after signing in.
+      if (error?.response?.status === 401)
+        await submissionAttempts.clear(survey.surveyId);
       failCount++;
 
-      const reason = getSafeSyncReason(error);
+      const needsReview = await submissionAttempts.requiresReview(survey.surveyId);
+      const reason = needsReview
+        ? "Submission outcome unconfirmed. Check the backend before retrying. Answers remain saved; automatic resubmission is blocked."
+        : getSafeSyncReason(error);
 
       await AppLogger.log("ERROR", "[SURVEY][FAIL]", {
         surveyId: survey.surveyId,
@@ -369,6 +460,11 @@ export async function syncPendingSurveys(
         status: "FAILED",
         reason,
       });
+      notify(
+        (await submissionAttempts.requiresReview(survey.surveyId))
+          ? "REVIEW_REQUIRED"
+          : "FAILED",
+      );
     }
   }
 
